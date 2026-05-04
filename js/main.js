@@ -577,7 +577,9 @@ function renderGameList(games) {
         const mode = g.Mode || 'Normal';
         const displayMode = mode === 'Normal' ? 'Extermination/Normal' : mode;
         const modeClass = `mode-${mode.toLowerCase()}`;
-        const passBadge = g.HasPassword ? ' <i class="fas fa-lock" title="Private Game" style="color:#ffaa00; font-size:0.8em; margin-left:5px;"></i>' : '';
+        const passBadge = g.HasPassword 
+            ? ' <span class="mode-badge" style="background: rgba(255, 170, 0, 0.15); border: 1px solid #ffaa00; color: #ffaa00; padding: 2px 6px; font-size: 0.75em; margin-left: 8px;"><i class="fas fa-lock" style="font-size:0.8em; margin-right:3px;"></i>Private</span>'
+            : ' <span class="mode-badge" style="background: rgba(0, 255, 136, 0.15); border: 1px solid #00ff88; color: #00ff88; padding: 2px 6px; font-size: 0.75em; margin-left: 8px;"><i class="fas fa-globe" style="font-size:0.8em; margin-right:3px;"></i>Open</span>';
 
         row.innerHTML = `
             <td>${escapeHtml(displayName)}${passBadge}</td>
