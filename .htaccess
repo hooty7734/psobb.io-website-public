@@ -1,0 +1,39 @@
+Options -Indexes
+
+RewriteEngine On
+
+# Redirect www to non-www (Unify sessions and boost SEO)
+RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+# Block access to critical dotfiles (.env, .git)
+RewriteRule ^\.env - [F,L]
+RewriteRule ^\.git - [F,L]
+
+# Block access to SQLite database files and the db directory
+RewriteRule \.db$ - [F,L]
+RewriteRule ^db/ - [F,L]
+
+# Block access to server scripts, logs, and test files (Allow install-deck.sh for Steam Deck users)
+RewriteCond %{REQUEST_URI} !install-deck\.sh$
+RewriteRule \.(sh|py|log)$ - [F,L]
+RewriteRule ^test_.*\.php$ - [F,L]
+
+
+# 1. Externally redirect /file.php to /file
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s([^.]+)\.php [NC]
+RewriteCond %{REQUEST_METHOD} !POST
+RewriteRule ^ %1 [R=301,L]
+
+# Explicitly rewrite /downloads (directory collision fix)
+RewriteRule ^downloads/(.+)$ - [L]
+RewriteRule ^downloads/?$ downloads.php [L]
+
+# Explicitly rewrite /decryption (directory collision fix)
+RewriteRule ^decryption/(.+)$ - [L]
+RewriteRule ^decryption/?$ decryption.php [L]
+
+# 2. Internally rewrite /file to /file.php
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.*?)/?$ $1.php [L]

@@ -1,0 +1,410 @@
+<?php
+/**
+ * Dedicated cron daemon for processing Global Server Community Events tracking and AI Milestones.
+ * Runs independently of cron_missions to ensure AI API latency does not bottleneck player telemetry.
+ */
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/db.php';
+
+$db = get_db();
+
+// Verify NewServ configuration exists
+if (empty($NEWSERV_API_URL) || empty($GEMINI_API_KEY)) {
+    die("[CRON] NEWSERV_API_URL or GEMINI_API_KEY is not defined in .env\n");
+}
+
+$state_cache_file = __DIR__ . '/.cron_community_state.json';
+$player_states = [];
+if (file_exists($state_cache_file)) {
+    $player_states = json_decode(file_get_contents($state_cache_file), true) ?: [];
+}
+
+echo "[CRON_COMMUNITY] Starting execution...\n";
+
+// Fetch live game state
+$options = [
+    'http' => [
+        'header' => "Content-type: application/json\r\n",
+        'method' => 'GET'
+    ]
+];
+$context = stream_context_create($options);
+$response = @file_get_contents($NEWSERV_API_URL . '/y/clients', false, $context);
+
+if (!$response) {
+    die("[CRON_COMMUNITY] Failed to fetch clients from NewServ API.\n");
+}
+
+$clients = json_decode($response, true) ?: [];
+
+if (empty($clients)) {
+    echo "[CRON_COMMUNITY] No clients online. Exiting.\n";
+    exit;
+}
+
+// Fetch active Community Events
+$active_community_events = [];
+$ce_res = $db->query("SELECT * FROM community_events WHERE status = 'active'");
+if ($ce_res) {
+    while ($row = $ce_res->fetchArray(SQLITE3_ASSOC)) {
+        $active_community_events[] = $row;
+    }
+}
+
+if (empty($active_community_events)) {
+    echo "[CRON_COMMUNITY] No active community events. Proceeding with debug telemetry only.\n";
+}
+
+/**
+ * Helper function to trigger Gemini AI for milestones and broadcast to NewServ.
+ */
+function trigger_ai_milestone($ce, $milestone_type, $pct_str) {
+    global $GEMINI_API_KEY, $NEWSERV_API_URL, $db;
+    
+    $prompt = "You are 'Mission Control', the official AI game master for PSOBB. Keep your response extremely brief (under 50 words, maximum 2 sentences). ";
+    $prompt .= "The server is currently running a Global Community Event titled '{$ce['title']}' where players work together to {$ce['goal_type']}. ";
+    
+    if ($milestone_type === 'start') {
+        $prompt .= "The event has just started! Announce it to the server and rally the players to participate.";
+        $db_flag = 'announced_start';
+    } elseif ($milestone_type === '100') {
+        $prompt .= "The server just completed 100% of the goal! Announce their victory and tell them they can claim their reward at psobb.io.";
+        $db_flag = 'completed_at'; // Special case, standard completion handles it
+    } else {
+        $prompt .= "The server just reached the {$pct_str} milestone for this goal! Give a quick, encouraging status update to keep players motivated.";
+        $db_flag = "announced_{$milestone_type}";
+    }
+    
+    $prompt .= "\nCRITICAL LANGUAGE DIRECTIVE: Since this is a global server broadcast to an international playerbase, you MUST provide your announcement bilingually. First write the English sentence, followed by the Japanese translation.";
+
+    echo "[CRON_COMMUNITY] Triggering Gemini AI for Milestone: {$milestone_type}%\n";
+
+    $payload = [
+        "contents" => [["parts" => [["text" => $prompt]]]],
+        "generationConfig" => ["temperature" => 0.8, "maxOutputTokens" => 60]
+    ];
+    
+    $g_options = [
+        'http' => [
+            'header'  => "Content-type: application/json\r\n",
+            'method'  => 'POST',
+            'content' => json_encode($payload)
+        ]
+    ];
+    $gemini_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" . $GEMINI_API_KEY;
+    $api_response = @file_get_contents($gemini_url, false, stream_context_create($g_options));
+
+    $message = "";
+    if ($api_response) {
+        $data = json_decode($api_response, true);
+        if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
+            $msg = trim($data['candidates'][0]['content']['parts'][0]['text']);
+            // Strip markdown
+            $msg = str_replace(['**', '*'], '', $msg);
+            $message = "[Mission Control] " . $msg;
+        }
+    }
+    
+    // Fallback if AI fails to respond
+    if (empty($message)) {
+        if ($milestone_type === 'start') $message = "[Mission Control] Global Event Started! / [指令室] グローバルイベント開始！";
+        elseif ($milestone_type === '100') $message = "[Mission Control] Global Event Completed! Claim your reward at psobb.io. / [指令室] グローバルイベント達成！報酬はpsobb.ioで。";
+        else $message = "[Mission Control] Global Event reached {$pct_str}! Keep it up! / [指令室] 目標{$pct_str}達成！この調子で頑張れ！";
+    }
+
+    // Broadcast
+    $exec_payload = json_encode(["command" => "announce-mail " . $message]);
+    $exec_options = [
+        'http' => [
+            'header'  => "Content-type: application/json\r\n",
+            'method'  => 'POST',
+            'content' => $exec_payload
+        ]
+    ];
+    @file_get_contents($NEWSERV_API_URL . "/y/shell-exec", false, stream_context_create($exec_options));
+
+    // Flag DB
+    if ($db_flag !== 'completed_at') {
+        $db->query("UPDATE community_events SET {$db_flag} = 1 WHERE id = " . (int)$ce['id']);
+    }
+}
+
+
+// --- 1. Milestone Tracking: START (0%) ---
+foreach ($active_community_events as $ce) {
+    if (empty($ce['announced_start'])) {
+        trigger_ai_milestone($ce, 'start', '0%');
+    }
+}
+
+// --- 2. Player Delta Accumulation ---
+foreach ($clients as $client) {
+    if (!isset($client['Account']['AccountID'])) continue;
+    $accId = (string)$client['Account']['AccountID'];
+    
+    $current_exp = $client['EXP'] ?? 0;
+    $current_item_count = count($client['InventoryItems'] ?? []);
+    $prev_state = $player_states[$accId] ?? [];
+    
+    $prev_exp = $prev_state['exp'] ?? $current_exp;
+    $prev_items = $prev_state['items'] ?? $current_item_count;
+    $curr_level = $client['Level'] ?? 1;
+    $prev_level = $prev_state['level'] ?? $curr_level;
+    
+    $curr_meseta = $client['Meseta'] ?? 0;
+    $prev_meseta = $prev_state['meseta'] ?? $curr_meseta;
+    
+    $curr_playtime = $client['PlayTimeSeconds'] ?? 0;
+    $prev_playtime = $prev_state['playtime'] ?? $curr_playtime;
+    
+    $curr_chal = count($client['ChallengeTimes'] ?? []);
+    $prev_chal = $prev_state['chal'] ?? $curr_chal;
+    
+    $curr_mats = ($client['NumHPMaterialsUsed'] ?? 0) + ($client['NumTPMaterialsUsed'] ?? 0) + ($client['NumPowerMaterialsUsed'] ?? 0) + ($client['NumDefMaterialsUsed'] ?? 0) + ($client['NumMindMaterialsUsed'] ?? 0) + ($client['NumEvadeMaterialsUsed'] ?? 0) + ($client['NumLuckMaterialsUsed'] ?? 0);
+    $prev_mats = $prev_state['mats'] ?? $curr_mats;
+    
+    $current_patrols = [];
+    $curr_f = (int)($client['LocationFloor'] ?? -1);
+    
+    // Protect against Zero-EXP spikes during loading screens where NewServ briefly reports 0 EXP.
+    // If we don't skip this tick, $prev_exp gets saved as 0, and the NEXT tick will show a massive delta!
+    if ($current_exp < $prev_exp && $current_exp === 0) {
+        continue;
+    }
+    
+    // Delayed EXP Sync Memory
+    $last_boss_arena = $prev_state['last_boss_arena'] ?? null;
+    $last_boss_arena_time = $prev_state['last_boss_arena_time'] ?? 0;
+    // Note: floor 15 (0x0F) is the lobby, NOT Gol Dragon. Do not include it.
+    if (in_array($curr_f, [11, 12, 13, 14, 9, 16, 17, 18])) {
+        $last_boss_arena = $curr_f;
+        $last_boss_arena_time = time();
+    }
+
+    // --- DEBUG TELEMETRY: Global Boss Kill Tracking ---
+    $boss_floors = [11 => 'Dragon', 12 => 'De Rol Le / Gal Gryphon', 13 => 'Vol Opt / Olga Flow', 14 => 'Dark Falz / Barba Ray', 15 => 'Gol Dragon', 9 => 'Saint-Million'];
+    $floor = $curr_f;
+    $prev_floor = (int)($prev_state['floor'] ?? -1);
+    
+    // Fast-Kill Race Condition Fix for Telemetry
+    $fast_kill_boss_name = null;
+    if (in_array($curr_f, [0, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240]) && !isset($boss_floors[$prev_floor])) {
+        // Player is in lobby (or Pioneer 2), but their previous floor wasn't a boss room.
+        // This implies they cleared the boss so fast the cron never saw them in it.
+        if ($prev_floor === 2) $fast_kill_boss_name = 'Dragon';
+        elseif ($prev_floor === 5) $fast_kill_boss_name = 'De Rol Le';
+        elseif ($prev_floor === 7) $fast_kill_boss_name = 'Vol Opt / Olga Flow';
+        elseif ($prev_floor === 10) $fast_kill_boss_name = 'Dark Falz';
+        elseif ($prev_floor === 4) $fast_kill_boss_name = 'Gol Dragon';
+    }
+    
+    $in_boss_arena = isset($boss_floors[$floor]) || isset($boss_floors[$prev_floor]) || (isset($boss_floors[$last_boss_arena]) && (time() - $last_boss_arena_time < 120)) || ($fast_kill_boss_name !== null);
+    if ($in_boss_arena) {
+        $exp_gain = ($current_exp - $prev_exp) >= 10;
+        $loot_gain = (($client['Level'] ?? 1) >= 200) && ($current_item_count > $prev_items);
+        if ($exp_gain || $loot_gain) {
+            // Boss kill detected!
+            $boss_name = $fast_kill_boss_name ?? $boss_floors[$floor] ?? $boss_floors[$prev_floor] ?? $boss_floors[$last_boss_arena] ?? 'Unknown Boss';
+            $debug_log_file = __DIR__ . '/.debug_telemetry.json';
+            $logs = file_exists($debug_log_file) ? json_decode(file_get_contents($debug_log_file), true) : [];
+            
+            // Add new log to the TOP of the array
+            array_unshift($logs, [
+                'time' => time(),
+                'char' => $client['Name'] ?? 'Unknown',
+                'boss' => $boss_name,
+                'exp_delta' => $current_exp - $prev_exp,
+                'loot_delta' => $current_item_count - $prev_items
+            ]);
+            
+            if (count($logs) > 50) $logs = array_slice($logs, 0, 50);
+            file_put_contents($debug_log_file, json_encode($logs));
+            echo "[CRON_COMMUNITY] DEBUG: Boss kill tracked for Acc $accId ($boss_name)\n";
+        }
+    }
+
+    // Evaluate progression for each active CE
+    foreach ($active_community_events as &$ce) {
+        $ce_contribution = 0;
+        
+        if ($ce['goal_type'] === 'MESETA') {
+            $delta = $curr_meseta - $prev_meseta;
+            if ($delta > 0) $ce_contribution = $delta;
+        } elseif ($ce['goal_type'] === 'LEVEL_UP') {
+            $delta = $curr_level - $prev_level;
+            if ($delta > 0) $ce_contribution = $delta;
+        } elseif ($ce['goal_type'] === 'MAT_CONSUME') {
+            $delta = $curr_mats - $prev_mats;
+            if ($delta > 0) $ce_contribution = $delta;
+        } elseif ($ce['goal_type'] === 'PLAYTIME') {
+            $delta = $curr_playtime - $prev_playtime;
+            if ($delta > 0) $ce_contribution = $delta;
+        } elseif ($ce['goal_type'] === 'CHALLENGE_STAGES') {
+            $delta = $curr_chal - $prev_chal;
+            if ($delta > 0) $ce_contribution = $delta;
+        } elseif ($ce['goal_type'] === 'ITEM') {
+            if ($current_item_count > $prev_items) {
+                $inventory = $client['InventoryItems'] ?? [];
+                $target_val = trim((string)$ce['goal_target']);
+                
+                // Map of generic weapon types to their Hex IDs for backwards compatibility
+                $generic_weapon_hex_map = [
+                    'Saber' => '007000', 'Dagger' => '000300', 'Handgun' => '000600', 'Rifle' => '007600', 'Cane' => '007900', 'Rod' => '007A00', 'Wand' => '007B00',
+                    'Brand' => '000101', 'Knife' => '000301', 'Autogun' => '000601', 'Sniper' => '000701', 'Stick' => '000A01', 'Baton' => '000C02',
+                    'Buster' => '000102', 'Blade' => '007200', 'Lockgun' => '000602', 'Blaster' => '000702', 'Mace' => '000A02', 'Scepter' => '000C03',
+                    'Pallasch' => '000103', 'Claymore' => '000203', 'Edge' => '000303', 'Berdys' => '000403', 'Sawcer' => '000503', 'Railgun' => '000603', 'Beam' => '000703', 'Launcher' => '00A600', 'Gatling' => '000803', 'Club' => '000A03', 'Striker' => '000B03',
+                    'Gladius' => '000104', 'Calibur' => '000204', 'Ripper' => '000304', 'Gungnir' => '000404', 'Diska' => '000504', 'Raygun' => '000604', 'Laser' => '000704', 'Arms' => '000904', 'Vulcan' => '000804',
+                ];
+
+                // Backwards compatibility for existing string-based community events
+                if (!ctype_xdigit($target_val)) {
+                    // Try to match the string to a hex code. If not found, fall back to null.
+                    $target_val = $generic_weapon_hex_map[ucfirst(strtolower($target_val))] ?? null;
+                } else {
+                    // Remove any modifiers from the hex if present
+                    $target_val = explode(' ', $target_val)[0];
+                }
+
+                if ($target_val) {
+                    foreach ($inventory as $inv_item) {
+                        // Check if the item's hex Data starts with our target hex prefix
+                        if (isset($inv_item['Data']) && strpos($inv_item['Data'], $target_val) === 0) {
+                            $ce_contribution = 1;
+                            break;
+                        }
+                    }
+                }
+            }
+        } elseif ($ce['goal_type'] === 'BOSS_ARENA') {
+            $target_floor = $ce['goal_target'];
+            $recent_boss_fight = false;
+            
+            $prev_f = (int)($prev_state['floor'] ?? -1);
+            $curr_f = (int)($client['LocationFloor'] ?? -1);
+
+            $fast_kill_preceding = [
+                11 => [2], // Dragon
+                12 => [5, 6, 7, 8, 9], // De Rol Le, Gal Gryphon
+                13 => [7, 11], // Vol Opt, Olga Flow
+                14 => [10, 2], // Dark Falz, Barba Ray
+                15 => [4], // Gol Dragon
+                9  => [8], // Saint-Million
+            ];
+            
+            $was_fast_kill = false;
+
+            if ($target_floor === 'ANY_DRAGON') {
+                $dragon_floors = [11, 15, 16]; // 11 = Forest/Sil, 15/16 = Gol Dragon (depending on NewServ mapping)
+                $recent_boss_fight = in_array($curr_f, $dragon_floors) || in_array($prev_f, $dragon_floors);
+                
+                // Fast-Kill Race Condition Fix:
+                if (in_array($prev_f, [2, 4]) && $curr_f !== $prev_f && !in_array($curr_f, $dragon_floors)) {
+                    $was_fast_kill = true;
+                }
+                
+                if (in_array($last_boss_arena, $dragon_floors) && (time() - $last_boss_arena_time < 120)) {
+                    $was_fast_kill = true;
+                }
+                $recent_boss_fight = $recent_boss_fight || $was_fast_kill;
+            } else {
+                $target_floor = (int)$target_floor;
+                // Map Episode 2 Boss "Fake" Floor IDs back to actual PSO Client Floor IDs
+                if ($target_floor === 15) $target_floor = 12; // Gal Gryphon -> De Rol Le Floor
+                elseif ($target_floor === 16) $target_floor = 15; // Gol Dragon -> VR Spaceship Final
+                elseif ($target_floor === 17) $target_floor = 14; // Barba Ray -> Dark Falz Floor
+                elseif ($target_floor === 18) $target_floor = 13; // Olga Flow -> Vol Opt Floor
+                elseif ($target_floor === 19) $target_floor = 9;  // Saint-Million -> Meteor Impact Site
+
+                // Fast-Kill Race Condition Fix:
+                if (isset($fast_kill_preceding[$target_floor]) && in_array($prev_f, $fast_kill_preceding[$target_floor])) {
+                    if ($curr_f !== $prev_f && $curr_f !== $target_floor) {
+                        $was_fast_kill = true;
+                    }
+                }
+                
+                if ($last_boss_arena === $target_floor && (time() - $last_boss_arena_time < 120)) {
+                    $was_fast_kill = true;
+                }
+                $recent_boss_fight = ($curr_f === $target_floor) || ($prev_f === $target_floor) || $was_fast_kill;
+            }
+
+            $exp_gain = ($current_exp - $prev_exp) >= 300;
+            $loot_gain = (($client['Level'] ?? 1) >= 200) && ($current_item_count > $prev_items);
+            if ($recent_boss_fight && ($exp_gain || $loot_gain)) {
+                $ce_contribution = 1;
+            }
+        } elseif ($ce['goal_type'] === 'PATROL') {
+            if (($client['LocationFloor'] ?? -1) === (int)$ce['goal_target']) {
+                $patrol_progress = ($prev_state['patrol']['CE_'.$ce['id']] ?? 0) + 1;
+                $current_patrols['CE_'.$ce['id']] = $patrol_progress;
+                if ($patrol_progress >= 10) {
+                    $ce_contribution = 1;
+                    $current_patrols['CE_'.$ce['id']] = 0;
+                }
+            } else {
+                $current_patrols['CE_'.$ce['id']] = $prev_state['patrol']['CE_'.$ce['id']] ?? 0;
+            }
+        }
+
+        if ($ce_contribution > 0) {
+            echo "[CRON_COMMUNITY] Account $accId contributed $ce_contribution to CE " . $ce['id'] . "\n";
+            $p_ins = $db->prepare("INSERT INTO community_event_participants (event_id, account_id, contribution_count) VALUES (:eid, :aid, :contrib) 
+                                   ON CONFLICT(event_id, account_id) DO UPDATE SET contribution_count = contribution_count + :contrib");
+            $p_ins->bindValue(':eid', $ce['id'], SQLITE3_INTEGER);
+            $p_ins->bindValue(':aid', $accId, SQLITE3_INTEGER);
+            $p_ins->bindValue(':contrib', $ce_contribution, SQLITE3_INTEGER);
+            $p_ins->execute();
+
+            $db->query("UPDATE community_events SET current_progress = current_progress + " . (int)$ce_contribution . " WHERE id = " . (int)$ce['id']);
+            
+            // Re-fetch to update local cache within the same script run
+            $ce['current_progress'] += $ce_contribution;
+        }
+    }
+
+    $player_states[(string)$accId] = [
+        'exp' => $current_exp,
+        'items' => $current_item_count,
+        'floor' => $curr_f,
+        'level' => $curr_level,
+        'patrol' => $current_patrols,
+        'meseta' => $curr_meseta,
+        'playtime' => $curr_playtime,
+        'chal' => $curr_chal,
+        'mats' => $curr_mats,
+        'last_boss_arena' => $last_boss_arena,
+        'last_boss_arena_time' => $last_boss_arena_time
+    ];
+}
+
+file_put_contents($state_cache_file, json_encode($player_states));
+
+// --- 3. Milestone Tracking: Progress (20, 50, 80, 100%) ---
+foreach ($active_community_events as $ce) {
+    if ($ce['status'] !== 'active') continue;
+
+    $target = (int)$ce['target_amount'];
+    if ($ce['goal_type'] === 'PLAYTIME') {
+        $target = $target * 3600;
+    }
+    
+    if ($target <= 0) continue;
+
+    $progress = (int)$ce['current_progress'];
+    $pct = ($progress / $target) * 100;
+
+    // Ordered highest to lowest to prevent skipping
+    if ($pct >= 100) {
+        $db->query("UPDATE community_events SET status = 'completed', completed_at = CURRENT_TIMESTAMP WHERE id = " . (int)$ce['id']);
+        trigger_ai_milestone($ce, '100', '100%');
+    } elseif ($pct >= 80 && empty($ce['announced_80'])) {
+        trigger_ai_milestone($ce, '80', '80%');
+    } elseif ($pct >= 50 && empty($ce['announced_50'])) {
+        trigger_ai_milestone($ce, '50', '50%');
+    } elseif ($pct >= 20 && empty($ce['announced_20'])) {
+        trigger_ai_milestone($ce, '20', '20%');
+    }
+}
+
+echo "[CRON_COMMUNITY] Run complete.\n";
+?>

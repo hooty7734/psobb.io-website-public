@@ -1,0 +1,262 @@
+/* psobb-website/css/missions.css */
+.missions-wide {
+    max-width: 1450px !important; /* Forces layout wider to support 3 columns */
+}
+
+.missions-hero {
+    text-align: center;
+    padding: 3rem 1rem 2rem;
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.05) 0%, rgba(157, 78, 221, 0.05) 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(0, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+.missions-hero h1 {
+    font-size: 3rem;
+    color: var(--pso-blue);
+    text-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+    margin: 0 0 1rem 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.missions-hero p {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.8);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Layout for missions board */
+.missions-container {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 2rem;
+    align-items: start;
+}
+
+/* Bounty Grid */
+.bounty-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.bounty-card {
+    background: linear-gradient(160deg, rgba(16, 24, 32, 0.85) 0%, rgba(8, 12, 16, 0.95) 100%);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(0, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 2rem;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.bounty-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--pso-blue), var(--pso-purple));
+    opacity: 0.7;
+}
+
+.bounty-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 255, 255, 0.15);
+    border-color: rgba(0, 255, 255, 0.4);
+}
+
+.bounty-card.completed::before {
+    background: #00e676;
+}
+
+.bounty-card.completed:hover {
+    box-shadow: 0 10px 25px rgba(0, 230, 118, 0.15);
+    border-color: rgba(0, 230, 118, 0.4);
+}
+
+.bounty-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    border-bottom: 1px dashed rgba(255,255,255,0.1);
+    padding-bottom: 0.5rem;
+}
+
+.bounty-player {
+    font-weight: bold;
+    color: #fff;
+    font-size: 1.1rem;
+}
+
+.bounty-status {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+.status-active {
+    background: rgba(0, 255, 255, 0.1);
+    color: var(--pso-blue);
+    border: 1px solid var(--pso-blue);
+}
+
+.status-done {
+    background: rgba(0, 230, 118, 0.1);
+    color: #00e676;
+    border: 1px solid #00e676;
+}
+
+.bounty-title {
+    font-size: 1.45rem;
+    color: #00ffff;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+    margin: 0 0 1rem 0;
+    letter-spacing: 0.5px;
+}
+
+.bounty-desc {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.6;
+    flex-grow: 1;
+    margin-bottom: 1.5rem;
+}
+
+.bounty-meta {
+    background: rgba(0, 255, 255, 0.03);
+    border: 1px solid rgba(0, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.bounty-meta-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.3rem;
+}
+
+.bounty-meta-row:last-child {
+    margin-bottom: 0;
+}
+
+.bounty-meta-label {
+    color: rgba(255,255,255,0.75);
+}
+
+.bounty-meta-val {
+    color: var(--pso-text);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    max-width: 70%;
+    text-align: right;
+}
+
+.bounty-reward {
+    color: var(--pso-orange);
+}
+
+/* Leaderboard Specifics */
+.leaderboard-widget {
+    background: var(--pso-panel);
+    border: 1px solid var(--pso-purple);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 0 20px rgba(157, 78, 221, 0.1);
+    position: sticky;
+    top: 100px;
+}
+
+.leaderboard-widget h3 {
+    margin: 0 0 1rem 0;
+    color: var(--pso-purple);
+    border-bottom: 1px solid var(--pso-purple);
+    padding-bottom: 0.5rem;
+    text-align: center;
+    font-size: 1.4rem;
+}
+
+.leaderboard-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.leaderboard-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.leaderboard-list li:last-child {
+    border-bottom: none;
+}
+
+.rank-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rank-badge {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #fff;
+}
+
+.rank-1 .rank-badge { background: linear-gradient(135deg, #ffd700, #b8860b); color: #000; box-shadow: 0 0 10px #ffd700; }
+.rank-2 .rank-badge { background: linear-gradient(135deg, #e0e0e0, #a0a0a0); color: #000; }
+.rank-3 .rank-badge { background: linear-gradient(135deg, #cd7f32, #8b4513); color: #000; }
+
+.player-name {
+    font-weight: 500;
+}
+
+.rank-1 .player-name { color: #ffd700; font-weight: bold; text-shadow: 0 0 5px rgba(255,215,0,0.5); }
+
+.completion-count {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--pso-blue);
+}
+
+.rank-1 .completion-count { color: #ffd700; }
+
+@media (max-width: 900px) {
+    .missions-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .leaderboard-widget {
+        position: static;
+        margin-top: 2rem;
+    }
+}

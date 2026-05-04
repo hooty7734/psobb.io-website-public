@@ -1,0 +1,18 @@
+.DS_Store
+__pycache__/
+*.pyc
+.vscode/
+.idea/
+.env
+node_modules/
+
+# Runtime data - never commit
+db/website.db
+db/*.log
+db/mail.log
+downloads/
+uploads/mods/
+api/bot_secret.php
+api/*.log
+db/.cron_player_state.json
+api/agent_state.json
