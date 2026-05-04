@@ -66,11 +66,12 @@ include 'includes/header.php';
                             <th><?= __('Episode') ?></th>
                             <th><?= __('Difficulty') ?></th>
                             <th><?= __('Players') ?></th>
+                            <th><?= __('Access') ?></th>
                         </tr>
                     </thead>
                     <tbody id="game-list">
                         <tr>
-                            <td colspan="5"><?= __('Loading games...') ?></td>
+                            <td colspan="6"><?= __('Loading games...') ?></td>
                         </tr>
                     </tbody>
                 </table>

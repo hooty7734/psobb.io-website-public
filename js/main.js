@@ -578,11 +578,16 @@ function renderGameList(games) {
         const displayMode = mode === 'Normal' ? 'Extermination/Normal' : mode;
         const modeClass = `mode-${mode.toLowerCase()}`;
         const passBadge = g.HasPassword 
-            ? ' <span class="mode-badge" style="background: rgba(255, 170, 0, 0.15); border: 1px solid #ffaa00; color: #ffaa00; padding: 2px 6px; font-size: 0.75em; margin-left: 8px;"><i class="fas fa-lock" style="font-size:0.8em; margin-right:3px;"></i>Private</span>'
-            : ' <span class="mode-badge" style="background: rgba(0, 255, 136, 0.15); border: 1px solid #00ff88; color: #00ff88; padding: 2px 6px; font-size: 0.75em; margin-left: 8px;"><i class="fas fa-globe" style="font-size:0.8em; margin-right:3px;"></i>Open</span>';
+            ? '<span style="display: inline-flex; align-items: center; gap: 4px; background: rgba(255, 170, 0, 0.1); border: 1px solid rgba(255, 170, 0, 0.4); color: #ffaa00; padding: 2px 8px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px;"><i class="fas fa-lock" style="font-size: 0.85em;"></i> PRIVATE</span>'
+            : '<span style="display: inline-flex; align-items: center; gap: 4px; background: rgba(0, 255, 200, 0.1); border: 1px solid rgba(0, 255, 200, 0.3); color: #00ffc8; padding: 2px 8px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px;"><i class="fas fa-unlock" style="font-size: 0.85em;"></i> OPEN</span>';
 
         row.innerHTML = `
-            <td>${escapeHtml(displayName)}${passBadge}</td>
+            <td>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-weight: 600; color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.3);">${escapeHtml(displayName)}</span>
+                    ${passBadge}
+                </div>
+            </td>
             <td><span class="mode-badge ${modeClass}">${displayMode}</span></td>
             <td>${g.Episode || 'Ep1'}</td>
             <td>${g.Difficulty || 'Normal'}</td>
