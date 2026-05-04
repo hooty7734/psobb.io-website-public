@@ -1,6 +1,8 @@
-# PSOBB Website
+# PSOBB.io Website
 
 The web frontend and API backend for a [Phantasy Star Online Blue Burst](https://en.wikipedia.org/wiki/Phantasy_Star_Online:_Blue_Burst) private server, powered by the [NewServ](https://github.com/fuzziqersoftware/newserv) emulator.
+
+Powers the private server [psobb.io](https://psobb.io)
 
 ## Features
 
@@ -9,7 +11,7 @@ The web frontend and API backend for a [Phantasy Star Online Blue Burst](https:/
 - **Community Events** — Server-wide boss kill goals with milestone announcements and tiered rewards
 - **Milestone Rewards** — Level-up reward system with procedurally generated items
 - **Login Streaks & Daily Drops** — Daily login tracking with escalating rewards
-- **Remote MAG Feeder** — Feed your MAG from the website while in-game
+- **Remote MAG Feeder** — Feed your MAG from the website while in-game (causes client disconnects, but will be fixed one day.)
 - **Mod Manager** — Browse, upload, rate, and download game mods
 - **Account Management** — Registration, password reset, Section ID changes, bank swaps, Discord linking
 - **Admin Dashboard** — Server console, player management, mission/event management, live telemetry
