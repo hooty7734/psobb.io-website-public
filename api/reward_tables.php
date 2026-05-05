@@ -670,25 +670,25 @@ function get_common_reward_item($level_milestone, $charClass, $category, $option
         $weapons = [];
         if ($isHunter) {
             switch ($tier) {
-                case 1: $weapons = ['007000' /* Saber */, '007100' /* Sword */, '000300' /* Dagger */, '007300' /* Partisan */, '007400' /* Slicer */, '000600' /* Handgun */]; break;
+                case 1: $weapons = ['000100' /* Saber */, '000200' /* Sword */, '000300' /* Dagger */, '000400' /* Partisan */, '000500' /* Slicer */, '000600' /* Handgun */]; break;
                 case 2: $weapons = ['000101' /* Brand */, '000201' /* Gigush */, '000301' /* Knife */, '000401' /* Halbert */, '000501' /* Spinner */, '000601' /* Autogun */]; break;
-                case 3: $weapons = ['000102' /* Buster */, '000202' /* Breaker */, '007200' /* Blade */, '000402' /* Glaive */, '000502' /* Cutter */, '000602' /* Lockgun */]; break;
+                case 3: $weapons = ['000102' /* Buster */, '000202' /* Breaker */, '000302' /* Blade */, '000402' /* Glaive */, '000502' /* Cutter */, '000602' /* Lockgun */]; break;
                 case 4: $weapons = ['000103' /* Pallasch */, '000203' /* Claymore */, '000303' /* Edge */, '000403' /* Berdys */, '000503' /* Sawcer */, '000603' /* Railgun */]; break;
                 case 5: $weapons = ['000104' /* Gladius */, '000204' /* Calibur */, '000304' /* Ripper */, '000404' /* Gungnir */, '000504' /* Diska */, '000604' /* Raygun */]; break;
                 case 6: $weapons = ['000104' /* Gladius */, '000204' /* Calibur */, '000304' /* Ripper */, '000404' /* Gungnir */, '000504' /* Diska */, '000604' /* Raygun */]; break;
             }
         } else if ($isRanger) {
             switch ($tier) {
-                case 1: $weapons = ['007600' /* Rifle */, '007800' /* Shot */, '007700' /* Mechgun */, '000600' /* Handgun */, '007400' /* Slicer */, '007000' /* Saber */]; break;
+                case 1: $weapons = ['000700' /* Rifle */, '000900' /* Shot */, '000800' /* Mechgun */, '000600' /* Handgun */, '000500' /* Slicer */, '000100' /* Saber */]; break;
                 case 2: $weapons = ['000701' /* Sniper */, '000901' /* Spread */, '000801' /* Assault */, '000601' /* Autogun */, '000501' /* Spinner */, '000101' /* Brand */]; break;
                 case 3: $weapons = ['000702' /* Blaster */, '000902' /* Cannon */, '000802' /* Repeater */, '000602' /* Lockgun */, '000502' /* Cutter */, '000102' /* Buster */]; break;
-                case 4: $weapons = ['000703' /* Beam */, '00A600' /* Launcher */, '000803' /* Gatling */, '000603' /* Railgun */, '000503' /* Sawcer */, '000103' /* Pallasch */]; break;
+                case 4: $weapons = ['000703' /* Beam */, '000903' /* Launcher */, '000803' /* Gatling */, '000603' /* Railgun */, '000503' /* Sawcer */, '000103' /* Pallasch */]; break;
                 case 5: $weapons = ['000704' /* Laser */, '000904' /* Arms */, '000804' /* Vulcan */, '000604' /* Raygun */, '000504' /* Diska */, '000104' /* Gladius */]; break;
                 case 6: $weapons = ['000704' /* Laser */, '000904' /* Arms */, '000804' /* Vulcan */, '000604' /* Raygun */, '000504' /* Diska */, '000104' /* Gladius */]; break;
             }
         } else { // Forces
             switch ($tier) {
-                case 1: $weapons = ['007900' /* Cane */, '007A00' /* Rod */, '007B00' /* Wand */, '000600' /* Handgun */, '007400' /* Slicer */]; break;
+                case 1: $weapons = ['000A00' /* Cane */, '000B00' /* Rod */, '000C00' /* Wand */, '000600' /* Handgun */, '000500' /* Slicer */]; break;
                 case 2: $weapons = ['000A01' /* Stick */, '000B01' /* Pole */, '000C01' /* Staff */, '000601' /* Autogun */, '000501' /* Spinner */]; break;
                 case 3: $weapons = ['000A02' /* Mace */, '000B02' /* Pillar */, '000C02' /* Baton */, '000602' /* Lockgun */, '000502' /* Cutter */]; break;
                 case 4: $weapons = ['000A03' /* Club */, '000B03' /* Striker */, '000C03' /* Scepter */, '000603' /* Railgun */, '000503' /* Sawcer */]; break;
@@ -734,7 +734,7 @@ function get_common_reward_item($level_milestone, $charClass, $category, $option
         $barriers = [];
         $shields = []; // Shields are normally unequippable by Forces
         switch ($tier) {
-            case 1: $barriers = ['01024B' /* Barrier */, '010204' /* Soul Barrier */]; $shields = ['010201' /* Shield */, '010202' /* Core Shield */]; break;
+            case 1: $barriers = ['010200' /* Barrier */, '010204' /* Soul Barrier */]; $shields = ['010201' /* Shield */, '010202' /* Core Shield */]; break;
             case 2: $barriers = ['010206' /* Brave Barrier */, '010208' /* Flame Barrier */]; $shields = ['010203' /* Giga Shield */, '010205' /* Hard Shield */]; break;
             case 3: $barriers = ['010209' /* Plasma Barrier */, '01020A' /* Freeze Barrier */]; $shields = ['010207' /* Solid Shield */, '01020C' /* General Shield */]; break;
             case 4: $barriers = ['01020B' /* Psychic Barrier */, '01020D' /* Protect Barrier */]; $shields = ['01020E' /* Glorious Shield */, '010210' /* Guardian Shield */]; break;
