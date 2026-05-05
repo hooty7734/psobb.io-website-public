@@ -142,6 +142,7 @@ foreach ($clients as $client) {
     $has_active_missions = false; 
     $completed_any = false;
     $last_completed_type = "training";
+    $current_patrols = [];
 
     while ($m = $res->fetchArray(SQLITE3_ASSOC)) {
         $has_active_missions = true;
@@ -640,6 +641,7 @@ CRITICAL RULE: Return ONLY valid JSON properly formatted with double quotes stri
         'level' => $curr_level,
         'last_boss_arena' => $last_boss_arena,
         'last_boss_arena_time' => $last_boss_arena_time,
+        'patrol' => $current_patrols,
     ];
 }
 

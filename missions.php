@@ -215,264 +215,264 @@ if ($account_id) {
                     <?php endforeach; ?>
                 </div>
 
-                <script>
-                async function redeemBounty(pmId, btnEl) {
-                    btnEl.disabled = true;
-                    btnEl.textContent = '<?= __('Preparing...') ?>';
-
-                    const overlay = document.getElementById('drop-animation-overlay');
-                    const box = document.getElementById('drop-item-box');
-                    const thankYouText = document.getElementById('thank-you-text');
-                    const countdownEl = document.getElementById('countdown-text');
-                    const statusEl = document.getElementById('redeem-status');
-                    statusEl.style.display = 'none';
-
-                    // Always use default red box for rare bounty rewards
-                    box.className = 'drop-item-box'; 
-
-                    thankYouText.style.animation = 'none';
-                    thankYouText.style.opacity = '0';
-
-                    const newBox = box.cloneNode(true);
-                    box.parentNode.replaceChild(newBox, box);
-
-                    overlay.style.display = 'flex';
-
-                    let count = 3;
-                    countdownEl.textContent = count;
-                    countdownEl.style.display = 'block';
-
-                    const countdownInterval = setInterval(async () => {
-                        count--;
-                        if (count > 0) {
-                            countdownEl.textContent = count;
-                            countdownEl.style.transform = 'scale(1.5)';
-                            setTimeout(() => countdownEl.style.transform = 'scale(1)', 100);
-                        } else if (count === 0) {
-                            countdownEl.style.transform = 'scale(1.5)';
-                            countdownEl.textContent = "<?= __('DROPPING!') ?>";
-                            
-                            try {
-                                const response = await fetch('/api/redeem_bounty.php', {
-                                    method: 'POST',
-                                    credentials: 'same-origin',
-                                    headers: { 
-                                        'Content-Type': 'application/json',
-                                        'X-CSRF-Token': window.getCSRFToken()
-                                    },
-                                    body: JSON.stringify({ player_mission_id: pmId })
-                                });
-                                const data = await response.json();
-                                if (response.ok && data.success) {
-                                    countdownEl.style.display = 'none';
-                                    thankYouText.textContent = "<?= __('BOUNTY CLAIMED!') ?>";
-                                    thankYouText.style.animation = 'textDrop 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
-
-                                    createFireworks();
-
-                                    setTimeout(() => {
-                                        overlay.style.display = 'none';
-                                        statusEl.textContent = data.message;
-                                        statusEl.style.display = 'block';
-                                        statusEl.className = 'alert-box success';
-                                        statusEl.style.color = '#1eff64';
-                                        statusEl.style.borderColor = '#1eff64';
-                                        btnEl.textContent = '<?= __('Claimed!') ?>';
-                                        btnEl.style.background = 'rgba(255,255,255,0.1)';
-                                        btnEl.style.borderColor = 'rgba(255,255,255,0.2)';
-                                        btnEl.style.color = 'rgba(255,255,255,0.5)';
-                                        setTimeout(() => { window.location.reload(); }, 2000);
-                                    }, 4000);
-                                } else {
-                                    throw new Error(data.error || 'Failed to claim reward.');
-                                }
-                            } catch(e) {
-                                clearInterval(countdownInterval);
-                                overlay.style.display = 'none';
-                                statusEl.textContent = '<?= __('Connection error: ') ?>' + e.message;
-                                statusEl.style.display = 'block';
-                                statusEl.className = 'alert-box';
-                                statusEl.style.color = '#ff4444';
-                                statusEl.style.borderColor = '#ff4444';
-                                statusEl.style.background = 'rgba(255, 68, 68, 0.1)';
-                                btnEl.disabled = false;
-                                btnEl.textContent = '<?= __('Claim Reward') ?>';
-                            }
-                            clearInterval(countdownInterval);
-                        }
-                    }, 1000);
-                }
-
-                async function redeemCommunityEvent(eventId, btnEl) {
-                    btnEl.disabled = true;
-                    btnEl.textContent = '<?= __('Preparing...') ?>';
-
-                    const overlay = document.getElementById('drop-animation-overlay');
-                    const box = document.getElementById('drop-item-box');
-                    const thankYouText = document.getElementById('thank-you-text');
-                    const countdownEl = document.getElementById('countdown-text');
-                    const statusEl = document.getElementById('redeem-status');
-                    statusEl.style.display = 'none';
-
-                    box.className = 'drop-item-box'; 
-
-                    thankYouText.style.animation = 'none';
-                    thankYouText.style.opacity = '0';
-
-                    const newBox = box.cloneNode(true);
-                    box.parentNode.replaceChild(newBox, box);
-                    overlay.style.display = 'flex';
-
-                    let count = 3;
-                    countdownEl.textContent = count;
-                    countdownEl.style.display = 'block';
-
-                    const countdownInterval = setInterval(async () => {
-                        count--;
-                        if (count > 0) {
-                            countdownEl.textContent = count;
-                            countdownEl.style.transform = 'scale(1.5)';
-                            setTimeout(() => countdownEl.style.transform = 'scale(1)', 100);
-                        } else if (count === 0) {
-                            countdownEl.style.transform = 'scale(1.5)';
-                            countdownEl.textContent = "<?= __('DROPPING!') ?>";
-                            
-                            try {
-                                let payload = { event_id: eventId };
-                                const bonusSelect = document.getElementById('ce_bonus_choice_' + eventId);
-                                if (bonusSelect) {
-                                    if (!bonusSelect.value) {
-                                        throw new Error('<?= __('Please select your Top 3 Bonus Reward first!') ?>');
-                                    }
-                                    payload.bonus_choice = bonusSelect.value;
-                                }
-
-                                const response = await fetch('/api/redeem_community.php', {
-                                    method: 'POST',
-                                    credentials: 'same-origin',
-                                    headers: { 
-                                        'Content-Type': 'application/json',
-                                        'X-CSRF-Token': window.getCSRFToken()
-                                    },
-                                    body: JSON.stringify(payload)
-                                });
-                                const data = await response.json();
-                                if (response.ok && data.success) {
-                                    countdownEl.style.display = 'none';
-                                    thankYouText.textContent = "<?= __('REWARD CLAIMED!') ?>";
-                                    thankYouText.style.animation = 'textDrop 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
-
-                                    createFireworks();
-
-                                    setTimeout(() => {
-                                        overlay.style.display = 'none';
-                                        statusEl.textContent = data.message;
-                                        statusEl.style.display = 'block';
-                                        statusEl.className = 'alert-box success';
-                                        statusEl.style.color = '#1eff64';
-                                        btnEl.textContent = '<?= __('Claimed!') ?>';
-                                        btnEl.style.background = 'rgba(255,255,255,0.1)';
-                                        btnEl.style.color = 'rgba(255,255,255,0.5)';
-                                        btnEl.style.borderColor = 'rgba(255,255,255,0.2)';
-                                        setTimeout(() => { window.location.reload(); }, 2000);
-                                    }, 4000);
-                                } else {
-                                    throw new Error(data.error || 'Failed to claim reward.');
-                                }
-                            } catch(e) {
-                                clearInterval(countdownInterval);
-                                overlay.style.display = 'none';
-                                statusEl.textContent = '<?= __('Connection error: ') ?>' + e.message;
-                                statusEl.style.display = 'block';
-                                statusEl.className = 'alert-box';
-                                statusEl.style.color = '#ff4444';
-                                statusEl.style.background = 'rgba(255, 68, 68, 0.1)';
-                                btnEl.disabled = false;
-                                btnEl.textContent = '<?= __('Claim Community Reward') ?>';
-                            }
-                            clearInterval(countdownInterval);
-                        }
-                    }, 1000);
-                }
-
-                function createFireworks() {
-                    const overlay = document.getElementById('drop-animation-overlay');
-                    const colors = ['#ff4444', '#33b5e5', '#00C851', '#ffaa00', '#aa66cc', '#ffffff'];
-
-                    for (let b = 0; b < 6; b++) {
-                        setTimeout(() => {
-                            const centerX = window.innerWidth / 2 + (Math.random() - 0.5) * 600;
-                            const centerY = window.innerHeight / 2 + (Math.random() - 0.5) * 500 - 150;
-
-                            for (let i = 0; i < 80; i++) {
-                                const particle = document.createElement('div');
-                                particle.style.position = 'absolute';
-                                particle.style.left = centerX + 'px';
-                                particle.style.top = centerY + 'px';
-                                particle.style.width = (Math.random() * 8 + 4) + 'px';
-                                particle.style.height = particle.style.width;
-                                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                                particle.style.borderRadius = '50%';
-                                particle.style.pointerEvents = 'none';
-                                particle.style.zIndex = '9998';
-                                particle.style.boxShadow = `0 0 15px ${particle.style.backgroundColor}, 0 0 30px ${particle.style.backgroundColor}`;
-
-                                overlay.appendChild(particle);
-
-                                const angle = Math.random() * Math.PI * 2;
-                                const velocity = 100 + Math.random() * 300;
-                                const tx = Math.cos(angle) * velocity;
-                                const ty = Math.sin(angle) * velocity;
-
-                                particle.animate([
-                                    { transform: 'translate(0,0) scale(1)', opacity: 1 },
-                                    { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
-                                ], {
-                                    duration: 1000 + Math.random() * 800,
-                                    easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
-                                    fill: 'forwards'
-                                });
-
-                                setTimeout(() => { if (particle.parentNode) particle.remove(); }, 2000);
-                            }
-                        }, b * 300);
-                    }
-                }
-                
-                async function abandonBounty(pmId, btnEl) {
-                    if (!confirm("<?= __('Are you sure you want to abandon this quest? It will be removed from your active bounties completely.') ?>")) return;
-
-                    btnEl.disabled = true;
-                    btnEl.textContent = '<?= __('Abandoning...') ?>';
-
-                    try {
-                        const response = await fetch('/api/abandon_bounty.php', {
-                            method: 'POST',
-                            credentials: 'same-origin',
-                            headers: { 
-                                'Content-Type': 'application/json',
-                                'X-CSRF-Token': window.getCSRFToken()
-                            },
-                            body: JSON.stringify({ player_mission_id: pmId })
-                        });
-                        const data = await response.json();
-                        if (response.ok && data.success) {
-                            btnEl.textContent = '<?= __('Abandoned') ?>';
-                            btnEl.style.background = 'rgba(255,255,255,0.1)';
-                            btnEl.style.color = '#fff';
-                            btnEl.style.borderColor = '#aaa';
-                            setTimeout(() => { window.location.reload(); }, 1000);
-                        } else {
-                            throw new Error(data.error || '<?= __('Failed to abandon quest.') ?>');
-                        }
-                    } catch(e) {
-                        alert("Error: " + e.message);
-                        btnEl.disabled = false;
-                        btnEl.textContent = '<?= __('Abandon Quest') ?>';
-                    }
-                }
-                </script>
             <?php endif; ?>
+            <script>
+            async function redeemBounty(pmId, btnEl) {
+                btnEl.disabled = true;
+                btnEl.textContent = '<?= __('Preparing...') ?>';
+
+                const overlay = document.getElementById('drop-animation-overlay');
+                const box = document.getElementById('drop-item-box');
+                const thankYouText = document.getElementById('thank-you-text');
+                const countdownEl = document.getElementById('countdown-text');
+                const statusEl = document.getElementById('redeem-status');
+                statusEl.style.display = 'none';
+
+                // Always use default red box for rare bounty rewards
+                box.className = 'drop-item-box'; 
+
+                thankYouText.style.animation = 'none';
+                thankYouText.style.opacity = '0';
+
+                const newBox = box.cloneNode(true);
+                box.parentNode.replaceChild(newBox, box);
+
+                overlay.style.display = 'flex';
+
+                let count = 3;
+                countdownEl.textContent = count;
+                countdownEl.style.display = 'block';
+
+                const countdownInterval = setInterval(async () => {
+                    count--;
+                    if (count > 0) {
+                        countdownEl.textContent = count;
+                        countdownEl.style.transform = 'scale(1.5)';
+                        setTimeout(() => countdownEl.style.transform = 'scale(1)', 100);
+                    } else if (count === 0) {
+                        countdownEl.style.transform = 'scale(1.5)';
+                        countdownEl.textContent = "<?= __('DROPPING!') ?>";
+                        
+                        try {
+                            const response = await fetch('/api/redeem_bounty.php', {
+                                method: 'POST',
+                                credentials: 'same-origin',
+                                headers: { 
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-Token': window.getCSRFToken()
+                                },
+                                body: JSON.stringify({ player_mission_id: pmId })
+                            });
+                            const data = await response.json();
+                            if (response.ok && data.success) {
+                                countdownEl.style.display = 'none';
+                                thankYouText.textContent = "<?= __('BOUNTY CLAIMED!') ?>";
+                                thankYouText.style.animation = 'textDrop 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+
+                                createFireworks();
+
+                                setTimeout(() => {
+                                    overlay.style.display = 'none';
+                                    statusEl.textContent = data.message;
+                                    statusEl.style.display = 'block';
+                                    statusEl.className = 'alert-box success';
+                                    statusEl.style.color = '#1eff64';
+                                    statusEl.style.borderColor = '#1eff64';
+                                    btnEl.textContent = '<?= __('Claimed!') ?>';
+                                    btnEl.style.background = 'rgba(255,255,255,0.1)';
+                                    btnEl.style.borderColor = 'rgba(255,255,255,0.2)';
+                                    btnEl.style.color = 'rgba(255,255,255,0.5)';
+                                    setTimeout(() => { window.location.reload(); }, 2000);
+                                }, 4000);
+                            } else {
+                                throw new Error(data.error || 'Failed to claim reward.');
+                            }
+                        } catch(e) {
+                            clearInterval(countdownInterval);
+                            overlay.style.display = 'none';
+                            statusEl.textContent = '<?= __('Connection error: ') ?>' + e.message;
+                            statusEl.style.display = 'block';
+                            statusEl.className = 'alert-box';
+                            statusEl.style.color = '#ff4444';
+                            statusEl.style.borderColor = '#ff4444';
+                            statusEl.style.background = 'rgba(255, 68, 68, 0.1)';
+                            btnEl.disabled = false;
+                            btnEl.textContent = '<?= __('Claim Reward') ?>';
+                        }
+                        clearInterval(countdownInterval);
+                    }
+                }, 1000);
+            }
+
+            async function redeemCommunityEvent(eventId, btnEl) {
+                btnEl.disabled = true;
+                btnEl.textContent = '<?= __('Preparing...') ?>';
+
+                const overlay = document.getElementById('drop-animation-overlay');
+                const box = document.getElementById('drop-item-box');
+                const thankYouText = document.getElementById('thank-you-text');
+                const countdownEl = document.getElementById('countdown-text');
+                const statusEl = document.getElementById('redeem-status');
+                statusEl.style.display = 'none';
+
+                box.className = 'drop-item-box'; 
+
+                thankYouText.style.animation = 'none';
+                thankYouText.style.opacity = '0';
+
+                const newBox = box.cloneNode(true);
+                box.parentNode.replaceChild(newBox, box);
+                overlay.style.display = 'flex';
+
+                let count = 3;
+                countdownEl.textContent = count;
+                countdownEl.style.display = 'block';
+
+                const countdownInterval = setInterval(async () => {
+                    count--;
+                    if (count > 0) {
+                        countdownEl.textContent = count;
+                        countdownEl.style.transform = 'scale(1.5)';
+                        setTimeout(() => countdownEl.style.transform = 'scale(1)', 100);
+                    } else if (count === 0) {
+                        countdownEl.style.transform = 'scale(1.5)';
+                        countdownEl.textContent = "<?= __('DROPPING!') ?>";
+                        
+                        try {
+                            let payload = { event_id: eventId };
+                            const bonusSelect = document.getElementById('ce_bonus_choice_' + eventId);
+                            if (bonusSelect) {
+                                if (!bonusSelect.value) {
+                                    throw new Error('<?= __('Please select your Top 3 Bonus Reward first!') ?>');
+                                }
+                                payload.bonus_choice = bonusSelect.value;
+                            }
+
+                            const response = await fetch('/api/redeem_community.php', {
+                                method: 'POST',
+                                credentials: 'same-origin',
+                                headers: { 
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-Token': window.getCSRFToken()
+                                },
+                                body: JSON.stringify(payload)
+                            });
+                            const data = await response.json();
+                            if (response.ok && data.success) {
+                                countdownEl.style.display = 'none';
+                                thankYouText.textContent = "<?= __('REWARD CLAIMED!') ?>";
+                                thankYouText.style.animation = 'textDrop 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+
+                                createFireworks();
+
+                                setTimeout(() => {
+                                    overlay.style.display = 'none';
+                                    statusEl.textContent = data.message;
+                                    statusEl.style.display = 'block';
+                                    statusEl.className = 'alert-box success';
+                                    statusEl.style.color = '#1eff64';
+                                    btnEl.textContent = '<?= __('Claimed!') ?>';
+                                    btnEl.style.background = 'rgba(255,255,255,0.1)';
+                                    btnEl.style.color = 'rgba(255,255,255,0.5)';
+                                    btnEl.style.borderColor = 'rgba(255,255,255,0.2)';
+                                    setTimeout(() => { window.location.reload(); }, 2000);
+                                }, 4000);
+                            } else {
+                                throw new Error(data.error || 'Failed to claim reward.');
+                            }
+                        } catch(e) {
+                            clearInterval(countdownInterval);
+                            overlay.style.display = 'none';
+                            statusEl.textContent = '<?= __('Connection error: ') ?>' + e.message;
+                            statusEl.style.display = 'block';
+                            statusEl.className = 'alert-box';
+                            statusEl.style.color = '#ff4444';
+                            statusEl.style.background = 'rgba(255, 68, 68, 0.1)';
+                            btnEl.disabled = false;
+                            btnEl.textContent = '<?= __('Claim Community Reward') ?>';
+                        }
+                        clearInterval(countdownInterval);
+                    }
+                }, 1000);
+            }
+
+            function createFireworks() {
+                const overlay = document.getElementById('drop-animation-overlay');
+                const colors = ['#ff4444', '#33b5e5', '#00C851', '#ffaa00', '#aa66cc', '#ffffff'];
+
+                for (let b = 0; b < 6; b++) {
+                    setTimeout(() => {
+                        const centerX = window.innerWidth / 2 + (Math.random() - 0.5) * 600;
+                        const centerY = window.innerHeight / 2 + (Math.random() - 0.5) * 500 - 150;
+
+                        for (let i = 0; i < 80; i++) {
+                            const particle = document.createElement('div');
+                            particle.style.position = 'absolute';
+                            particle.style.left = centerX + 'px';
+                            particle.style.top = centerY + 'px';
+                            particle.style.width = (Math.random() * 8 + 4) + 'px';
+                            particle.style.height = particle.style.width;
+                            particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                            particle.style.borderRadius = '50%';
+                            particle.style.pointerEvents = 'none';
+                            particle.style.zIndex = '9998';
+                            particle.style.boxShadow = `0 0 15px ${particle.style.backgroundColor}, 0 0 30px ${particle.style.backgroundColor}`;
+
+                            overlay.appendChild(particle);
+
+                            const angle = Math.random() * Math.PI * 2;
+                            const velocity = 100 + Math.random() * 300;
+                            const tx = Math.cos(angle) * velocity;
+                            const ty = Math.sin(angle) * velocity;
+
+                            particle.animate([
+                                { transform: 'translate(0,0) scale(1)', opacity: 1 },
+                                { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+                            ], {
+                                duration: 1000 + Math.random() * 800,
+                                easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+                                fill: 'forwards'
+                            });
+
+                            setTimeout(() => { if (particle.parentNode) particle.remove(); }, 2000);
+                        }
+                    }, b * 300);
+                }
+            }
+            
+            async function abandonBounty(pmId, btnEl) {
+                if (!confirm("<?= __('Are you sure you want to abandon this quest? It will be removed from your active bounties completely.') ?>")) return;
+
+                btnEl.disabled = true;
+                btnEl.textContent = '<?= __('Abandoning...') ?>';
+
+                try {
+                    const response = await fetch('/api/abandon_bounty.php', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': window.getCSRFToken()
+                        },
+                        body: JSON.stringify({ player_mission_id: pmId })
+                    });
+                    const data = await response.json();
+                    if (response.ok && data.success) {
+                        btnEl.textContent = '<?= __('Abandoned') ?>';
+                        btnEl.style.background = 'rgba(255,255,255,0.1)';
+                        btnEl.style.color = '#fff';
+                        btnEl.style.borderColor = '#aaa';
+                        setTimeout(() => { window.location.reload(); }, 1000);
+                    } else {
+                        throw new Error(data.error || '<?= __('Failed to abandon quest.') ?>');
+                    }
+                } catch(e) {
+                    alert("Error: " + e.message);
+                    btnEl.disabled = false;
+                    btnEl.textContent = '<?= __('Abandon Quest') ?>';
+                }
+            }
+            </script>
 
             <div class="section-header delay-1">
                 <h2><?= __('Active Server Events') ?></h2>
