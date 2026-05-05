@@ -579,6 +579,16 @@ if ($account_id) {
 
         <!-- Right Column: Leaderboard -->
         <aside class="sidebar delay-3">
+            <!-- Instructions Widget -->
+            <div class="leaderboard-widget" style="margin-bottom: 2rem;">
+                <h3 style="border-bottom-color: var(--pso-blue); color: var(--pso-blue);"><?= __('How to Play') ?></h3>
+                <p style="font-size: 0.9rem; line-height:1.5; color: rgba(255,255,255,0.8);">
+                    <?= __('The Game Master automatically generates specially curated bounties tailored specifically to your character\'s stats and classes.') ?>
+                    <br><br>
+                    <?= __('Talk to the official Discord Bot and type <strong>!quest</strong> to request a mission explicitly, or simply wait for the administration to assign a Server Event bounty manually!') ?>
+                </p>
+            </div>
+
             <div class="leaderboard-widget">
                 <h3><?= __('Top Hunters') ?></h3>
                 <?php if (empty($leaderboard)): ?>
@@ -597,16 +607,6 @@ if ($account_id) {
                         <?php endforeach; ?>
                     </ul>
                 <?php endif; ?>
-            </div>
-            
-            <!-- Instructions Widget -->
-            <div class="leaderboard-widget" style="margin-top: 2rem;">
-                <h3 style="border-bottom-color: var(--pso-blue); color: var(--pso-blue);"><?= __('How to Play') ?></h3>
-                <p style="font-size: 0.9rem; line-height:1.5; color: rgba(255,255,255,0.8);">
-                    <?= __('The Game Master automatically generates specially curated bounties tailored specifically to your character\'s stats and classes.') ?>
-                    <br><br>
-                    <?= __('Talk to the official Discord Bot and type <strong>!quest</strong> to request a mission explicitly, or simply wait for the administration to assign a Server Event bounty manually!') ?>
-                </p>
             </div>
         </aside>
 

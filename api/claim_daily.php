@@ -100,28 +100,31 @@ if ($result['cnt'] > 0) {
 
 // 4. Pick a random daily reward
 $dailyPool = [
-    '04000000E80300000000000000000000' /* 1000 Meseta */ => 100,
-    '030500' /* Star Atomizer */ => 60,
-    '030400' /* Moon Atomizer */ => 80,
-    '030002' /* Trimate */ => 100,
-    '030102' /* Trifluid */ => 80,
-    '030300' /* Sol Atomizer */ => 40,
-    '030700' /* Telepipe */ => 100,
-    '030900' /* Scape Doll */ => 15,
-    '031000, 031000' /* Photon Drop x2 */ => 30,
-    '030600' /* Antidote */ => 60,
-    '030601' /* Antiparalysis */ => 60,
+    '04000000E80300000000000000000000' => ['weight' => 100, 'name' => '1000 Meseta'],
+    '030500' => ['weight' => 60, 'name' => 'Star Atomizer'],
+    '030400' => ['weight' => 80, 'name' => 'Moon Atomizer'],
+    '030002' => ['weight' => 100, 'name' => 'Trimate'],
+    '030102' => ['weight' => 80, 'name' => 'Trifluid'],
+    '030300' => ['weight' => 40, 'name' => 'Sol Atomizer'],
+    '030700' => ['weight' => 100, 'name' => 'Telepipe'],
+    '030900' => ['weight' => 15, 'name' => 'Scape Doll'],
+    '031000, 031000' => ['weight' => 30, 'name' => 'Photon Drop x2'],
+    '030600' => ['weight' => 60, 'name' => 'Antidote'],
+    '030601' => ['weight' => 60, 'name' => 'Antiparalysis'],
 ];
 
 // Weighted random selection
-$totalWeight = array_sum($dailyPool);
+$totalWeight = 0;
+foreach ($dailyPool as $i) $totalWeight += $i['weight'];
 $roll = rand(1, $totalWeight);
 $cumulative = 0;
-$chosenItem = '';
-foreach ($dailyPool as $item => $weight) {
-    $cumulative += $weight;
+$chosenItemHex = '';
+$chosenItemName = '';
+foreach ($dailyPool as $hex => $info) {
+    $cumulative += $info['weight'];
     if ($roll <= $cumulative) {
-        $chosenItem = $item;
+        $chosenItemHex = $hex;
+        $chosenItemName = $info['name'];
         break;
     }
 }
@@ -131,7 +134,7 @@ if (!function_exists('parse_and_drop_items')) {
     require_once 'functions.php';
 }
 
-$dropResult = parse_and_drop_items($accountId, $chosenItem);
+$dropResult = parse_and_drop_items($accountId, $chosenItemHex);
 
 if (!$dropResult['success']) {
     http_response_code(400);
@@ -143,11 +146,13 @@ if (!$dropResult['success']) {
 $stmt = $db->prepare("INSERT INTO daily_rewards (account_id, claim_date, item_string) VALUES (:aid, :date, :item)");
 $stmt->bindValue(':aid', $accountId, SQLITE3_INTEGER);
 $stmt->bindValue(':date', $today, SQLITE3_TEXT);
-$stmt->bindValue(':item', $chosenItem, SQLITE3_TEXT);
+$stmt->bindValue(':item', $chosenItemHex, SQLITE3_TEXT);
 $stmt->execute();
+
+$translatedName = __($chosenItemName);
 
 echo json_encode([
     "success" => true,
-    "item" => $chosenItem,
-    "message" => "Daily reward: {$chosenItem} dropped in-game!"
+    "item" => $translatedName,
+    "message" => "Daily reward: {$translatedName} dropped in-game!"
 ]);

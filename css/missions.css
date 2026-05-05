@@ -175,15 +175,17 @@
     color: var(--pso-orange);
 }
 
-/* Leaderboard Specifics */
+.sidebar {
+    position: sticky;
+    top: 100px;
+}
+
 .leaderboard-widget {
     background: var(--pso-panel);
     border: 1px solid var(--pso-purple);
     border-radius: 8px;
     padding: 1.5rem;
     box-shadow: 0 0 20px rgba(157, 78, 221, 0.1);
-    position: sticky;
-    top: 100px;
 }
 
 .leaderboard-widget h3 {
@@ -252,11 +254,17 @@
 
 @media (max-width: 900px) {
     .missions-container {
-        grid-template-columns: minmax(0, 1fr);
+        display: flex;
+        flex-direction: column-reverse;
+        gap: 2rem;
     }
 
     .missions-container > * {
-        min-width: 0;
+        width: 100%;
+    }
+
+    .sidebar {
+        position: static;
     }
 
     .leaderboard-widget {

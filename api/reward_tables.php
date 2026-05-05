@@ -79,7 +79,7 @@ function build_pso_armor($base_hex_or_name, $slots = 0, $def = 0, $evp = 0) {
 
 // Weighted random selection algorithm
 function get_weighted_random($pool) {
-    if (empty($pool)) return 'Meseta 1000';
+    if (empty($pool)) return '10000 Meseta';
     $total_weight = array_sum($pool);
     $rand = mt_rand(1, $total_weight);
     foreach ($pool as $item => $weight) {
@@ -647,7 +647,15 @@ function get_reward_item($level_milestone, $charClass, $category, $options = [])
         }
     }
     
-    return get_weighted_random($pool);
+    $chosen = get_weighted_random($pool);
+    
+    // If it is an Armor or Frame (Hex starts with 0101 and length is 6)
+    if (strpos($chosen, '0101') === 0 && strlen($chosen) === 6) {
+        $slots = $options['slots'] ?? mt_rand(3, 4);
+        return build_pso_armor($chosen, $slots);
+    }
+    
+    return $chosen;
 }
 
 function get_common_reward_item($level_milestone, $charClass, $category, $options = []) {
@@ -727,7 +735,7 @@ function get_common_reward_item($level_milestone, $charClass, $category, $option
         $chosenArmor = $validArmors[array_rand($validArmors)];
         $def = $options['def'] ?? 0;
         $evp = $options['evp'] ?? 0;
-        $slots = $options['slots'] ?? mt_rand(0, 4);
+        $slots = $options['slots'] ?? mt_rand(3, 4);
         return build_pso_armor($chosenArmor, $slots, $def, $evp);
         
     } else if ($category === 'Shield') {
@@ -755,7 +763,7 @@ function get_common_reward_item($level_milestone, $charClass, $category, $option
             case 1: $units = ['010300' /* Knight/Power */, '010304' /* Priest/Mind */, '01030C' /* Thief/Legs */, '010318' /* Warrior/Body */]; break;
             case 2: $units = ['010301' /* General/Power */, '010305' /* General/Mind */, '01030D' /* General/Legs */, '010319' /* General/Body */, '010309' /* General/Arm */, '010311' /* General/HP */]; break;
             case 3: $units = ['010302' /* Ogre/Power */, '010310' /* Digger/HP */, '01030E' /* Elf/Legs */, '01030A' /* Elf/Arm */, '010308' /* Marksman/Arm */, '01033C' /* Wizard/Technique */]; break;
-            case 4: $units = ['010312' /* Dragon/HP */, '010306' /* Angel/Mind */, '01031C' /* Angel/Luck */, '010303' /* God/Power */]; break;
+            case 4: $units = ['010312' /* Dragon/HP */, '010306' /* Angel/Mind */, '01031C' /* Angel/Luck */, '01030E' /* Elf/Legs */]; break;
             case 5: $units = ['01031E' /* Master/Ability */, '010334' /* HP/Generate */, '010337' /* TP/Generate */, '01033A' /* PB/Generate */]; break;
             case 6: $units = ['010333' /* HP/Restorate */, '010336' /* TP/Restorate */, '010339' /* PB/Amplifier */]; break;
         }
@@ -764,6 +772,6 @@ function get_common_reward_item($level_milestone, $charClass, $category, $option
     }
     
     // Fallback if bad category
-    return 'Meseta 1000';
+    return '10000 Meseta';
 }
 ?>

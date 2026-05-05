@@ -159,8 +159,21 @@ $I18N = [
         'Happy hunting on Ragol!' => 'ラグオルでの狩猟をお楽しみください！',
         '<strong>Note:</strong> Patches from newserv/system/patch-pc applied. Server address: <code>psobb.io</code>' => '<strong>注意:</strong> newserv/system/patch-pcのパッチが適用されています。サーバーアドレス: <code>psobb.io</code>',
 
-        // stats.php
-        'Server Statistics' => 'サーバー統計',
+        // Common Item Names (For Daily Rewards)
+        '1000 Meseta' => '1000 メセタ',
+        'Star Atomizer' => 'スターアトマイザー',
+        'Moon Atomizer' => 'ムーンアトマイザー',
+        'Trimate' => 'トリメイト',
+        'Trifluid' => 'トリフルイド',
+        'Sol Atomizer' => 'ソルアトマイザー',
+        'Telepipe' => 'テレパイプ',
+        'Scape Doll' => 'スケープドール',
+        'Photon Drop x2' => 'フォトンドロップ x2',
+        'Antidote' => 'アンティドート',
+        'Antiparalysis' => 'アンティパラライズ',
+
+        // unlocks.php
+        'Player Dashboard' => 'プレイヤーダッシュボード',
         'Live Server Stats' => 'ライブサーバ統計',
         'Total Players:' => '総プレイヤー数:',
         'Active Games:' => 'アクティブゲーム:',

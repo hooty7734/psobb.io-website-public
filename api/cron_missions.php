@@ -72,15 +72,24 @@ foreach ($clients as $client) {
     if (!isset($client['Account']['AccountID'])) continue;
     $accId = (string)$client['Account']['AccountID'];
     
+    $charName = $client['Name'] ?? 'Unknown';
+    $stateKey = $accId . '_' . $charName;
+    
     // Skip players who are still connecting/loading (no character data yet)
     if (!isset($client['EXP'])) continue;
     $current_exp = $client['EXP'] ?? 0;
     $current_item_count = count($client['InventoryItems'] ?? []);
-    $prev_state = $player_states[$accId] ?? [];
+    $prev_state = $player_states[$stateKey] ?? [];
     $prev_exp = $prev_state['exp'] ?? $current_exp;
     $prev_items = $prev_state['items'] ?? $current_item_count;
     $curr_level = $client['Level'] ?? 1;
     $prev_level = $prev_state['level'] ?? $curr_level;
+
+    // Prevent false level-ups when level temporarily drops during loading screens
+    // or when switching to a lower level character on the same account
+    if ($curr_level < $prev_level) {
+        $prev_level = $curr_level;
+    }
     $curr_f = (int)($client['LocationFloor'] ?? -1);
     $prev_f = (int)($prev_state['floor'] ?? -1);
     
@@ -637,11 +646,12 @@ CRITICAL RULE: Return ONLY valid JSON properly formatted with double quotes stri
         }
     }
     
-    $player_states[(string)$accId] = [
+    $player_states[(string)$stateKey] = [
         'exp' => $current_exp,
         'floor' => $curr_f,
         'items' => $current_item_count,
         'level' => $curr_level,
+        'char_name' => $charName,
         'last_boss_arena' => $last_boss_arena,
         'last_boss_arena_time' => $last_boss_arena_time,
         'patrol' => $current_patrols,
