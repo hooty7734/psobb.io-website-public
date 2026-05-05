@@ -252,9 +252,13 @@
 
 @media (max-width: 900px) {
     .missions-container {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
-    
+
+    .missions-container > * {
+        min-width: 0;
+    }
+
     .leaderboard-widget {
         position: static;
         margin-top: 2rem;
@@ -264,5 +268,23 @@
 @media (max-width: 600px) {
     .bounty-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .bounty-grid {
+        gap: 1rem;
+    }
+
+    .bounty-card {
+        padding: 1.25rem;
+    }
+
+    .missions-hero {
+        padding: 2rem 1rem 1.5rem;
+    }
+
+    .missions-hero h1 {
+        font-size: 2rem;
     }
 }

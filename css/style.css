@@ -46,6 +46,7 @@ body {
     overflow-x: hidden;
     background-image: radial-gradient(circle at top center, #1a0b2e 0%, #050a14 60%, #000000 100%);
     min-height: 100vh;
+    position: relative;
 }
 
 a {
@@ -251,6 +252,9 @@ footer {
     position: absolute;
     stroke: white;
     z-index: 2;
+    max-width: 100%;
+    height: auto;
+    pointer-events: none;
 }
 
 .sigil {
@@ -964,43 +968,17 @@ footer {
         padding: 10px;
     }
 
-    @media (max-width: 600px) {
-        .section-id-grid {
-            gap: 5px;
-        }
-
-        .secid-option-lbl {
-            padding: 2px !important;
-        }
-
-        .secid-option-lbl img {
-            width: 30px !important;
-            height: 30px !important;
-        }
-
-        .secid-option-lbl span {
-            font-size: 0.6em !important;
-        }
-    }
-
-    @media (max-width: 400px) {
-        .section-id-grid {
-            gap: 2px;
-        }
-
-        .secid-option-lbl img {
-            width: 25px !important;
-            height: 25px !important;
-        }
-
-        .secid-option-lbl span {
-            font-size: 0.55em !important;
-            word-break: break-all;
-        }
-    }
-
     .layout-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .layout-grid > .main-content,
+    .layout-grid > .sidebar {
+        min-width: 0;
+    }
+
+    .hero {
+        padding: 4rem 1rem 2rem;
     }
 
     .hero-title {
@@ -1026,9 +1004,28 @@ footer {
     }
 
     /* Download cards stack */
+    .download-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1rem;
+    }
+
     .dl-card {
-        min-width: unset;
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .dl-card > * {
+        max-width: 100%;
+    }
+
+    .dl-card > h3,
+    .dl-card > p {
         width: 100%;
+    }
+
+    .dl-card code {
+        word-break: break-all;
+        white-space: normal;
     }
 
     /* Fix any 100vw elements */
@@ -1067,6 +1064,41 @@ footer {
     .reward-options .claim-category-btn {
         padding: 10px 12px;
         font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .section-id-grid {
+        gap: 5px;
+    }
+
+    .secid-option-lbl {
+        padding: 2px !important;
+    }
+
+    .secid-option-lbl img {
+        width: 30px !important;
+        height: 30px !important;
+    }
+
+    .secid-option-lbl span {
+        font-size: 0.6em !important;
+    }
+}
+
+@media (max-width: 400px) {
+    .section-id-grid {
+        gap: 2px;
+    }
+
+    .secid-option-lbl img {
+        width: 25px !important;
+        height: 25px !important;
+    }
+
+    .secid-option-lbl span {
+        font-size: 0.55em !important;
+        word-break: break-all;
     }
 }
 
