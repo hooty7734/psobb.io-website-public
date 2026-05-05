@@ -75,7 +75,7 @@ $user_count = $db->querySingle("SELECT COUNT(*) FROM users");
             <h1>Admin Dashboard</h1>
             <div style="font-size:0.9rem; opacity:0.7;">Logged in as <?php echo htmlspecialchars($_SESSION['user']['username']); ?> (ID: <?php echo $_SESSION['user']['account_id']; ?>)</div>
         </div>
-        <div style="display:flex; gap: 10px;">
+        <div style="display:flex; flex-wrap: wrap; gap: 10px;">
             <a href="mods.php" class="dl-btn" style="text-decoration:none; display:flex; align-items:center; background: var(--pso-blue); color: #000;">Manage Mods</a>
             <a href="mission_manager.php" class="dl-btn success-btn" style="text-decoration:none; display:flex; align-items:center;">Manage Missions</a>
             <a href="telemetry.php" class="dl-btn" style="text-decoration:none; display:flex; align-items:center; border-color:#00ffcc; color:#00ffcc;">Telemetry</a>
@@ -118,7 +118,7 @@ $user_count = $db->querySingle("SELECT COUNT(*) FROM users");
             <h3>Reset Reward Claim</h3>
             <p>Refund a claimed milestone for a player.</p>
             <form id="reset-claim-form" onsubmit="resetClaim(event)">
-                <div style="display:flex; gap:10px; margin-bottom: 5px;">
+                <div style="display:flex; flex-wrap: wrap; gap:10px; margin-bottom: 5px;">
                     <input type="text" id="rc-cname" list="claimed-chars-list" placeholder="Search Character Name..." required style="flex-grow:1; padding: 8px;">
                     <input type="number" id="rc-count" placeholder="# to Revert" value="1" min="1" required style="width: 100px; padding: 8px;">
                 </div>
@@ -143,7 +143,7 @@ $user_count = $db->querySingle("SELECT COUNT(*) FROM users");
             </h3>
             <p>Execute raw shell commands (Use with caution).</p>
             <form id="console-form" onsubmit="runConsole(event)">
-                <div style="display:flex; gap:10px;">
+                <div style="display:flex; flex-wrap: wrap; gap:10px;">
                     <input type="text" id="console-cmd" placeholder="Command (e.g. reload, kick <id>)" style="flex-grow:1; padding: 8px;">
                     <button type="submit" class="dl-btn">Run</button>
                 </div>
@@ -155,7 +155,7 @@ $user_count = $db->querySingle("SELECT COUNT(*) FROM users");
         <div class="admin-card" style="grid-column: span 3;">
             <h3>Online Players</h3>
             <div style="overflow-x: auto;">
-                <table style="width:100%; border-collapse: collapse;">
+                <table style="width:100%; min-width: 600px; border-collapse: collapse;">
                     <thead>
                         <tr style="text-align:left; border-bottom:1px solid #333;">
                             <th>Name</th>
@@ -177,7 +177,7 @@ $user_count = $db->querySingle("SELECT COUNT(*) FROM users");
         <div class="admin-card" style="grid-column: span 3;">
             <h3>All Registered Accounts</h3>
             <div style="overflow-x: auto; max-height: 400px;">
-                <table style="width:100%; border-collapse: collapse;">
+                <table style="width:100%; min-width: 600px; border-collapse: collapse;">
                     <thead>
                         <tr style="text-align:left; border-bottom:1px solid #333; position: sticky; top: 0; background: rgba(0,0,0,0.9);">
                             <th>Account ID</th>

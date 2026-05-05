@@ -409,8 +409,12 @@ include 'includes/header.php';
 
         @media (max-width: 600px) {
             .streak-calendar {
-                grid-template-columns: repeat(5, 1fr);
+                grid-template-columns: repeat(4, 1fr);
                 gap: 6px;
+            }
+            .streak-bar-wrapper {
+                overflow-x: auto;
+                padding-bottom: 10px;
             }
             .streak-day { padding: 8px 4px; }
             .streak-day .day-reward { font-size: 0.65rem; }

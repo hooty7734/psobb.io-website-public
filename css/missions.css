@@ -260,3 +260,9 @@
         margin-top: 2rem;
     }
 }
+
+@media (max-width: 600px) {
+    .bounty-grid {
+        grid-template-columns: 1fr;
+    }
+}
