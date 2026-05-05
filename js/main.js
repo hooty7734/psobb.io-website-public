@@ -582,16 +582,12 @@ function renderGameList(games) {
             : '<span style="display: inline-flex; align-items: center; gap: 4px; background: rgba(0, 255, 200, 0.1); border: 1px solid rgba(0, 255, 200, 0.3); color: #00ffc8; padding: 2px 8px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px;"><i class="fas fa-unlock" style="font-size: 0.85em;"></i> OPEN</span>';
 
         row.innerHTML = `
-            <td>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-weight: 600; color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.3);">${escapeHtml(displayName)}</span>
-                    ${passBadge}
-                </div>
-            </td>
+            <td><span style="font-weight: 600; color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.3);">${escapeHtml(displayName)}</span></td>
             <td><span class="mode-badge ${modeClass}">${displayMode}</span></td>
             <td>${g.Episode || 'Ep1'}</td>
             <td>${g.Difficulty || 'Normal'}</td>
             <td>${players}/4</td>
+            <td>${passBadge}</td>
         `;
         list.appendChild(row);
     });
