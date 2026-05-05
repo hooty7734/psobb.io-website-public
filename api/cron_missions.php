@@ -82,6 +82,9 @@ foreach ($clients as $client) {
     $curr_level = $client['Level'] ?? 1;
     $prev_level = $prev_state['level'] ?? $curr_level;
     $curr_f = (int)($client['LocationFloor'] ?? -1);
+    $prev_f = (int)($prev_state['floor'] ?? -1);
+    
+    $floor_entered_time = ($curr_f === $prev_f) ? ($prev_state['floor_entered_time'] ?? time()) : time();
     
     // Protect against Zero-EXP spikes during loading screens where NewServ briefly reports 0 EXP.
     // If we don't skip this tick, $prev_exp gets saved as 0, and the NEXT tick will show a massive delta!
@@ -642,6 +645,7 @@ CRITICAL RULE: Return ONLY valid JSON properly formatted with double quotes stri
         'last_boss_arena' => $last_boss_arena,
         'last_boss_arena_time' => $last_boss_arena_time,
         'patrol' => $current_patrols,
+        'floor_entered_time' => $floor_entered_time,
     ];
 }
 

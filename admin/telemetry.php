@@ -95,6 +95,7 @@ $telemetry_logs = file_exists($debug_log_file) ? json_decode(file_get_contents($
                             <th>Lv</th>
                             <th>Prev</th>
                             <th>Curr</th>
+                            <th>Time</th>
                             <th>Old EXP</th>
                             <th>New EXP</th>
                             <th>Delta</th>
@@ -117,6 +118,12 @@ $telemetry_logs = file_exists($debug_log_file) ? json_decode(file_get_contents($
                                     $prevFloorId = $state['floor'] ?? $currFloorId;
                                     $prevFloorName = $floor_names[$prevFloorId] ?? "Floor $prevFloorId";
                                     
+                                    $floorEnteredTime = $state['floor_entered_time'] ?? time();
+                                    $secondsOnFloor = time() - $floorEnteredTime;
+                                    $minsOnFloor = floor($secondsOnFloor / 60);
+                                    $secsOnFloor = $secondsOnFloor % 60;
+                                    $timeOnFloorStr = sprintf("%d:%02d", $minsOnFloor, $secsOnFloor);
+                                    
                                     $currExp = $client['EXP'] ?? 0;
                                     $prevExp = $state['exp'] ?? $currExp;
                                     $expDelta = $currExp - $prevExp;
@@ -135,6 +142,7 @@ $telemetry_logs = file_exists($debug_log_file) ? json_decode(file_get_contents($
                                     <td style="<?php echo $inBossRoom ? 'color:#ffaa00; font-weight:bold;' : ''; ?>">
                                         <?php echo htmlspecialchars($currFloorName); ?>
                                     </td>
+                                    <td style="opacity:0.7;"><?php echo $timeOnFloorStr; ?></td>
                                     <td style="opacity:0.7;"><?php echo number_format($prevExp); ?></td>
                                     <td><?php echo number_format($currExp); ?></td>
                                     <td style="<?php echo $spikeStyle; ?>">+<?php echo number_format($expDelta); ?></td>
