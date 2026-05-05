@@ -121,7 +121,8 @@ try {
     }
 
     $iterations = ($category === 'Random') ? 3 : 1;
-    $droppedItems = [];
+    $droppedItems = [];    // hex strings sent to newserv
+    $displayNames = [];   // human-readable names shown to user
 
     for ($iter = 0; $iter < $iterations; $iter++) {
         // 3.5. Weapon/Armor Random Attributes
@@ -147,8 +148,10 @@ try {
         }
 
         // 3. Generate Item String
+        $displayName = $category; // fallback display
         if ($category === 'Mag') {
             $itemString = 'Random Mag';
+            $displayName = 'Random Mag';
         } else {
             // Rares only drop at 25, 50, 75, 100, etc.
             if ($milestone % 25 === 0 || $category === 'Random') {
@@ -160,6 +163,28 @@ try {
                 } else {
                     $itemString = get_common_reward_item($milestone, $charClass, $category, $options);
                 }
+            }
+            // Resolve a friendly display name from item_hex.txt if the result is pure hex
+            $firstToken = explode(' ', trim($itemString))[0];
+            if (ctype_xdigit($firstToken) && strlen($firstToken) >= 6) {
+                $hexPath = __DIR__ . '/../item_hex.txt';
+                if (file_exists($hexPath)) {
+                    $shortHex = strtoupper(substr($firstToken, 0, 6));
+                    foreach (file($hexPath) as $line) {
+                        if (stripos($line, $shortHex) === false) continue;
+                        $parts = preg_split('/\s{2,}/', trim($line));
+                        if (count($parts) >= 2) {
+                            $displayName = trim(end($parts));
+                            break;
+                        }
+                    }
+                } else {
+                    // Fallback: label by category
+                    $displayName = $category . ' item';
+                }
+            } else {
+                // String-based items (e.g. "Photon Drop x2", "1000 Meseta")
+                $displayName = $itemString;
             }
         }
         
@@ -229,13 +254,15 @@ try {
             exit;
         }
 
-        // 5. Verify character loading state to prevent drop loss
+        // 5. Record drop
         error_log("[Bounty Claim] Success - Item delivered via shell-exec.");
         
-        $droppedItems[] = $itemString;
+        $droppedItems[] = $itemString;   // hex — stored in DB
+        $displayNames[] = $displayName; // friendly — shown to user
     }
 
-    $finalItemString = implode(", ", $droppedItems);
+    $finalItemString = implode(", ", $droppedItems);       // hex for DB
+    $finalDisplayString = implode(" + ", $displayNames);   // readable for UI
 
     // 5. Store claim record in website DB
     $stmt = $db->prepare("INSERT INTO rewards_claimed (account_id, character_name, level_milestone, category, item_string) VALUES (:aid, :cname, :lvl, :cat, :item)");
@@ -249,7 +276,7 @@ try {
     echo json_encode([
         "success" => true,
         "message" => "Item dropped! Return to game to pick it up!",
-        "item" => $finalItemString
+        "item" => $finalDisplayString   // human-readable; hex stays in DB only
     ]);
 
 } catch (Exception $e) {
