@@ -24,7 +24,7 @@ include 'includes/header.php';
         </section>
 
         <div class="section-header">
-            <h2><?= __('Coming Soon') ?></h2>
+            <h2><?= __('Updates') ?></h2>
         </div>
 
         <div class="layout-grid">
@@ -58,10 +58,7 @@ include 'includes/header.php';
                     <p><?= __('Please Uninstall your existing client before installing this new release.') ?></p>
                 </article>
 
-                <article class="news-item">
-                    <h3><?= __('Server Updates') ?></h3>
-                    <p><?= __('We are currently working on the final touches for the website and server. Please check back soon for more updates!') ?></p>
-                </article>
+
             </section>
 
             <aside class="sidebar">
