@@ -167,24 +167,28 @@ if ($result['cnt'] > 0) {
 // 6. Execute Game Payload (Drop Generation)
 // --------------------------------------------------------------------------
 $materials = [
-    '030B00' /* Power Material */,
-    '030B01' /* Mind Material */,
-    '030B03' /* HP Material */,
-    '030B04' /* TP Material */,
-    '030B05' /* Def Material */,
-    '030B02' /* Evade Material */,
-    '030B06' /* Luck Material */
+    '030B00' => 'Power Material',
+    '030B01' => 'Mind Material',
+    '030B03' => 'HP Material',
+    '030B04' => 'TP Material',
+    '030B05' => 'Def Material',
+    '030B02' => 'Evade Material',
+    '030B06' => 'Luck Material'
 ];
 
 // Map the milestone index to a dynamic reward scale
 if ($milestone === 30) {
-    $itemString = '030A02'; // Trigrinder
+    $itemString = '030A02';
+    $itemName = 'Trigrinder';
 } else if ($milestone % 2 === 0) {
-    $itemString = $materials[array_rand($materials)];
+    $itemString = array_rand($materials);
+    $itemName = $materials[$itemString];
 } else if ($milestone % 3 === 0) {
-    $itemString = '030A01'; // Digrinder
+    $itemString = '030A01';
+    $itemName = 'Digrinder';
 } else {
-    $itemString = '030A00'; // Monogrinder
+    $itemString = '030A00';
+    $itemName = 'Monogrinder';
 }
 
 // Execute the robust item parser to handle the drop securely
@@ -217,6 +221,6 @@ echo json_encode([
     "success" => true,
     "item" => $itemString,
     "milestone" => $milestone,
-    "message" => "{$itemString} dropped in-game! Keep the streak going!"
+    "message" => "{$itemName} dropped in-game! Keep the streak going!"
 ]);
 ?>
