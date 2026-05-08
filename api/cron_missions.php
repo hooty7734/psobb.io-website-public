@@ -741,8 +741,9 @@ foreach ($clients as $client) {
                 $selected_target_friendly = "Level " . $selected_target_id;
                 break;
             case 'PLAYTIME':
-                $selected_target_id = $playtime + 3600;
-                $selected_target_friendly = floor($selected_target_id / 3600) . " total hours of playtime";
+                $next_hour = floor($playtime / 3600) + 1;
+                $selected_target_id = $next_hour * 3600;
+                $selected_target_friendly = $next_hour . " total hours of playtime";
                 break;
             case 'BATTLE_WINS':
                 $selected_target_id = $battle_wins + 1;

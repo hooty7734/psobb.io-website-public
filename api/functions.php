@@ -120,7 +120,7 @@ function getClearObjective($type, $target) {
         case 'MAT_CONSUME': return __('Consume Any Materials');
         case 'PLAYTIME':
             if ($target === 'ANY') return __('Accumulate Playtime (Server-wide Tracker)');
-            return __('Accumulate %s hours of playtime', number_format(floor((int)$target / 3600)));
+            return __('Accumulate %s total hours of playtime', (int)($target / 3600));
         case 'CHALLENGE_STAGES':
             if ($target === 'ANY') return __('Clear Any Challenge Mode Stages');
             return __('Complete %s Challenge Mode stages', htmlspecialchars($target));
