@@ -138,11 +138,15 @@ $stmt->bindValue(':aid', $accountId, SQLITE3_INTEGER);
 $result = $stmt->execute()->fetchArray();
 $currentCycle = $result['cycle'];
 
-$stmt = $db->prepare("SELECT COUNT(*) as cnt FROM streak_claims WHERE account_id = :aid AND streak_cycle = :cycle AND milestone = 30");
+$stmt = $db->prepare("SELECT COALESCE(MAX(milestone), 0) as max_ms FROM streak_claims WHERE account_id = :aid AND streak_cycle = :cycle");
 $stmt->bindValue(':aid', $accountId, SQLITE3_INTEGER);
 $stmt->bindValue(':cycle', $currentCycle, SQLITE3_INTEGER);
 $result = $stmt->execute()->fetchArray();
-if ($result['cnt'] > 0) {
+$maxClaimedMilestone = $result['max_ms'];
+
+if ($maxClaimedMilestone == 30) {
+    $currentCycle++;
+} else if ($maxClaimedMilestone > 0 && $streak < $maxClaimedMilestone) {
     $currentCycle++;
 }
 
