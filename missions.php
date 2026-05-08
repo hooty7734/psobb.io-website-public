@@ -48,7 +48,7 @@ $lb_res = $db->query("SELECT u.username, COUNT(pm.id) as completions
                       WHERE pm.status = 'completed' 
                       GROUP BY u.username 
                       ORDER BY completions DESC 
-                      LIMIT 10");
+                      LIMIT 3");
 while ($row = $lb_res->fetchArray(SQLITE3_ASSOC)) {
     $leaderboard[] = $row;
 }
@@ -625,6 +625,7 @@ if ($account_id) {
                             </li>
                         <?php endforeach; ?>
                     </ul>
+                    <a href="/top_hunters.php" class="dl-btn" style="display:block; text-align:center; margin-top: 1rem; padding: 10px;"><?= __('View All Hunters') ?></a>
                 <?php endif; ?>
             </div>
         </aside>
