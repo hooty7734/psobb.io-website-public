@@ -38,6 +38,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $type = $_POST['goal_type'];
         $target = trim($_POST['goal_target']);
         $reward = trim($_POST['reward_item_string']);
+        
+        if ($type === 'SPEEDRUN_BOSS' || $type === 'SPEEDRUN_FLOOR') {
+            // Speedrun mission targets require both a floor ID and a time limit in seconds.
+            // We concatenate them using an underscore (e.g., '11_180' means Dragon in 180 seconds)
+            // so they can be stored in the single 'goal_target' database column.
+            $time_limit = (int)($_POST['time_limit'] ?? 0);
+            if ($time_limit > 0) {
+                $target = $target . '_' . $time_limit;
+            }
+        }
 
         if ($title && $desc && $type && $target && $reward) {
             $stmt = $db->prepare("INSERT INTO missions (title, description, goal_type, goal_target, reward_item_string) VALUES (:t, :d, :gt, :gta, :ri)");
@@ -231,8 +241,10 @@ while ($ce = $tele_res->fetchArray(SQLITE3_ASSOC)) {
                             <option value="PLAYTIME">Play Time (Seconds)</option>
                             <option value="ITEM">Obtain Item</option>
                             <option value="BOSS_ARENA">Defeat Boss (Floor ID)</option>
+                            <option value="SPEEDRUN_BOSS">Speedrun Boss (Time Limit)</option>
                             <option value="EXPLORATION">Explore Area (Floor ID)</option>
                             <option value="PATROL">Patrol Area 10m (Floor ID)</option>
+                            <option value="SPEEDRUN_FLOOR">Speedrun Area (Time Limit)</option>
                             <option value="BATTLE_WINS">Battle Mode Wins</option>
                             <option value="CHALLENGE_STAGES">Challenge Stages Cleared</option>
                         </select>
@@ -279,17 +291,25 @@ while ($ce = $tele_res->fetchArray(SQLITE3_ASSOC)) {
             const container = document.getElementById('goal_target_container');
             const label = document.getElementById('goal_target_label');
 
-            if (type === 'BOSS_ARENA') {
+            if (type === 'BOSS_ARENA' || type === 'SPEEDRUN_BOSS') {
                 label.textContent = "Select Target Boss";
-                let html = '<select name="goal_target" required style="width:100%; padding:8px; background:rgba(0,0,0,0.4); border:1px solid #444; color:#fff;">';
+                let html = '<div style="display:flex; gap:10px;"><select name="goal_target" required style="flex:1; padding:8px; background:rgba(0,0,0,0.4); border:1px solid #444; color:#fff;">';
                 bossOptions.forEach(b => html += `<option value="${b.val}">${b.text}</option>`);
                 html += '</select>';
+                if (type === 'SPEEDRUN_BOSS') {
+                    html += '<input type="number" name="time_limit" required placeholder="Seconds (e.g. 90)" style="flex:1; padding:8px; background:rgba(0,0,0,0.4); border:1px solid #444; color:#fff;">';
+                }
+                html += '</div>';
                 container.innerHTML = html;
-            } else if (type === 'EXPLORATION' || type === 'PATROL') {
+            } else if (type === 'EXPLORATION' || type === 'PATROL' || type === 'SPEEDRUN_FLOOR') {
                 label.textContent = "Select Target Area";
-                let html = '<select name="goal_target" required style="width:100%; padding:8px; background:rgba(0,0,0,0.4); border:1px solid #444; color:#fff;">';
+                let html = '<div style="display:flex; gap:10px;"><select name="goal_target" required style="flex:1; padding:8px; background:rgba(0,0,0,0.4); border:1px solid #444; color:#fff;">';
                 floorOptions.forEach(f => html += `<option value="${f.val}">${f.text}</option>`);
                 html += '</select>';
+                if (type === 'SPEEDRUN_FLOOR') {
+                    html += '<input type="number" name="time_limit" required placeholder="Seconds (e.g. 300)" style="flex:1; padding:8px; background:rgba(0,0,0,0.4); border:1px solid #444; color:#fff;">';
+                }
+                html += '</div>';
                 container.innerHTML = html;
             } else {
                 label.textContent = "Goal Target (Number or Item Name)";

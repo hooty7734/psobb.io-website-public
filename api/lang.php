@@ -284,7 +284,7 @@ $I18N = [
         'The leaderboard is waiting for its first legend.' => 'リーダーボードは最初の伝説を待っています。',
         'How to Play' => '遊び方',
         'The Game Master automatically generates specially curated bounties tailored specifically to your character\'s stats and classes.' => 'ゲームマスターは、あなたのキャラクターのステータスやクラスに合わせた特別に厳選されたバウンティを自動的に生成します。',
-        'Talk to the official Discord Bot and type <strong>!quest</strong> to request a mission explicitly, or simply wait for the administration to assign a Server Event bounty manually!' => '公式Discord Botに話しかけて<strong>!quest</strong>と入力し、明示的にミッションをリクエストするか、管理者がサーバーイベントバウンティを手動で割り当てるのを待ってください！',
+        'Missions are automatically assigned to your characters as you play! You can hold up to 3 active bounties per character at a time. Check back regularly or log into the game to receive your next assignment from the Hunter\'s Guild!' => 'ミッションはプレイ中にキャラクターに自動的に割り当てられます！各キャラクターは最大3つのアクティブなバウンティを同時に保持できます。定期的に確認するか、ゲームにログインしてハンターズギルドからの次の任務を受け取ってください！',
 
         // forgot_password.php & reset_password.php
         'Recover Account' => 'アカウントを復元',

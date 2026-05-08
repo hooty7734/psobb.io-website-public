@@ -35,14 +35,14 @@ function build_pso_weapon($base_hex, $special_name = '', $untekked = false, $nat
     return strtoupper(bin2hex($data));
 }
 
-function build_pso_mag($magIndex, $def, $pow, $dex, $mind, $sync, $iq, $colorIndex, $pbFlags = 0) {
+function build_pso_mag($magIndex, $def, $pow, $dex, $mind, $sync, $iq, $colorIndex, $flags = 0, $pb_nums = 0) {
     $data = str_repeat("\x00", 16);
     $data[0] = chr(0x02);
     $data[1] = chr($magIndex);
     
     $level = $def + $pow + $dex + $mind;
     $data[2] = chr($level & 0xFF);
-    $data[3] = chr($pbFlags & 0xFF);
+    $data[3] = chr($pb_nums & 0xFF);
     
     // Stats (uint16 LE, value * 100)
     $def100 = $def * 100; $data[4] = chr($def100 & 0xFF); $data[5] = chr(($def100 >> 8) & 0xFF);
@@ -54,8 +54,9 @@ function build_pso_mag($magIndex, $def, $pow, $dex, $mind, $sync, $iq, $colorInd
     $data[12] = chr($sync & 0xFF);
     $data[13] = chr($iq & 0xFF);
     
-    // Color
-    $data[14] = chr($colorIndex & 0xFF);
+    // Flags and Color
+    $data[14] = chr($flags & 0xFF);
+    $data[15] = chr($colorIndex & 0xFF);
     
     return strtoupper(bin2hex($data));
 }
@@ -91,12 +92,46 @@ function get_weighted_random($pool) {
     return array_key_first($pool);
 }
 
+function filter_rare_pool_by_level($pool, $level) {
+    $filtered = [];
+    foreach ($pool as $item => $weight) {
+        $adjusted_weight = 0;
+        
+        if ($weight == 100) {
+            if ($level <= 40) $adjusted_weight = 100;
+            else if ($level <= 80) $adjusted_weight = 50;
+            else if ($level <= 120) $adjusted_weight = 20;
+            else $adjusted_weight = 5;
+        } else if ($weight == 40) {
+            if ($level < 20) $adjusted_weight = 0;
+            else if ($level <= 60) $adjusted_weight = 20;
+            else if ($level <= 120) $adjusted_weight = 60;
+            else $adjusted_weight = 40;
+        } else if ($weight == 10) {
+            if ($level < 80) $adjusted_weight = 0;
+            else if ($level <= 120) $adjusted_weight = 5;
+            else if ($level <= 160) $adjusted_weight = 15;
+            else $adjusted_weight = 25;
+        } else if ($weight == 2 || $weight == 5) {
+            if ($level < 130) $adjusted_weight = 0;
+            else if ($level <= 170) $adjusted_weight = 2;
+            else $adjusted_weight = 5;
+        } else {
+            $adjusted_weight = $weight;
+        }
+        
+        if ($adjusted_weight > 0) {
+            $filtered[$item] = $adjusted_weight;
+        }
+    }
+    
+    if (empty($filtered)) return $pool; 
+    return $filtered;
+}
+
 function get_reward_item($level_milestone, $charClass, $category, $options = []) {
-    $bracket = 0;
-    if ($level_milestone >= 111) $bracket = 4;
-    else if ($level_milestone >= 80) $bracket = 3;
-    else if ($level_milestone >= 30) $bracket = 2;
-    else $bracket = 1;
+    // Determine tier (1-10)
+    $tier = max(1, min(10, floor($level_milestone / 20) + 1));
 
     $pool = [];
     
@@ -584,7 +619,7 @@ function get_reward_item($level_milestone, $charClass, $category, $options = [])
             }
 
     } else if ($category === 'Unit') {
-        if ($bracket == 1) {
+        if ($tier <= 2) {
             $pool = [
                 '010330' /* All/Resist */ => 40, '010310' /* Digger/HP */ => 40, '01030A' /* Elf/Arm */ => 40, '01030E' /* Elf/Legs */ => 40, 
                 '010309' /* General/Arm */ => 40, '010319' /* General/Body */ => 40, '010311' /* General/HP */ => 40, '01030D' /* General/Legs */ => 40, 
@@ -592,7 +627,7 @@ function get_reward_item($level_milestone, $charClass, $category, $options = [])
                 '01031A' /* Metal/Body */ => 40, '010302' /* Ogre/Power */ => 40, '010304' /* Priest/Mind */ => 40, '01030C' /* Thief/Legs */ => 40, 
                 '010318' /* Warrior/Body */ => 40, '01033C' /* Wizard/Technique */ => 40, '01033F' /* General/Battle */ => 10
             ];
-        } else if ($bracket == 2) {
+        } else if ($tier <= 5) {
             $pool = [
                 '01031C' /* Angel/Luck */ => 40, '010306' /* Angel/Mind */ => 40, '010312' /* Dragon/HP */ => 40, '010334' /* HP/Generate */ => 40, 
                 '010333' /* HP/Restorate */ => 40, '010339' /* PB/Amplifier */ => 40, '01033A' /* PB/Generate */ => 40, '010337' /* TP/Generate */ => 40, 
@@ -600,44 +635,57 @@ function get_reward_item($level_milestone, $charClass, $category, $options = [])
                 '010321' /* Resist/Fire */ => 40, '010322' /* Resist/Flame */ => 40, '010325' /* Resist/Freeze */ => 40, '01032A' /* Resist/Light */ => 40, 
                 '01032B' /* Resist/Saint */ => 40, '010327' /* Resist/Shock */ => 40, '010328' /* Resist/Thunder */ => 40
             ];
-        } else if ($bracket >= 3) {
+        } else if ($tier <= 8) {
             $pool = [
                 '01031E' /* Master/Ability */ => 40, '010331' /* Super/Resist */ => 40, '010343' /* Trap/Search */ => 40, 
                 '010347' /* Cure/Shock */ => 20, '010346' /* Cure/Freeze */ => 20, '010343' /* Cure/Paralysis */ => 20, '010345' /* Cure/Confuse */ => 20,
                 '010341' /* God/Battle */ => 10, '010320' /* God/Ability */ => 10, '010303' /* God/Power */ => 20, '010307' /* God/Mind */ => 20
             ];
+        } else {
+            $pool = [
+                '010353' /* Heavenly/Battle */ => 40, '01035A' /* Heavenly/Ability */ => 40,
+                '010354' /* Heavenly/Power */ => 60, '010355' /* Heavenly/Mind */ => 60, '010356' /* Heavenly/Arms */ => 60,
+                '010349' /* V101 */ => 15, '01034B' /* V502 */ => 15, '01034C' /* V801 */ => 15, '01034D' /* LIMITER */ => 5, '01034E' /* ADEPT */ => 5,
+                '01034F' /* SWORDSMAN LORE */ => 10, '010350' /* PROOF OF SWORD-SAINT */ => 10, '010351' /* SMARTLINK */ => 20,
+                '010352' /* DIVINE PROTECTION */ => 10, '01035B' /* Centurion/Ability */ => 10
+            ];
         }
 
     } else if ($category === 'Random') {
-        if ($bracket == 1) {
+        if ($tier <= 2) {
             $pool = [
-                '010346' /* Cure/Freeze */ => 40, '010343' /* Cure/Paralysis */ => 40, '010345' /* Cure/Confuse */ => 40, 
-                '010341' /* God/Battle */ => 30, '010320' /* God/Ability */ => 30, '010303' /* God/Power */ => 50, '010307' /* God/Mind */ => 50,
-                '031002' /* Photon Crystal */ => 50, '031805' /* Amities Memo */ => 10, '031806' /* Heart of Morolian */ => 10
+                '030A00' /* Monogrinder */ => 100, '030A01' /* Digrinder */ => 50, '030B00' /* Power Material */ => 50, '030B01' /* Mind Material */ => 50, '030B02' /* Evade Material */ => 50, '030B04' /* Def Material */ => 50, '010300' /* Knight/Power */ => 40, '010304' /* Priest/Mind */ => 40, '010309' /* General/Arm */ => 40, '010330' /* All/Resist */ => 20
             ];
-        } else if ($bracket == 2) {
+        } else if ($tier <= 4) {
+            $pool = [
+                '030A01' /* Digrinder */ => 100, '030A02' /* Trigrinder */ => 50, '030B00' /* Power Material */ => 100, '030B01' /* Mind Material */ => 100, 
+                '030B03' /* HP Material */ => 80, '030F00' /* AddSlot */ => 20, 
+                '031000' /* Photon Drop */ => 100, '031002' /* Photon Crystal */ => 10, '010301' /* General/Power */ => 50, '010305' /* General/Mind */ => 50,
+            ];
+        } else if ($tier <= 6) {
             $pool = [
                 '030A02' /* Trigrinder */ => 100, '030B00' /* Power Material */ => 100, '030B01' /* Mind Material */ => 100, 
                 '030B03' /* HP Material */ => 80, '030B06' /* Luck Material */ => 60, '030F00' /* AddSlot */ => 80, 
-                '031000, 031000, 031000, 031000, 031000, 031000, 031000, 031000, 031000, 031000' /* Photon Drop x10 */ => 100, '031001' /* Photon Sphere */ => 10, '010347' /* Cure/Shock */ => 40, 
+                '031000, 031000, 031000' /* Photon Drop x3 */ => 100, '031001' /* Photon Sphere */ => 10, '010347' /* Cure/Shock */ => 40, 
                 '010346' /* Cure/Freeze */ => 40, '010343' /* Cure/Paralysis */ => 40, '010345' /* Cure/Confuse */ => 40, 
-                '010341' /* God/Battle */ => 30, '010320' /* God/Ability */ => 30, '010303' /* God/Power */ => 50, '010307' /* God/Mind */ => 50,
+                '010302' /* Ogre/Power */ => 50, '010310' /* Digger/HP */ => 50,
                 '031002' /* Photon Crystal */ => 50, '031805' /* Amities Memo */ => 10, '031806' /* Heart of Morolian */ => 10
             ];
-        } else if ($bracket == 3) {
+        } else if ($tier <= 8) {
             $pool = [
                 '030A02' /* Trigrinder */ => 100, '030B00' /* Power Material */ => 100, '030B01' /* Mind Material */ => 100, 
                 '030B03' /* HP Material */ => 80, '030B06' /* Luck Material */ => 60, '030F00' /* AddSlot */ => 80,
-                '031001' /* Photon Sphere */ => 50, '010353' /* Heavenly/Battle */ => 40, '01035A' /* Heavenly/Ability */ => 40,
-                '010354' /* Heavenly/Power */ => 60, '010355' /* Heavenly/Mind */ => 60, '010356' /* Heavenly/Arms */ => 60,
-                '01034A' /* V501 */ => 20, '01035B' /* Centurion/Ability */ => 5, '030E03' /* Blue-Black Stone */ => 30, 
+                '031001' /* Photon Sphere */ => 50, '010341' /* God/Battle */ => 30, '010320' /* God/Ability */ => 30, '010303' /* God/Power */ => 50, '010307' /* God/Mind */ => 50,
+                '01034A' /* V501 */ => 20, '030E03' /* Blue-Black Stone */ => 30, 
                 '030E09' /* Star Amplifier */ => 40, '030E04' /* Syncesta */ => 20, '031002' /* Photon Crystal */ => 50, '031809' /* D-Photon Core */ => 10,
                 '031804' /* Pioneer Parts */ => 10, '031808' /* Yahoo!s engine */ => 10
             ];
-        } else if ($bracket == 4) {
+        } else {
             $pool = [
                 '030A02' /* Trigrinder */ => 100, '030B06' /* Luck Material */ => 60, '030F00' /* AddSlot */ => 80,
                 '031001' /* Photon Sphere */ => 80, '010227' /* Red Ring */ => 2, '030E01' /* Parasitic Gene "Flow" */ => 5, 
+                '010353' /* Heavenly/Battle */ => 40, '01035A' /* Heavenly/Ability */ => 40,
+                '010354' /* Heavenly/Power */ => 60, '010355' /* Heavenly/Mind */ => 60, '010356' /* Heavenly/Arms */ => 60,
                 '010349' /* V101 */ => 15, '01034B' /* V502 */ => 15, '01034C' /* V801 */ => 15, '01034D' /* LIMITER */ => 5, '01034E' /* ADEPT */ => 5,
                 '01034F' /* SWORDSMAN LORE */ => 10, '010350' /* PROOF OF SWORD-SAINT */ => 10, '010351' /* SMARTLINK */ => 20,
                 '010352' /* DIVINE PROTECTION */ => 10, '01035B' /* Centurion/Ability */ => 10, '030209001D0000000000000000000000' /* Disk:Grants Lv.30 */ => 40, 
@@ -645,6 +693,10 @@ function get_reward_item($level_milestone, $charClass, $category, $options = [])
                 '031803' /* Heaven Striker Coat */ => 10, '03180A' /* Liberta Kit */ => 10, '031800' /* Tablet */ => 10
             ];
         }
+    }
+    
+    if ($category === 'Weapon' || $category === 'Armor' || $category === 'Shield') {
+        $pool = filter_rare_pool_by_level($pool, $level_milestone);
     }
     
     $chosen = get_weighted_random($pool);
@@ -655,19 +707,25 @@ function get_reward_item($level_milestone, $charClass, $category, $options = [])
         return build_pso_armor($chosen, $slots);
     }
     
+    // If it is a Unit (Hex starts with 0103 and length is 6)
+    if (strpos($chosen, '0103') === 0 && strlen($chosen) === 6) {
+        // Only basic stat units get modifiers. God/Heavenly units shouldn't, but 1-2 doesn't hurt.
+        // We'll give early/mid game units a + or ++ modifier (1 or 2).
+        $modifier = mt_rand(1, 2);
+        return build_pso_armor($chosen, 0, $modifier, 0);
+    }
+    
     return $chosen;
 }
 
 function get_common_reward_item($level_milestone, $charClass, $category, $options = []) {
-    // Determine the tier based on milestone (roughly matches equip requirements)
-    $tier = 1;
-    if ($level_milestone >= 95) $tier = 6;
-    else if ($level_milestone >= 65) $tier = 5;
-    else if ($level_milestone >= 45) $tier = 4;
-    else if ($level_milestone >= 25) $tier = 3;
-    else if ($level_milestone >= 15) $tier = 2;
+    // Determine the tier based on milestone (10 tiers up to max level)
+    $tier = max(1, min(10, floor($level_milestone / 20) + 1));
+    
+    // For PSO items, common item types max out at tier 6.
+    $item_tier = min(6, $tier);
 
-    $specials = ['Charge', 'Berserk', 'Spirit', 'Arrest', 'Blizzard', 'Hell', 'Demon\'s', 'Geist', 'Gush'];
+    $specials = ['Draw', 'Drain', 'Fill', 'Gush', 'Heart', 'Mind', 'Soul', 'Geist', 'Masters', 'Lords', 'Kings', 'Charge', 'Spirit', 'Berserk', 'Ice', 'Frost', 'Freeze', 'Blizzard', 'Bind', 'Hold', 'Seize', 'Arrest', 'Heat', 'Fire', 'Flame', 'Burning', 'Shock', 'Thunder', 'Storm', 'Tempest', 'Dim', 'Shadow', 'Dark', 'Hell', 'Panic', 'Riot', 'Havoc', 'Chaos', 'Devil\'s', 'Demon\'s'];
     
     // Group classes
     $isHunter = in_array($charClass, ['HUmar', 'HUnewearl', 'HUcast', 'HUcaseal']);
@@ -677,7 +735,7 @@ function get_common_reward_item($level_milestone, $charClass, $category, $option
     if ($category === 'Weapon') {
         $weapons = [];
         if ($isHunter) {
-            switch ($tier) {
+            switch ($item_tier) {
                 case 1: $weapons = ['000100' /* Saber */, '000200' /* Sword */, '000300' /* Dagger */, '000400' /* Partisan */, '000500' /* Slicer */, '000600' /* Handgun */]; break;
                 case 2: $weapons = ['000101' /* Brand */, '000201' /* Gigush */, '000301' /* Knife */, '000401' /* Halbert */, '000501' /* Spinner */, '000601' /* Autogun */]; break;
                 case 3: $weapons = ['000102' /* Buster */, '000202' /* Breaker */, '000302' /* Blade */, '000402' /* Glaive */, '000502' /* Cutter */, '000602' /* Lockgun */]; break;
@@ -686,7 +744,7 @@ function get_common_reward_item($level_milestone, $charClass, $category, $option
                 case 6: $weapons = ['000104' /* Gladius */, '000204' /* Calibur */, '000304' /* Ripper */, '000404' /* Gungnir */, '000504' /* Diska */, '000604' /* Raygun */]; break;
             }
         } else if ($isRanger) {
-            switch ($tier) {
+            switch ($item_tier) {
                 case 1: $weapons = ['000700' /* Rifle */, '000900' /* Shot */, '000800' /* Mechgun */, '000600' /* Handgun */, '000500' /* Slicer */, '000100' /* Saber */]; break;
                 case 2: $weapons = ['000701' /* Sniper */, '000901' /* Spread */, '000801' /* Assault */, '000601' /* Autogun */, '000501' /* Spinner */, '000101' /* Brand */]; break;
                 case 3: $weapons = ['000702' /* Blaster */, '000902' /* Cannon */, '000802' /* Repeater */, '000602' /* Lockgun */, '000502' /* Cutter */, '000102' /* Buster */]; break;
@@ -695,7 +753,7 @@ function get_common_reward_item($level_milestone, $charClass, $category, $option
                 case 6: $weapons = ['000704' /* Laser */, '000904' /* Arms */, '000804' /* Vulcan */, '000604' /* Raygun */, '000504' /* Diska */, '000104' /* Gladius */]; break;
             }
         } else { // Forces
-            switch ($tier) {
+            switch ($item_tier) {
                 case 1: $weapons = ['000A00' /* Cane */, '000B00' /* Rod */, '000C00' /* Wand */, '000600' /* Handgun */, '000500' /* Slicer */]; break;
                 case 2: $weapons = ['000A01' /* Stick */, '000B01' /* Pole */, '000C01' /* Staff */, '000601' /* Autogun */, '000501' /* Spinner */]; break;
                 case 3: $weapons = ['000A02' /* Mace */, '000B02' /* Pillar */, '000C02' /* Baton */, '000602' /* Lockgun */, '000502' /* Cutter */]; break;
@@ -706,8 +764,27 @@ function get_common_reward_item($level_milestone, $charClass, $category, $option
         }
         
                 $chosenWeapon = $weapons[array_rand($weapons)];
-        $chosenSpecial = $specials[array_rand($specials)];
         
+        // At higher levels, better specials are more likely
+        if ($tier > 7) {
+            $high_specials = ['Charge', 'Berserk', 'Spirit', 'Arrest', 'Blizzard', 'Hell', 'Demon\'s', 'Geist', 'Gush'];
+            $chosenSpecial = $high_specials[array_rand($high_specials)];
+        } else {
+            $chosenSpecial = $specials[array_rand($specials)];
+        }
+        
+        // Scale attributes dynamically with level
+        $base_attr = mt_rand(0, $tier * 10);
+        $attr_types = ['native', 'abeast', 'machine', 'dark'];
+        shuffle($attr_types);
+        $attr1 = $attr_types[0];
+        $attr2 = $attr_types[1];
+        
+        $options[$attr1] = $options[$attr1] ?? min(100, $base_attr);
+        if ($tier > 4 && mt_rand(0, 100) > 50) {
+            $options[$attr2] = $options[$attr2] ?? min(100, $base_attr);
+        }
+
         $native = $options['native'] ?? 0;
         $abeast = $options['abeast'] ?? 0;
         $machine = $options['machine'] ?? 0;
@@ -718,7 +795,7 @@ function get_common_reward_item($level_milestone, $charClass, $category, $option
     } else if ($category === 'Armor') {
         $frames = [];
         $armors = [];
-        switch ($tier) {
+        switch ($item_tier) {
             case 1: $frames = ['010100' /* Frame */, '010103' /* Giga Frame */]; $armors = ['010101' /* Armor */, '010102' /* Psy Armor */]; break;
             case 2: $frames = ['010104' /* Soul Frame */, '010106' /* Solid Frame */]; $armors = ['010105' /* Cross Armor */, '010107' /* Brave Armor */]; break;
             case 3: $frames = ['010108' /* Hyper Frame */, '01010A' /* Shock Frame */]; $armors = ['010109' /* Grand Armor */, '01010D' /* Absorb Armor */]; break;
@@ -733,15 +810,18 @@ function get_common_reward_item($level_milestone, $charClass, $category, $option
         $validArmors = $isNewman ? $frames : array_merge($frames, $armors);
         
         $chosenArmor = $validArmors[array_rand($validArmors)];
-        $def = $options['def'] ?? 0;
-        $evp = $options['evp'] ?? 0;
-        $slots = $options['slots'] ?? mt_rand(3, 4);
+        
+        // Scale DEF and EVP based on tier
+        $def = $options['def'] ?? mt_rand(0, $tier * 5);
+        $evp = $options['evp'] ?? mt_rand(0, $tier * 5);
+        $slots = $options['slots'] ?? mt_rand(max(0, $tier - 6), 4);
+        
         return build_pso_armor($chosenArmor, $slots, $def, $evp);
         
     } else if ($category === 'Shield') {
         $barriers = [];
         $shields = []; // Shields are normally unequippable by Forces
-        switch ($tier) {
+        switch ($item_tier) {
             case 1: $barriers = ['010200' /* Barrier */, '010204' /* Soul Barrier */]; $shields = ['010201' /* Shield */, '010202' /* Core Shield */]; break;
             case 2: $barriers = ['010206' /* Brave Barrier */, '010208' /* Flame Barrier */]; $shields = ['010203' /* Giga Shield */, '010205' /* Hard Shield */]; break;
             case 3: $barriers = ['010209' /* Plasma Barrier */, '01020A' /* Freeze Barrier */]; $shields = ['010207' /* Solid Shield */, '01020C' /* General Shield */]; break;
@@ -754,12 +834,12 @@ function get_common_reward_item($level_milestone, $charClass, $category, $option
         $validShields = $isForce ? $barriers : array_merge($barriers, $shields);
 
         $chosenShield = $validShields[array_rand($validShields)];
-        $def = $options['def'] ?? 0;
-        $evp = $options['evp'] ?? 0;
+        $def = $options['def'] ?? mt_rand(0, $tier * 5);
+        $evp = $options['evp'] ?? mt_rand(0, $tier * 5);
         return build_pso_armor($chosenShield, 0, $def, $evp);
     } else if ($category === 'Unit') {
         $units = [];
-        switch ($tier) {
+        switch ($item_tier) {
             case 1: $units = ['010300' /* Knight/Power */, '010304' /* Priest/Mind */, '01030C' /* Thief/Legs */, '010318' /* Warrior/Body */]; break;
             case 2: $units = ['010301' /* General/Power */, '010305' /* General/Mind */, '01030D' /* General/Legs */, '010319' /* General/Body */, '010309' /* General/Arm */, '010311' /* General/HP */]; break;
             case 3: $units = ['010302' /* Ogre/Power */, '010310' /* Digger/HP */, '01030E' /* Elf/Legs */, '01030A' /* Elf/Arm */, '010308' /* Marksman/Arm */, '01033C' /* Wizard/Technique */]; break;
@@ -768,7 +848,8 @@ function get_common_reward_item($level_milestone, $charClass, $category, $option
             case 6: $units = ['010333' /* HP/Restorate */, '010336' /* TP/Restorate */, '010339' /* PB/Amplifier */]; break;
         }
                 $chosenUnit = $units[array_rand($units)];
-        return build_pso_armor($chosenUnit, 0, 0, 0); // Units use same hex base logic
+        $modifier = mt_rand(1, 2); // 1 = +, 2 = ++
+        return build_pso_armor($chosenUnit, 0, $modifier, 0); // Units use same hex base logic
     }
     
     // Fallback if bad category

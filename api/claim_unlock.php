@@ -231,13 +231,45 @@ try {
             $pbBits = [0, 1, 2, 3, 4, 5];
             shuffle($pbBits);
             $numPbs = rand(1, 3);
-            $pbFlags = 0;
-            for ($i = 0; $i < $numPbs; $i++) {
-                $pbFlags |= (1 << $pbBits[$i]);
+            
+            $flags = 0;
+            $pb_nums = 0;
+            
+            if ($numPbs >= 1) {
+                // Center PB
+                $pb1 = $pbBits[0];
+                $pb_nums |= ($pb1 & 0x07);
+                $flags |= 1;
+            }
+            if ($numPbs >= 2) {
+                // Right PB
+                $pb2 = $pbBits[1];
+                $pb_nums |= (($pb2 & 0x07) << 3);
+                $flags |= 2;
+            }
+            if ($numPbs >= 3) {
+                // Left PB uses a compression algorithm because there are only 2 bits left
+                $pb3 = $pbBits[2];
+                // Calculate left_pb_num: it's the index of pb3 among the UNUSED pbs
+                $used = [];
+                $used[$pb1] = true;
+                $used[$pb2] = true;
+                
+                $left_pb_num = 0;
+                for ($z = 0; $z < 6; $z++) {
+                    if (empty($used[$z])) {
+                        if ($z == $pb3) {
+                            break;
+                        }
+                        $left_pb_num++;
+                    }
+                }
+                $pb_nums |= (($left_pb_num & 0x03) << 6);
+                $flags |= 4;
             }
             
             // Build the hex natively, completely bypassing string parsing vulnerability
-            $itemString = build_pso_mag($magIndex, $def, $pow, $dex, $mind, $sync, $iq, $chosenColorIndex, $pbFlags);
+            $itemString = build_pso_mag($magIndex, $def, $pow, $dex, $mind, $sync, $iq, $chosenColorIndex, $flags, $pb_nums);
         }
 
         // 4. Send shell-exec to newserv

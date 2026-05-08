@@ -92,6 +92,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
     margin-bottom: 1rem;
     border-bottom: 1px dashed rgba(255,255,255,0.1);
     padding-bottom: 0.5rem;

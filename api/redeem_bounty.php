@@ -99,7 +99,7 @@ try {
     $db = get_db();
 
     // Verify ownership and status
-    $stmt = $db->prepare("SELECT pm.id, m.reward_item_string 
+    $stmt = $db->prepare("SELECT pm.id, pm.character_name, m.reward_item_string 
                           FROM player_missions pm
                           JOIN missions m ON pm.mission_id = m.id
                           WHERE pm.id = :pm_id AND pm.account_id = :accId AND pm.status = 'ready_to_redeem'");
@@ -130,6 +130,9 @@ try {
     if (is_array($clients)) {
         foreach ($clients as $c) {
             if (isset($c['Account']) && $c['Account']['AccountID'] == $accId) {
+                if (!empty($bounty['character_name']) && isset($c['Name']) && $c['Name'] !== $bounty['character_name']) {
+                    continue; // Wrong character
+                }
                 $onlineCharacter = $c;
                 break;
             }
@@ -138,7 +141,11 @@ try {
 
     if (!$onlineCharacter) {
         http_response_code(400);
-        echo json_encode(["error" => "Character must be online to claim rewards."]);
+        $err_msg = "Character must be online to claim rewards.";
+        if (!empty($bounty['character_name'])) {
+            $err_msg = "You must be logged in as " . $bounty['character_name'] . " to claim this reward!";
+        }
+        echo json_encode(["error" => $err_msg]);
         exit;
     }
 

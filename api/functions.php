@@ -158,17 +158,50 @@ function getClearObjective($type, $target) {
             // Maps integer Floor IDs returned by the game client memory map to friendly Names
             $floors = [1=>'Forest 1',2=>'Forest 2',3=>'Cave 1',4=>'Cave 2',5=>'Cave 3',6=>'Mine 1',7=>'Mine 2',8=>'Ruins 1',9=>'Ruins 2',10=>'Ruins 3'];
             $loc = $floors[$target] ?? "Floor $target";
-            return __('Explore the %s', htmlspecialchars(__($loc)));
+            return __('[Ep 1] Explore the %s', htmlspecialchars(__($loc)));
         case 'PATROL':
             $floors = [1=>'Forest 1',2=>'Forest 2',3=>'Cave 1',4=>'Cave 2',5=>'Cave 3',6=>'Mine 1',7=>'Mine 2',8=>'Ruins 1',9=>'Ruins 2',10=>'Ruins 3'];
             $loc = $floors[$target] ?? "Floor $target";
-            return __('Survive and patrol the %s for 10 minutes', htmlspecialchars(__($loc)));
+            return __('[Ep 1] Survive and patrol the %s for 10 minutes', htmlspecialchars(__($loc)));
         case 'BOSS_ARENA':
             if ($target === 'ANY_DRAGON') return __('Defeat Any Dragon Boss (Forest, Sil, or Gol)');
             // Maps Boss integer Floor IDs to the boss name to ensure users know where to go
-            $bosses = [11=>'Dragon (Forest)', 12=>'De Rol Le (Caves)', 13=>'Vol Opt (Mines)', 14=>'Dark Falz (Ruins)', 17=>'Barba Ray (Temple)', 16=>'Gol Dragon (Spaceship)', 15=>'Gal Gryphon (CCA)', 18=>'Olga Flow (Seabed)'];
+            $bosses = [11=>'Dragon (Forest)', 12=>'De Rol Le (Caves)', 13=>'Vol Opt (Mines)', 14=>'Dark Falz (Ruins)', 17=>'Barba Ray (Temple)', 16=>'Gol Dragon (Spaceship)', 15=>'Gal Gryphon (CCA)', 18=>'Olga Flow (Seabed)', 19=>'Saint-Million (Crater)'];
+            $ep = ($target >= 15 && $target <= 18) ? '2' : ($target == 19 ? '4' : '1');
             $boss = $bosses[$target] ?? "Boss at Floor $target";
-            return __('Defeat the %s', htmlspecialchars(__($boss)));
+            return __('[Ep %s] Defeat the %s', $ep, htmlspecialchars(__($boss)));
+        case 'MENTOR_BOSS':
+            if ($target === 'ANY_DRAGON') return __('Mentor a player through Any Dragon Boss (Forest, Sil, or Gol)');
+            $bosses = [11=>'Dragon (Forest)', 12=>'De Rol Le (Caves)', 13=>'Vol Opt (Mines)', 14=>'Dark Falz (Ruins)', 17=>'Barba Ray (Temple)', 16=>'Gol Dragon (Spaceship)', 15=>'Gal Gryphon (CCA)', 18=>'Olga Flow (Seabed)', 19=>'Saint-Million (Crater)'];
+            $ep = ($target >= 15 && $target <= 18) ? '2' : ($target == 19 ? '4' : '1');
+            $boss = $bosses[$target] ?? "Boss at Floor $target";
+            return __('[Ep %s] Carry a lower-level player through the %s fight', $ep, htmlspecialchars(__($boss)));
+        case 'HARDCORE_MENTOR':
+            if ($target === 'ANY_DRAGON') return __('Hardcore Carry 3 lower-level players through Any Dragon Boss');
+            $bosses = [11=>'Dragon (Forest)', 12=>'De Rol Le (Caves)', 13=>'Vol Opt (Mines)', 14=>'Dark Falz (Ruins)', 17=>'Barba Ray (Temple)', 16=>'Gol Dragon (Spaceship)', 15=>'Gal Gryphon (CCA)', 18=>'Olga Flow (Seabed)', 19=>'Saint-Million (Crater)'];
+            $ep = ($target >= 15 && $target <= 18) ? '2' : ($target == 19 ? '4' : '1');
+            $boss = $bosses[$target] ?? "Boss at Floor $target";
+            return __('[Ep %s] Hardcore Carry 3 lower-level players through the %s fight', $ep, htmlspecialchars(__($boss)));
+        case 'DIVERSE_PARTY_BOSS':
+            if ($target === 'ANY_DRAGON') return __('Defeat Any Dragon Boss with a diverse party (HU, RA, FO)');
+            $bosses = [11=>'Dragon (Forest)', 12=>'De Rol Le (Caves)', 13=>'Vol Opt (Mines)', 14=>'Dark Falz (Ruins)', 17=>'Barba Ray (Temple)', 16=>'Gol Dragon (Spaceship)', 15=>'Gal Gryphon (CCA)', 18=>'Olga Flow (Seabed)', 19=>'Saint-Million (Crater)'];
+            $ep = ($target >= 15 && $target <= 18) ? '2' : ($target == 19 ? '4' : '1');
+            $boss = $bosses[$target] ?? "Boss at Floor $target";
+            return __('[Ep %s] Defeat the %s with a diverse party (HU, RA, FO)', $ep, htmlspecialchars(__($boss)));
+        case 'SPEEDRUN_BOSS':
+            list($target_floor, $time_limit) = explode('_', $target);
+            $bosses = [11=>'Dragon (Forest)', 12=>'De Rol Le (Caves)', 13=>'Vol Opt (Mines)', 14=>'Dark Falz (Ruins)', 17=>'Barba Ray (Temple)', 16=>'Gol Dragon (Spaceship)', 15=>'Gal Gryphon (CCA)', 18=>'Olga Flow (Seabed)', 19=>'Saint-Million (Crater)'];
+            $ep = ($target_floor >= 15 && $target_floor <= 18) ? '2' : ($target_floor == 19 ? '4' : '1');
+            $boss = $bosses[$target_floor] ?? "Boss at Floor $target_floor";
+            return __('[Ep %s] Defeat the %s in under %s seconds', $ep, htmlspecialchars(__($boss)), htmlspecialchars($time_limit));
+        case 'SPEEDRUN_FLOOR':
+            list($target_floor, $time_limit) = explode('_', $target);
+            $floors = [1=>'Forest 1',2=>'Forest 2',3=>'Cave 1',4=>'Cave 2',5=>'Cave 3',6=>'Mine 1',7=>'Mine 2',8=>'Ruins 1',9=>'Ruins 2',10=>'Ruins 3'];
+            $loc = $floors[$target_floor] ?? "Floor $target_floor";
+            $mins = floor($time_limit / 60);
+            $secs = $time_limit % 60;
+            if ($secs == 0) return __('[Ep 1] Clear %s in under %s minutes', htmlspecialchars(__($loc)), $mins);
+            return __('[Ep 1] Clear %s in under %s minutes and %s seconds', htmlspecialchars(__($loc)), $mins, $secs);
         default: return htmlspecialchars($type) . ": " . htmlspecialchars($target);
     }
 }
@@ -281,10 +314,10 @@ function parse_and_drop_items($accountId, $itemString) {
             $amount = intval($mmatch[1]);
             $data = str_repeat("\x00", 16);
             $data[0] = chr(0x04);
-            $data[4] = chr($amount & 0xFF);
-            $data[5] = chr(($amount >> 8) & 0xFF);
-            $data[6] = chr(($amount >> 16) & 0xFF);
-            $data[7] = chr(($amount >> 24) & 0xFF);
+            $data[12] = chr($amount & 0xFF);
+            $data[13] = chr(($amount >> 8) & 0xFF);
+            $data[14] = chr(($amount >> 16) & 0xFF);
+            $data[15] = chr(($amount >> 24) & 0xFF);
             $baseItemName = strtoupper(bin2hex($data));
         }
         

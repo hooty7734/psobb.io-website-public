@@ -123,6 +123,20 @@ function get_db()
             $db->exec("ALTER TABLE community_events ADD COLUMN top_3_reward_item_string TEXT");
         }
         
+        // Ensure character_name exists in player_missions to support per-character bounties
+        $hasCharName = false;
+        $result = $db->query("PRAGMA table_info(player_missions)");
+        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+            if ($row['name'] === 'character_name') {
+                $hasCharName = true;
+                break;
+            }
+        }
+        $result->finalize();
+        if (!$hasCharName) {
+            $db->exec("ALTER TABLE player_missions ADD COLUMN character_name TEXT");
+        }
+        
         // --- Auto-migration for Community Event Participants & Game Mods ---
         $db->exec("
             CREATE TABLE IF NOT EXISTS community_event_participants (
