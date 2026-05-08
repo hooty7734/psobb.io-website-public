@@ -254,7 +254,7 @@ async function resetClaim(e) {
         const res = await fetch('/api/admin_reset_claim.php', {
             method: 'POST',
             credentials: 'same-origin',
-            headers: {'Content-Type': 'application/json'},
+            headers: {'Content-Type': 'application/json', 'X-CSRF-Token': window.getCSRFToken()},
             body: JSON.stringify({account_id: aid, character_name: cname, count: count})
         });
         const data = await res.json();
@@ -293,7 +293,7 @@ async function execCommand(cmd) {
         const res = await fetch('/api/admin_exec.php', {
             method: 'POST',
             credentials: 'same-origin',
-            headers: {'Content-Type': 'application/json'},
+            headers: {'Content-Type': 'application/json', 'X-CSRF-Token': window.getCSRFToken()},
             body: JSON.stringify({command: cmd})
         });
         const data = await res.json();
