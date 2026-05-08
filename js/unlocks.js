@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     fetch('api/claim_unlock.php', {
                         method: 'POST',
                         credentials: 'same-origin',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.getCSRFToken() },
                         body: JSON.stringify({ level: currentClaimLevel, category: category })
                     })
                         .then(res => res.json())
@@ -382,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetch('api/claim_streak.php', {
                     method: 'POST',
                     credentials: 'same-origin',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.getCSRFToken() },
                     body: JSON.stringify({ milestone })
                 })
                     .then(res => res.json())
@@ -449,7 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetch('api/claim_daily.php', {
                     method: 'POST',
                     credentials: 'same-origin',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.getCSRFToken() },
                     body: JSON.stringify({})
                 })
                     .then(res => res.json())

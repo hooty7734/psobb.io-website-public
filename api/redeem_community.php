@@ -1,11 +1,4 @@
 <?php
-/**
- * PSOBB API: Redeem Community Event Reward
- * 
- * Allows a user to claim their reward for participating in a completed community event.
- * Validates event status, participant contribution, and handles Top 3 bonus selections
- * before dropping the items to the online character.
- */
 require_once 'config.php';
 
 if (ob_get_length()) ob_clean();

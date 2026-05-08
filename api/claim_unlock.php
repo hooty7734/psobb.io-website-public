@@ -6,6 +6,7 @@ require_once 'reward_tables.php';
 if (ob_get_length()) ob_clean();
 start_secure_session();
 header('Content-Type: application/json');
+verify_csrf_token($_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['csrf_token'] ?? '');
 
 if (empty($_SESSION['user']) || empty($_SESSION['user']['account_id'])) {
     http_response_code(401);
