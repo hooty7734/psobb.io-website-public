@@ -187,6 +187,30 @@ foreach ($clients as $client) {
         $last_boss_arena_time = time();
     }
 
+    // =====================================================================
+    // NEWSERV FLOOR ID REFERENCE (from /y/clients -> LocationFloor)
+    // Each episode reuses the same floor numbering starting from 0.
+    // =====================================================================
+    //  ID | Episode 1       | Episode 2       | Episode 4
+    // ----+-----------------+-----------------+-----------------
+    //   0 | Pioneer 2       | Lab             | Pioneer 2
+    //   1 | Forest 1        | VR Temple Alpha | Crater Route 1
+    //   2 | Forest 2        | VR Temple Beta  | Crater Route 2
+    //   3 | Cave 1          | VR Ship Alpha   | Crater Route 3
+    //   4 | Cave 2          | VR Ship Beta    | Crater Route 4
+    //   5 | Cave 3          | CCA             | Crater Interior
+    //   6 | Mine 1          | Jungle North    | Desert 1
+    //   7 | Mine 2          | Jungle South    | Desert 2
+    //   8 | Ruins 1         | Mountain        | Desert 3
+    //   9 | Ruins 2         | Seaside         | *Saint-Million*
+    //  10 | Ruins 3         | Seabed Upper    | —
+    //  11 | *Dragon*        | Seabed Lower    | *Sil Dragon*
+    //  12 | *De Rol Le*     | *Gal Gryphon*   | —
+    //  13 | *Vol Opt*       | *Olga Flow*     | —
+    //  14 | *Dark Falz*     | *Barba Ray*     | —
+    //  15 | —               | *Gol Dragon*    | —
+    // =====================================================================
+
     // --- DEBUG TELEMETRY: Global Boss Kill Tracking ---
     $boss_floors = [
         11 => 'Dragon',           // Ep1 Forest Boss
