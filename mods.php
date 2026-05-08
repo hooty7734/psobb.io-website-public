@@ -1,10 +1,4 @@
 <?php
-/**
- * PSOBB Website: Game Mods Directory
- * 
- * Displays approved client modifications (HUDs, Skins, Texture Packs) submitted 
- * by the community. Allows users to download, rate, and submit their own mods.
- */
 $page_title = 'Mods - PSOBB Private Server';
 $current_page = 'mods';
 include 'includes/header.php';
@@ -269,10 +263,7 @@ async function fetchMods() {
                     try {
                         const res = await fetch('api/rate_mod.php', {
                             method: 'POST',
-                            headers: { 
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                                'X-CSRF-Token': window.getCSRFToken()
-                            },
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRF-Token': window.getCSRFToken() },
                             body: formData.toString()
                         });
                         const data = await res.json();

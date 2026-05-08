@@ -12,6 +12,7 @@ if (empty($_SESSION['user']) || empty($_SESSION['user']['is_admin'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Server Console - psobb.io</title>
+    <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?? '' ?>">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Rajdhani:wght@300;500;700&display=swap">
     <style>
@@ -125,7 +126,7 @@ async function execCommand(cmd) {
         const res = await fetch('../api/admin_exec.php', {
             method: 'POST',
             credentials: 'same-origin',
-            headers: {'Content-Type': 'application/json'},
+            headers: {'Content-Type': 'application/json', 'X-CSRF-Token': (document.querySelector('meta[name="csrf-token"]') || {}).content || ''},
             body: JSON.stringify({command: cmd})
         });
         const data = await res.json();

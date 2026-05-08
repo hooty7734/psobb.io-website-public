@@ -244,7 +244,7 @@ async function feedMag(feedItem) {
         const res = await fetch('/api/mag_feed.php', {
             method: 'POST',
             credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.getCSRFToken() },
             body: JSON.stringify({
                 mag_item_id: selectedMagId,
                 feed_item_id: feedItem.item_id,
