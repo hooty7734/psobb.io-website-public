@@ -220,8 +220,74 @@ function showDashboard(user) {
 
         // Bank Swap Logic
         loadCharacterBankSwitcher(user.AccountID);
+
+        // Load existing display name into the alias input
+        loadDisplayName();
     }
 }
+
+async function loadDisplayName() {
+    const input = document.getElementById('display-name-input');
+    if (!input) return;
+    try {
+        const res = await fetch('/api/get_display_name.php', { credentials: 'same-origin' });
+        const data = await res.json();
+        if (data.display_name) {
+            input.value = data.display_name;
+        }
+    } catch (e) { /* silent */ }
+}
+
+window.saveDisplayName = async function () {
+    const input = document.getElementById('display-name-input');
+    const btn = document.getElementById('btn-save-alias');
+    const msgEl = document.getElementById('alias-message');
+    const name = input.value.trim();
+
+    if (!name) {
+        msgEl.textContent = 'Please enter a display name.';
+        msgEl.style.color = '#ff4444';
+        msgEl.style.display = 'block';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+    msgEl.style.display = 'none';
+
+    try {
+        const response = await fetch('/api/set_display_name.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': window.getCSRFToken()
+            },
+            body: JSON.stringify({ display_name: name })
+        });
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            msgEl.textContent = '✓ ' + data.message;
+            msgEl.style.color = '#00C851';
+            msgEl.style.display = 'block';
+            btn.textContent = 'Saved!';
+            setTimeout(() => { btn.disabled = false; btn.textContent = 'Save'; }, 2000);
+        } else {
+            msgEl.textContent = data.error || 'Failed to update.';
+            msgEl.style.color = '#ff4444';
+            msgEl.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = 'Save';
+        }
+    } catch (e) {
+        msgEl.textContent = 'Connection error.';
+        msgEl.style.color = '#ff4444';
+        msgEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Save';
+    }
+};
 
 async function loadActiveCharacterSectionId(accountId) {
     const secIdContainer = document.getElementById('section-id-change-container');

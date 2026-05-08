@@ -122,6 +122,14 @@ include 'includes/header.php';
                             </div>
         
                             <p style="font-size: 0.9em; opacity: 0.7; margin-bottom: 0.5rem; margin-top: 1rem;"><?= __('Actions') ?></p>
+                            <div style="margin-bottom: 1rem; padding: 12px; border: 1px solid rgba(0, 255, 255, 0.2); background: rgba(0, 255, 255, 0.05); border-radius: 6px;">
+                                <label style="font-size: 0.85em; color: #aaa; display: block; margin-bottom: 6px;"><?= __('Leaderboard Display Name') ?></label>
+                                <div style="display: flex; gap: 8px;">
+                                    <input type="text" id="display-name-input" placeholder="<?= __('Enter alias (2-20 chars)') ?>" maxlength="20" style="flex: 1; padding: 8px; background: rgba(0,0,0,0.5); border: 1px solid rgba(0,255,255,0.3); color: #fff; border-radius: 4px; font-family: 'Share Tech Mono', monospace;">
+                                    <button onclick="saveDisplayName()" id="btn-save-alias" class="dl-btn" style="padding: 8px 16px; border-color: #00ffff; background: rgba(0,255,255,0.15); color: #00ffff; white-space: nowrap;"><?= __('Save') ?></button>
+                                </div>
+                                <div id="alias-message" style="margin-top: 6px; font-size: 0.85em; display: none;"></div>
+                            </div>
                             <button onclick="requestChangePassword()" class="dl-btn" style="width:100%; margin-bottom: 1rem; box-sizing: border-box;"><?= __('Change Password') ?></button>
                             
                             <p style="font-size: 0.9em; opacity: 0.7; margin-bottom: 0.5rem; color:#ff4444; margin-top: 1rem;"><?= __('Danger Zone') ?></p>

@@ -61,6 +61,20 @@ function get_db()
             $db->exec("ALTER TABLE users ADD COLUMN language TEXT DEFAULT 'en'");
         }
 
+        // Ensure display_name column exists (leaderboard alias)
+        $hasDisplayName = false;
+        $result = $db->query("PRAGMA table_info(users)");
+        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+            if ($row['name'] === 'display_name') {
+                $hasDisplayName = true;
+                break;
+            }
+        }
+        $result->finalize();
+        if (!$hasDisplayName) {
+            $db->exec("ALTER TABLE users ADD COLUMN display_name TEXT");
+        }
+
         // --- Auto-migration for Bounty/Missions & Streaks tables ---
         $db->exec("
             CREATE TABLE IF NOT EXISTS missions (
