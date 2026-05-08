@@ -175,14 +175,27 @@ foreach ($clients as $client) {
     // Delayed EXP Sync Memory
     $last_boss_arena = $prev_state['last_boss_arena'] ?? null;
     $last_boss_arena_time = $prev_state['last_boss_arena_time'] ?? 0;
-    // Note: floor 15 (0x0F) is the lobby, NOT Gol Dragon. Do not include it.
-    if (in_array($curr_f, [11, 12, 13, 14, 9, 16, 17, 18])) {
+    // Track when a player is in a boss arena for delayed EXP sync detection.
+    // These are the RAW LocationFloor values as reported by newserv /y/clients:
+    //   Ep1: 11=Dragon, 12=De Rol Le, 13=Vol Opt, 14=Dark Falz
+    //   Ep2: 12=Gal Gryphon, 13=Olga Flow, 14=Barba Ray, 15=Gol Dragon
+    //   Ep4: 9=Saint-Million
+    // Note: Floor IDs overlap across episodes (e.g. 12 = De Rol Le in Ep1, Gal Gryphon in Ep2).
+    // This is acceptable because we only use these for EXP-delta-based kill detection.
+    if (in_array($curr_f, [11, 12, 13, 14, 15, 9])) {
         $last_boss_arena = $curr_f;
         $last_boss_arena_time = time();
     }
 
     // --- DEBUG TELEMETRY: Global Boss Kill Tracking ---
-    $boss_floors = [11 => 'Dragon', 12 => 'De Rol Le / Gal Gryphon', 13 => 'Vol Opt / Olga Flow', 14 => 'Dark Falz / Barba Ray', 15 => 'Gol Dragon', 9 => 'Saint-Million'];
+    $boss_floors = [
+        11 => 'Dragon',           // Ep1 Forest Boss
+        12 => 'De Rol Le / Gal Gryphon', // Ep1 Cave Boss / Ep2 CCA Boss (same floor ID)
+        13 => 'Vol Opt / Olga Flow',     // Ep1 Mine Boss / Ep2 Seabed Boss
+        14 => 'Dark Falz / Barba Ray',   // Ep1 Ruins Boss / Ep2 Temple Boss
+        15 => 'Gol Dragon',              // Ep2 Spaceship Boss
+        9  => 'Saint-Million'            // Ep4 Boss
+    ];
     $floor = $curr_f;
     $prev_floor = (int)($prev_state['floor'] ?? -1);
     
@@ -294,7 +307,7 @@ foreach ($clients as $client) {
             $was_fast_kill = false;
 
             if ($target_floor === 'ANY_DRAGON') {
-                $dragon_floors = [11, 15, 16]; // 11 = Forest/Sil, 15/16 = Gol Dragon (depending on NewServ mapping)
+                $dragon_floors = [11, 15]; // 11 = Ep1 Dragon + Ep4 Sil Dragon, 15 = Ep2 Gol Dragon
                 $recent_boss_fight = in_array($curr_f, $dragon_floors) || in_array($prev_f, $dragon_floors);
                 
                 // Fast-Kill Race Condition Fix:
@@ -307,13 +320,20 @@ foreach ($clients as $client) {
                 }
                 $recent_boss_fight = $recent_boss_fight || $was_fast_kill;
             } else {
-                $target_floor = (int)$target_floor;
-                // Map Episode 2 Boss "Fake" Floor IDs back to actual PSO Client Floor IDs
-                if ($target_floor === 15) $target_floor = 12; // Gal Gryphon -> De Rol Le Floor
-                elseif ($target_floor === 16) $target_floor = 15; // Gol Dragon -> VR Spaceship Final
-                elseif ($target_floor === 17) $target_floor = 14; // Barba Ray -> Dark Falz Floor
-                elseif ($target_floor === 18) $target_floor = 13; // Olga Flow -> Vol Opt Floor
-                elseif ($target_floor === 19) $target_floor = 9;  // Saint-Million -> Meteor Impact Site
+                // The admin panel uses "Fake" Floor IDs (15=Gal Gryphon, 16=Gol Dragon, etc.)
+                // to distinguish Ep2 bosses from Ep1 bosses. We must remap them back to the
+                // REAL LocationFloor values that newserv /y/clients reports.
+                //   Admin Panel -> Real LocationFloor:
+                //     15 (Gal Gryphon) -> 12 (same floor as De Rol Le)
+                //     16 (Gol Dragon)  -> 15
+                //     17 (Barba Ray)   -> 14 (same floor as Dark Falz)
+                //     18 (Olga Flow)   -> 13 (same floor as Vol Opt)
+                //     19 (Saint-Million) -> 9
+                if ($target_floor === 15) $target_floor = 12;
+                elseif ($target_floor === 16) $target_floor = 15;
+                elseif ($target_floor === 17) $target_floor = 14;
+                elseif ($target_floor === 18) $target_floor = 13;
+                elseif ($target_floor === 19) $target_floor = 9;
 
                 // Fast-Kill Race Condition Fix:
                 if (isset($fast_kill_preceding[$target_floor]) && in_array($prev_f, $fast_kill_preceding[$target_floor])) {

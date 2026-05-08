@@ -105,11 +105,41 @@ foreach ($clients as $client) {
     // Delayed EXP Sync Memory
     $last_boss_arena = $prev_state['last_boss_arena'] ?? null;
     $last_boss_arena_time = $prev_state['last_boss_arena_time'] ?? 0;
-    // Note: floor 15 (0x0F) is the lobby, NOT Gol Dragon. Do not include it.
-    if (in_array($curr_f, [11, 12, 13, 14, 9, 16, 17, 18])) {
+    // Track when a player is in a boss arena for delayed EXP sync detection.
+    // These are the RAW LocationFloor values as reported by newserv /y/clients:
+    //   Ep1: 11=Dragon, 12=De Rol Le, 13=Vol Opt, 14=Dark Falz
+    //   Ep2: 12=Gal Gryphon, 13=Olga Flow, 14=Barba Ray, 15=Gol Dragon
+    //   Ep4: 9=Saint-Million
+    // Note: Floor IDs overlap across episodes (e.g. 12 = De Rol Le in Ep1, Gal Gryphon in Ep2).
+    // This is acceptable because we only use these for EXP-delta-based kill detection.
+    if (in_array($curr_f, [11, 12, 13, 14, 15, 9])) {
         $last_boss_arena = $curr_f;
         $last_boss_arena_time = time();
     }
+
+    // =====================================================================
+    // NEWSERV FLOOR ID REFERENCE (from /y/clients -> LocationFloor)
+    // Each episode reuses the same floor numbering starting from 0.
+    // =====================================================================
+    //  ID | Episode 1       | Episode 2       | Episode 4
+    // ----+-----------------+-----------------+-----------------
+    //   0 | Pioneer 2       | Lab             | Pioneer 2
+    //   1 | Forest 1        | VR Temple Alpha | Crater Route 1
+    //   2 | Forest 2        | VR Temple Beta  | Crater Route 2
+    //   3 | Cave 1          | VR Ship Alpha   | Crater Route 3
+    //   4 | Cave 2          | VR Ship Beta    | Crater Route 4
+    //   5 | Cave 3          | CCA             | Crater Interior
+    //   6 | Mine 1          | Jungle North    | Desert 1
+    //   7 | Mine 2          | Jungle South    | Desert 2
+    //   8 | Ruins 1         | Mountain        | Desert 3
+    //   9 | Ruins 2         | Seaside         | *Saint-Million*
+    //  10 | Ruins 3         | Seabed Upper    | —
+    //  11 | *Dragon*        | Seabed Lower    | *Sil Dragon*
+    //  12 | *De Rol Le*     | *Gal Gryphon*   | —
+    //  13 | *Vol Opt*       | *Olga Flow*     | —
+    //  14 | *Dark Falz*     | *Barba Ray*     | —
+    //  15 | —               | *Gol Dragon*    | —
+    // =====================================================================
 
     // Fetch user language preference (must be before milestone notifications)
     $lang_stmt = $db->prepare("SELECT language FROM users WHERE account_id = :acc");
@@ -299,7 +329,7 @@ foreach ($clients as $client) {
             ];
 
             if ($target_floor === 'ANY_DRAGON') {
-                $dragon_floors = [11, 15, 16]; // 11 = Forest/Sil, 15/16 = Gol Dragon
+                $dragon_floors = [11, 15]; // 11 = Ep1 Dragon + Ep4 Sil Dragon, 15 = Ep2 Gol Dragon
                 $recent_boss_fight = in_array($curr_f, $dragon_floors) || in_array($prev_f, $dragon_floors);
                 
                 // Fast-Kill Race Condition Fix:
