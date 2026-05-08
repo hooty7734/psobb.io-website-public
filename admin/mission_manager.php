@@ -218,7 +218,7 @@ while ($ce = $tele_res->fetchArray(SQLITE3_ASSOC)) {
     <div class="admin-grid">
         <!-- Add Mission Form -->
         <div class="admin-card">
-            <h3>Create Global Mission</h3>
+            <h3 style="color: #00bfff;">Create Daily Bounty Template</h3>
             <form method="POST">
                 <input type="hidden" name="action" value="add_mission">
                 
