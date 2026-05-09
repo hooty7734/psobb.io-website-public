@@ -30,20 +30,6 @@ include 'includes/header.php';
         <div class="layout-grid">
             <section class="main-content">
                 <!-- AUTO-MISSION-START -->
-                <article class="news-item animate-fade-in">
-                    <div class="event-badge" style="background: #00ff88; color: #000; padding: 2px 8px; display: inline-block; border-radius: 4px; font-size: 0.8rem; margin-bottom: 0.5rem; font-weight: bold;"><?= __('Active Event') ?></div>
-                    <h3 style="color: var(--pso-orange);"><?= __('Deep Scan Titan 130: Triple EXP') ?></h3>
-                    <p><strong><?= __('Mission Window:') ?></strong> May 1, 2026 (12 AM PST) - May 4, 2026 (12 AM PST)</p>
-                    <p><?= __('The military has declassified restricted combat maneuvers for all Hunters. All enemies defeated this weekend will grant **3x Experience Points**!') ?></p>
-                    <div style="font-size: 0.85rem; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px; border-left: 3px solid var(--pso-blue);">
-                        <strong><?= __('Global Start Times:') ?></strong><br>
-                        🇺🇸 PST: Friday, 12:00 AM<br>
-                        🇺🇸 EST: Friday, 3:00 AM<br>
-                        🇬🇧 GMT: Friday, 8:00 AM<br>
-                        🇯🇵 JST: Friday, 5:00 PM
-                    </div>
-                    <p style="margin-top: 10px;"><em><?= __('Good luck down there, Hunters! Stay safe on the surface.') ?></em></p>
-                </article>
                 <!-- AUTO-MISSION-END -->
 
                 <article class="news-item">
