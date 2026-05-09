@@ -16,8 +16,19 @@ $data_json = false;
 
 // Check cache first
 if (file_exists($cache_file) && (time() - filemtime($cache_file)) < $cache_ttl) {
-    $data_json = file_get_contents($cache_file);
-} else {
+    $cached = file_get_contents($cache_file);
+    $decoded_cache = @json_decode($cached, true);
+    if ($decoded_cache !== null) {
+        if (!isset($decoded_cache['success'])) {
+            $data_json = json_encode(["success" => true, "data" => $decoded_cache]);
+            @file_put_contents($cache_file, $data_json); // Update cache with wrapped version
+        } else {
+            $data_json = $cached;
+        }
+    }
+}
+
+if ($data_json === false) {
     // Attempt to fetch from Newserv
     // Increase timeout since user mentioned it's slow
     $ctx = stream_context_create(['http' => ['timeout' => 15]]);
@@ -30,7 +41,12 @@ if (file_exists($cache_file) && (time() - filemtime($cache_file)) < $cache_ttl) 
         
         $decoded = @json_decode($clean_json, true);
         if ($decoded !== null) {
-            $data_json = $clean_json; // Save the cleaned JSON
+            // Newserv returns a raw array. Wrap it in our standard API response.
+            if (!isset($decoded['success'])) {
+                $data_json = json_encode(["success" => true, "data" => $decoded]);
+            } else {
+                $data_json = $clean_json;
+            }
             // Save to cache
             @file_put_contents($cache_file, $data_json);
         } else {
