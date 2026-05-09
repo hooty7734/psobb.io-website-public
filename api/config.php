@@ -60,8 +60,62 @@ $BOT_API_SECRET = $_ENV['BOT_API_SECRET'] ?? '';
 // Discord Bot Token (used by cron_streak_alert.php for DM alerts)
 $BOT_TOKEN = $_ENV['BOT_TOKEN'] ?? '';
 
+class SQLiteSessionHandler implements SessionHandlerInterface {
+    private $db;
+
+    public function __construct() {
+        require_once __DIR__ . '/db.php';
+        $this->db = get_db();
+    }
+
+    #[\ReturnTypeWillChange]
+    public function open($path, $name) {
+        return true;
+    }
+
+    #[\ReturnTypeWillChange]
+    public function close() {
+        return true;
+    }
+
+    #[\ReturnTypeWillChange]
+    public function read($id) {
+        $stmt = $this->db->prepare('SELECT data FROM sessions WHERE id = :id');
+        $stmt->bindValue(':id', $id, SQLITE3_TEXT);
+        $result = $stmt->execute();
+        if ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+            return $row['data'];
+        }
+        return '';
+    }
+
+    #[\ReturnTypeWillChange]
+    public function write($id, $data) {
+        $stmt = $this->db->prepare('REPLACE INTO sessions (id, data, last_accessed) VALUES (:id, :data, :time)');
+        $stmt->bindValue(':id', $id, SQLITE3_TEXT);
+        $stmt->bindValue(':data', $data, SQLITE3_TEXT);
+        $stmt->bindValue(':time', time(), SQLITE3_INTEGER);
+        return (bool)$stmt->execute();
+    }
+
+    #[\ReturnTypeWillChange]
+    public function destroy($id) {
+        $stmt = $this->db->prepare('DELETE FROM sessions WHERE id = :id');
+        $stmt->bindValue(':id', $id, SQLITE3_TEXT);
+        return (bool)$stmt->execute();
+    }
+
+    #[\ReturnTypeWillChange]
+    public function gc($max_lifetime) {
+        $stmt = $this->db->prepare('DELETE FROM sessions WHERE last_accessed < :old');
+        $stmt->bindValue(':old', time() - $max_lifetime, SQLITE3_INTEGER);
+        $stmt->execute();
+        return $this->db->changes();
+    }
+}
+
 /**
- * Initializes a secure, HTTP-only session with a dedicated save path.
+ * Initializes a secure, HTTP-only session using the SQLite backend.
  * 
  * Sets the session duration to 30 days and automatically generates a 
  * 32-byte CSRF token upon session creation to protect against Cross-Site Request Forgery.
@@ -70,14 +124,18 @@ $BOT_TOKEN = $_ENV['BOT_TOKEN'] ?? '';
  */
 function start_secure_session() {
     if (session_status() === PHP_SESSION_NONE) {
-        $session_dir = sys_get_temp_dir() . '/psobb_sessions';
-        if (!is_dir($session_dir)) {
-            @mkdir($session_dir, 0777, true);
-        }
-        session_save_path($session_dir);
+        // Register the custom SQLite session handler
+        $handler = new SQLiteSessionHandler();
+        session_set_save_handler($handler, true);
         
+        // Ensure sessions last 30 days
         ini_set('session.cookie_httponly', 1);
         ini_set('session.gc_maxlifetime', 86400 * 30);
+        
+        // Enable PHP's internal GC probability so it cleans old DB rows
+        ini_set('session.gc_probability', 1);
+        ini_set('session.gc_divisor', 100);
+
         session_set_cookie_params(86400 * 30, '/');
         session_start();
         
@@ -97,7 +155,7 @@ function start_secure_session() {
  * @return void
  */
 function verify_csrf_token($token) {
-    if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+    if (empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], trim($token))) {
         http_response_code(403);
         echo json_encode(['success' => false, 'error' => 'Invalid or missing CSRF token.']);
         exit;

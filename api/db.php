@@ -187,6 +187,12 @@ function get_db()
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(mod_id, account_id)
             );
+            
+            CREATE TABLE IF NOT EXISTS sessions (
+                id TEXT PRIMARY KEY,
+                data TEXT,
+                last_accessed INTEGER NOT NULL
+            );
         ");
 
         // Clean up legacy draft table if it exists to prevent conflicts

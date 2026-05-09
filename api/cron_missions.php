@@ -382,7 +382,7 @@ foreach ($clients as $client) {
                 $recent_boss_fight = $recent_boss_fight || $was_fast_kill;
                 
                 // Episode validation for ANY_DRAGON: pre_boss_floor must be from Forest, VR Ship, or Crater
-                $valid_dragon_preceding = array_merge([1, 2], [3, 4], [1, 2, 3, 4, 5, 6, 7, 8]);
+                $valid_dragon_preceding = array_merge([1, 2], [3, 4], [5, 6, 7, 8]);
                 if ($recent_boss_fight && $pre_boss_floor >= 0 && !in_array($pre_boss_floor, $valid_dragon_preceding)) {
                     echo "[CRON] ANY_DRAGON rejected: pre_boss_floor={$pre_boss_floor} not valid for any dragon\n";
                     $recent_boss_fight = false;

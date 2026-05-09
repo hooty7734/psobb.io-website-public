@@ -24,11 +24,18 @@ if (file_exists($cache_file) && (time() - filemtime($cache_file)) < $cache_ttl) 
     $res = @file_get_contents($url, false, $ctx);
     
     if ($res !== false) {
-        $decoded = @json_decode($res, true);
+        // Fix non-standard hex syntax: Newserv's JSON might contain unquoted hex values like 0x010203
+        // Standard json_decode() will fail on these, so we wrap them in quotes first.
+        $clean_json = preg_replace('/(?<=:|,|\s|\[)(0x[a-fA-F0-9]+)(?=,|\]|\}|\s)/', '"$1"', $res);
+        
+        $decoded = @json_decode($clean_json, true);
         if ($decoded !== null) {
-            $data_json = $res;
+            $data_json = $clean_json; // Save the cleaned JSON
             // Save to cache
             @file_put_contents($cache_file, $data_json);
+        } else {
+            // Log if it still fails to parse
+            error_log("[Drops API] Failed to parse JSON even after hex cleanup. JSON Error: " . json_last_error_msg());
         }
     }
 }
