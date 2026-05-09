@@ -9,7 +9,7 @@ $cache_dir = __DIR__ . '/../scratch';
 if (!is_dir($cache_dir)) {
     @mkdir($cache_dir, 0777, true);
 }
-$cache_file = $cache_dir . '/rare_table_cache.json';
+$cache_file = $cache_dir . '/rare_table_cache_v2.json';
 $cache_ttl = 86400; // 24 hours
 
 $data_json = false;
