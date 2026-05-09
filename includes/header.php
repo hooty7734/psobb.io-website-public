@@ -38,9 +38,12 @@ start_secure_session();
                 <li><a href="/downloads.php" class="<?php echo ($current_page == 'downloads') ? 'active' : ''; ?>"><?= __('Downloads') ?></a></li>
                 <li><a href="/mods.php" class="<?php echo ($current_page == 'mods') ? 'active' : ''; ?>"><?= __('Mods') ?></a></li>
                 <li class="dropdown">
-                    <a href="javascript:void(0)" class="dropbtn <?php echo in_array($current_page, ['stats', 'team', 'about', 'mission_manager', 'telemetry']) ? 'active' : ''; ?>"><?= __('Tools') ?> <i class="fas fa-caret-down"></i></a>
+                    <a href="javascript:void(0)" class="dropbtn <?php echo in_array($current_page, ['stats', 'drops', 'decryption', 'quest-editor', 'top_hunters', 'team', 'about', 'mission_manager', 'telemetry']) ? 'active' : ''; ?>"><?= __('Tools') ?> <i class="fas fa-caret-down"></i></a>
                     <div class="dropdown-content">
                         <a href="/stats.php" class="<?php echo ($current_page == 'stats') ? 'active' : ''; ?>"><?= __('Stats') ?></a>
+                        <a href="/drops.php" class="<?php echo ($current_page == 'drops') ? 'active' : ''; ?>"><?= __('Drops') ?></a>
+                        <a href="/decryption.php" class="<?php echo ($current_page == 'decryption') ? 'active' : ''; ?>"><?= __('Decryption') ?></a>
+                        <a href="/quest-editor" class="<?php echo ($current_page == 'quest-editor') ? 'active' : ''; ?>"><?= __('Quest Editor') ?></a>
                         <a href="/top_hunters.php" class="<?php echo ($current_page == 'top_hunters') ? 'active' : ''; ?>"><?= __('Top Hunters') ?></a>
                         <a href="/team.php" id="nav-team-link" style="display: none;" class="<?php echo ($current_page == 'team') ? 'active' : ''; ?>"><?= __('Team') ?></a>
                         <?php if (!empty($_SESSION['user']['is_admin'])): ?>

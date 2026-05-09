@@ -1,0 +1,312 @@
+/* psobb-website/css/drops.css */
+
+.drops-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #e0e0e0;
+}
+
+.drops-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.drops-header h1 {
+    font-size: 2.5rem;
+    color: #00ffff;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    margin-bottom: 0.5rem;
+}
+
+/* Glassmorphic Filter Panel */
+.drops-filters {
+    background: rgba(10, 15, 25, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.filter-group label {
+    font-size: 0.85rem;
+    color: #00ffff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: bold;
+}
+
+/* Toggle Buttons */
+.toggle-btn-group {
+    display: flex;
+    gap: 5px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.toggle-btn {
+    background: transparent;
+    border: none;
+    color: #aaa;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.toggle-btn.active {
+    background: rgba(0, 255, 255, 0.2);
+    color: #00ffff;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+}
+
+/* Section ID Toggles */
+.section-id-toggles {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 5px;
+    width: 100%;
+}
+
+.sid-toggle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px 4px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    opacity: 0.6;
+}
+
+.sid-toggle img {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 4px;
+    transition: transform 0.2s;
+}
+
+.sid-toggle span {
+    font-size: 0.65rem;
+    font-weight: bold;
+}
+
+.sid-toggle:hover {
+    opacity: 0.8;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.sid-toggle.active {
+    opacity: 1;
+    border-color: #00ffff;
+    background: rgba(0, 255, 255, 0.1);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+}
+
+.sid-toggle.active img {
+    transform: scale(1.15);
+}
+
+/* Search Bar */
+.search-bar-container {
+    width: 100%;
+    position: relative;
+}
+
+.search-bar-container i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #00ffff;
+}
+
+.drops-search {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    color: #fff;
+    padding: 12px 12px 12px 40px;
+    border-radius: 8px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1rem;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+.drops-search:focus {
+    outline: none;
+    border-color: #00ffff;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+/* Results Area */
+.drops-results-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: #aaa;
+}
+
+.drops-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
+}
+
+/* Drop Card Animations */
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.drop-card {
+    background: rgba(15, 20, 30, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    animation: slideUpFade 0.4s ease forwards;
+    opacity: 0;
+}
+
+.drop-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    border-color: rgba(0, 255, 255, 0.4);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(0, 255, 255, 0.15);
+    z-index: 10;
+}
+
+.dc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 8px;
+}
+
+.dc-item-name {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #ffaa00; /* Rare item color */
+    text-shadow: 0 0 5px rgba(255, 170, 0, 0.4);
+}
+
+.dc-monster {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    color: #ddd;
+}
+
+.dc-monster i {
+    color: #ff4444;
+}
+
+.dc-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #aaa;
+}
+
+.dc-rate-box {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 6px 10px;
+    border-radius: 6px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dc-rate-box .rate-frac {
+    color: #00ffff;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.dc-rate-box .rate-pct {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+/* Loading state */
+.drops-loading {
+    text-align: center;
+    padding: 50px;
+    color: #00ffff;
+    font-size: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.drops-loading i {
+    font-size: 2.5rem;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* Section ID specific colors for cards */
+.drop-card.sid-viridia { border-left: 4px solid #33cc33; }
+.drop-card.sid-greenill { border-left: 4px solid #00cc00; }
+.drop-card.sid-skyly { border-left: 4px solid #00cccc; }
+.drop-card.sid-bluefull { border-left: 4px solid #3366ff; }
+.drop-card.sid-purplenum { border-left: 4px solid #9933ff; }
+.drop-card.sid-pinkal { border-left: 4px solid #ff33cc; }
+.drop-card.sid-redria { border-left: 4px solid #ff3333; }
+.drop-card.sid-oran { border-left: 4px solid #ff9900; }
+.drop-card.sid-yellowboze { border-left: 4px solid #cccc00; }
+.drop-card.sid-whitill { border-left: 4px solid #ffffff; }
+
+@media (max-width: 768px) {
+    .section-id-toggles {
+        grid-template-columns: repeat(5, 1fr);
+    }
+    .filter-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
