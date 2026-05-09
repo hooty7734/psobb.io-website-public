@@ -126,6 +126,8 @@ $section_ids = ["Viridia", "Greenill", "Skyly", "Bluefull", "Purplenum", "Pinkal
     <div id="drops-grid" class="drops-grid">
         <!-- Rendered via drops.js -->
     </div>
+    
+    <div id="scroll-sentinel" style="height: 1px; width: 100%;"></div>
 </main>
 
 <script src="/js/drops.js?v=<?php echo time(); ?>"></script>

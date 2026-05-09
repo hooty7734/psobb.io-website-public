@@ -1,6 +1,10 @@
 // psobb-website/js/drops.js
 
 let allDrops = [];
+let filteredDrops = [];
+let renderChunkIndex = 0;
+const CHUNK_SIZE = 40;
+
 let currentFilters = {
     episode: 'All',
     difficulty: 'Ultimate',
@@ -22,9 +26,22 @@ const SUBTYPES = {
 
 document.addEventListener('DOMContentLoaded', async () => {
     initUIControls();
+    initScrollObserver();
     await fetchActiveCharacter();
     fetchDropData();
 });
+
+function initScrollObserver() {
+    const sentinel = document.getElementById('scroll-sentinel');
+    if (!sentinel) return;
+    
+    const observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+            renderNextChunk();
+        }
+    }, { rootMargin: '300px' });
+    observer.observe(sentinel);
+}
 
 async function fetchActiveCharacter() {
     const userStr = sessionStorage.getItem('psobb_user');
@@ -205,7 +222,7 @@ function renderDrops() {
     const info = document.getElementById('drops-info-text');
     
     // Filter data
-    const filtered = allDrops.filter(drop => {
+    filteredDrops = allDrops.filter(drop => {
         // Ep
         if (currentFilters.episode !== 'All' && drop.episode.toString() !== currentFilters.episode.toString()) return false;
         
@@ -244,7 +261,7 @@ function renderDrops() {
     });
 
     // Sort logic
-    filtered.sort((a, b) => {
+    filteredDrops.sort((a, b) => {
         if (currentFilters.sortBy === 'rarity_asc') {
             return a.rate_percent - b.rate_percent;
         } else if (currentFilters.sortBy === 'rarity_desc') {
@@ -262,19 +279,29 @@ function renderDrops() {
     });
 
     if (info) {
-        info.textContent = `Showing ${filtered.length} drops`;
+        info.textContent = `Showing ${filteredDrops.length} drops`;
     }
 
     container.innerHTML = '';
+    renderChunkIndex = 0;
 
-    if (filtered.length === 0) {
+    if (filteredDrops.length === 0) {
         container.innerHTML = '<div style="color:#aaa; text-align:center; padding: 40px; grid-column: 1/-1;">No drops found matching these filters.</div>';
         return;
     }
 
-    // Render cards with staggered animation
-    filtered.forEach((drop, index) => {
-        const delay = Math.min(index * 0.03, 1.5); // Cap delay so it doesn't take forever
+    renderNextChunk();
+}
+
+function renderNextChunk() {
+    if (renderChunkIndex >= filteredDrops.length) return;
+
+    const container = document.getElementById('drops-grid');
+    const chunk = filteredDrops.slice(renderChunkIndex, renderChunkIndex + CHUNK_SIZE);
+
+    // Render cards with staggered animation for just this chunk
+    chunk.forEach((drop, index) => {
+        const delay = Math.min(index * 0.03, 1.5); 
         
         const card = document.createElement('div');
         card.className = `drop-card sid-${drop.section_id.toLowerCase()}`;
@@ -313,4 +340,6 @@ function renderDrops() {
         
         container.appendChild(card);
     });
+
+    renderChunkIndex += CHUNK_SIZE;
 }

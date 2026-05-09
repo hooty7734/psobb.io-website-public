@@ -46,12 +46,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const loginBtn = document.querySelector('.login-nav-btn');
         if (loginBtn) loginBtn.textContent = 'Dashboard';
 
-        // MAG Feeder link - admin only
+        const signupBtn = document.querySelector('.signup-nav-btn');
+        if (signupBtn) signupBtn.style.display = 'none';
+
+        // Admin only links
         try {
             const userData = JSON.parse(userStr);
             if (userData && userData.isAdmin) {
-                const magLink = document.getElementById('nav-magfeeder-link');
-                if (magLink) magLink.style.display = '';
+                const adminDropdown = document.getElementById('nav-admin-dropdown');
+                if (adminDropdown) adminDropdown.style.display = '';
             }
         } catch (e) { }
     }
@@ -78,6 +81,33 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.news-item, .sidebar-widget, .server-status-widget').forEach(el => {
         el.style.opacity = '0'; // Initial hidden state
         observer.observe(el);
+    });
+
+    // Mobile Menu Toggle
+    const mobileMenu = document.getElementById('mobile-menu');
+    const navUl = document.querySelector('nav ul');
+    if (mobileMenu && navUl) {
+        mobileMenu.addEventListener('click', () => {
+            navUl.classList.toggle('active');
+        });
+    }
+
+    // Dropdown toggling for mobile
+    const dropBtns = document.querySelectorAll('.dropbtn');
+    dropBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768) {
+                e.preventDefault();
+                const parentDropdown = btn.closest('.dropdown');
+                
+                // Close other open dropdowns
+                document.querySelectorAll('.dropdown.mobile-open').forEach(d => {
+                    if (d !== parentDropdown) d.classList.remove('mobile-open');
+                });
+                
+                parentDropdown.classList.toggle('mobile-open');
+            }
+        });
     });
 });
 
