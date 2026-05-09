@@ -41,12 +41,81 @@ if ($data_json === false) {
         
         $decoded = @json_decode($clean_json, true);
         if ($decoded !== null) {
-            // Newserv returns a raw array. Wrap it in our standard API response.
-            if (!isset($decoded['success'])) {
-                $data_json = json_encode(["success" => true, "data" => $decoded]);
-            } else {
-                $data_json = $clean_json;
+            // Flatten Newserv's deeply nested JSON array and map item names
+            $flat_drops = [];
+            
+            // Load and flip item map (Hex -> Name)
+            $item_map_file = __DIR__ . '/item_map.json';
+            $hex_to_name = [];
+            if (file_exists($item_map_file)) {
+                $item_map = json_decode(file_get_contents($item_map_file), true);
+                if (is_array($item_map)) {
+                    foreach ($item_map as $name => $hex) {
+                        // Normalize hex by padding to 6 characters
+                        $normalized_hex = strtoupper(str_pad($hex, 6, '0', STR_PAD_LEFT));
+                        // Title case the name
+                        $hex_to_name[$normalized_hex] = ucwords($name);
+                    }
+                }
             }
+
+            foreach ($decoded as $mode => $episodes) {
+                if ($mode !== 'Normal') continue; // Only care about Normal gameplay drops
+                foreach ($episodes as $ep => $diffs) {
+                    $episode_num = (int)str_replace('Episode', '', $ep);
+                    foreach ($diffs as $diff => $sids) {
+                        foreach ($sids as $sid => $monsters) {
+                            $section_id = $sid;
+                            if ($section_id === 'Greennill') $section_id = 'Greenill'; // Fix Newserv typo
+                            
+                            foreach ($monsters as $monster => $drops) {
+                                foreach ($drops as $drop) {
+                                    $rate_str = $drop[0]; // e.g. "7/8192" or large int
+                                    $item_hex_raw = $drop[1]; // e.g. "0x00A600"
+                                    
+                                    // Calculate percentage
+                                    $rate_pct = 0;
+                                    $rate_display = $rate_str;
+                                    if (is_string($rate_str) && strpos($rate_str, '/') !== false) {
+                                        list($num, $den) = explode('/', $rate_str);
+                                        $rate_pct = ((float)$num / (float)$den) * 100;
+                                    } elseif (is_numeric($rate_str)) {
+                                        $rate_pct = ((float)$rate_str / 4294967296) * 100;
+                                        $den = floor(4294967296 / (float)$rate_str);
+                                        $rate_display = "1/" . $den;
+                                    }
+                                    
+                                    // Parse Item Hex
+                                    $clean_hex = str_replace('0x', '', strtoupper((string)$item_hex_raw));
+                                    $clean_hex = str_pad($clean_hex, 6, '0', STR_PAD_LEFT);
+                                    
+                                    $item_name = $hex_to_name[$clean_hex] ?? "Unknown Item ($item_hex_raw)";
+                                    
+                                    // Clean up Monster Name (e.g. Box-Cave1 -> Cave 1 Box, HILDEBEAR -> Hildebear)
+                                    $monster_clean = str_replace('_', ' ', $monster);
+                                    if (strpos($monster_clean, 'Box-') === 0) {
+                                        $monster_clean = str_replace('Box-', '', $monster_clean) . ' Box';
+                                    } else {
+                                        $monster_clean = ucwords(strtolower($monster_clean));
+                                    }
+                                    
+                                    $flat_drops[] = [
+                                        "episode" => $episode_num,
+                                        "difficulty" => $diff,
+                                        "section_id" => $section_id,
+                                        "monster" => $monster_clean,
+                                        "item" => $item_name,
+                                        "rate" => $rate_display,
+                                        "rate_percent" => $rate_pct
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            $data_json = json_encode(["success" => true, "data" => $flat_drops]);
             // Save to cache
             @file_put_contents($cache_file, $data_json);
         } else {
