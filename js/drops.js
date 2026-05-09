@@ -5,7 +5,9 @@ let currentFilters = {
     episode: 'All',
     difficulty: 'Ultimate',
     sectionId: 'All',
-    search: ''
+    itemType: 'All',
+    search: '',
+    sortBy: 'rarity_asc'
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -83,6 +85,16 @@ function initUIControls() {
         });
     });
 
+    // Item Type Toggles
+    document.querySelectorAll('.type-toggle').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.type-toggle').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            currentFilters.itemType = e.target.dataset.val;
+            renderDrops();
+        });
+    });
+
     // Search Bar
     const searchInput = document.getElementById('drop-search');
     if (searchInput) {
@@ -91,6 +103,16 @@ function initUIControls() {
             renderDrops();
         });
     }
+
+    // Sort Toggles
+    document.querySelectorAll('.sort-toggle').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.sort-toggle').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            currentFilters.sortBy = e.target.dataset.val;
+            renderDrops();
+        });
+    });
 }
 
 function updateSectionIdUI(sid) {
@@ -141,6 +163,11 @@ function renderDrops() {
         // Section ID
         if (currentFilters.sectionId !== 'All' && drop.section_id !== currentFilters.sectionId) return false;
         
+        // Item Type
+        if (currentFilters.itemType !== 'All') {
+            if (drop.type !== currentFilters.itemType) return false;
+        }
+        
         // Search
         if (currentFilters.search) {
             const term = currentFilters.search;
@@ -152,8 +179,23 @@ function renderDrops() {
         return true;
     });
 
-    // Sort by rate percent desc
-    filtered.sort((a, b) => b.rate_percent - a.rate_percent);
+    // Sort logic
+    filtered.sort((a, b) => {
+        if (currentFilters.sortBy === 'rarity_asc') {
+            return a.rate_percent - b.rate_percent;
+        } else if (currentFilters.sortBy === 'rarity_desc') {
+            return b.rate_percent - a.rate_percent;
+        } else if (currentFilters.sortBy === 'type') {
+            const typeCompare = (a.type || '').localeCompare(b.type || '');
+            if (typeCompare === 0) return a.rate_percent - b.rate_percent;
+            return typeCompare;
+        } else if (currentFilters.sortBy === 'name') {
+            return a.item.localeCompare(b.item);
+        } else if (currentFilters.sortBy === 'enemy') {
+            return a.monster.localeCompare(b.monster) || b.rate_percent - a.rate_percent;
+        }
+        return 0;
+    });
 
     if (info) {
         info.textContent = `Showing ${filtered.length} drops`;
@@ -174,12 +216,18 @@ function renderDrops() {
         card.className = `drop-card sid-${drop.section_id.toLowerCase()}`;
         card.style.animationDelay = `${delay}s`;
         
+        let typeBadge = '';
+        if (drop.type) {
+            typeBadge = `<span style="font-size:0.7rem; background: rgba(0,255,255,0.1); border: 1px solid #00ffff; color:#00ffff; padding: 2px 6px; border-radius: 4px; float: right;">${drop.type}</span>`;
+        }
+
         card.innerHTML = `
             <div class="dc-header">
                 <span class="dc-item-name">${escapeHtml(drop.item)}</span>
                 <img src="/img/section_ids/${drop.section_id}.png" alt="${drop.section_id}" style="width:20px; height:20px;" title="${drop.section_id}">
             </div>
-            <div class="dc-monster">
+            ${typeBadge}
+            <div class="dc-monster" style="margin-top: 5px;">
                 <i class="fas fa-ghost"></i> <span>${escapeHtml(drop.monster)}</span>
             </div>
             <div class="dc-details">

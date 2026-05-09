@@ -42,6 +42,18 @@ $section_ids = ["Viridia", "Greenill", "Skyly", "Bluefull", "Purplenum", "Pinkal
                     <button class="toggle-btn diff-toggle active" data-val="Ultimate">Ultimate</button>
                 </div>
             </div>
+            
+            <div class="filter-group">
+                <label>Item Type</label>
+                <div class="toggle-btn-group">
+                    <button class="toggle-btn type-toggle active" data-val="All">ALL</button>
+                    <button class="toggle-btn type-toggle" data-val="Weapon">Weapon</button>
+                    <button class="toggle-btn type-toggle" data-val="Armor">Armor</button>
+                    <button class="toggle-btn type-toggle" data-val="Shield">Shield</button>
+                    <button class="toggle-btn type-toggle" data-val="Unit">Unit</button>
+                    <button class="toggle-btn type-toggle" data-val="Tool">Tool</button>
+                </div>
+            </div>
         </div>
 
         <div class="filter-group" style="width: 100%;">
@@ -50,15 +62,30 @@ $section_ids = ["Viridia", "Greenill", "Skyly", "Bluefull", "Purplenum", "Pinkal
                 <?php foreach($section_ids as $sid): ?>
                     <div class="sid-toggle" data-val="<?= $sid ?>">
                         <img src="/img/section_ids/<?= $sid ?>.png" alt="<?= $sid ?>">
-                        <span><?= strtoupper(substr($sid, 0, 3)) ?></span>
+                        <span><?= $sid ?></span>
                     </div>
                 <?php endforeach; ?>
             </div>
         </div>
 
-        <div class="search-bar-container">
-            <i class="fas fa-search"></i>
-            <input type="text" id="drop-search" class="drops-search" placeholder="Search by item or monster name...">
+        <div class="filter-row" style="margin-top: 20px;">
+            <div class="filter-group" style="width: 100%;">
+                <label>Sort By</label>
+                <div class="toggle-btn-group">
+                    <button class="toggle-btn sort-toggle active" data-val="rarity_asc">Rarest First</button>
+                    <button class="toggle-btn sort-toggle" data-val="rarity_desc">Common First</button>
+                    <button class="toggle-btn sort-toggle" data-val="type">Item Type</button>
+                    <button class="toggle-btn sort-toggle" data-val="name">Item Name</button>
+                    <button class="toggle-btn sort-toggle" data-val="enemy">Enemy Name</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="search-bar-container" style="display: flex; gap: 10px; margin-top: 20px;">
+            <div style="position: relative; flex: 1;">
+                <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #00ffff;"></i>
+                <input type="text" id="drop-search" class="drops-search" placeholder="Search by item or monster name..." style="width: 100%;">
+            </div>
         </div>
     </div>
 
