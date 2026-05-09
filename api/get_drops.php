@@ -43,10 +43,11 @@ if ($data_json === false) {
         if ($decoded !== null) {
             // Flatten Newserv's deeply nested JSON array and map item names
             $flat_drops = [];
+            $seen = [];
             
-            // Load and flip item map (Hex -> Name)
-            $item_map_file = __DIR__ . '/item_map.json';
+            // Load Mapping dictionaries
             $hex_to_name = [];
+            $item_map_file = __DIR__ . '/item_map.json';
             if (file_exists($item_map_file)) {
                 $item_map = json_decode(file_get_contents($item_map_file), true);
                 if (is_array($item_map)) {
@@ -55,6 +56,24 @@ if ($data_json === false) {
                         $normalized_hex = strtoupper(str_pad($hex, 6, '0', STR_PAD_LEFT));
                         // Title case the name
                         $hex_to_name[$normalized_hex] = ucwords($name);
+                    }
+                }
+            }
+            
+            $item_subtypes = [];
+            $item_subtype_file = __DIR__ . '/item_subtypes.json';
+            if (file_exists($item_subtype_file)) {
+                $item_subtypes = json_decode(file_get_contents($item_subtype_file), true);
+                if (!is_array($item_subtypes)) $item_subtypes = [];
+            }
+
+            $item_equips = [];
+            $item_equip_file = __DIR__ . '/item_equip_map.json';
+            if (file_exists($item_equip_file)) {
+                $raw_equips = json_decode(file_get_contents($item_equip_file), true);
+                if (is_array($raw_equips)) {
+                    foreach ($raw_equips as $name => $classes) {
+                        $item_equips[strtolower(trim($name))] = $classes;
                     }
                 }
             }
@@ -86,10 +105,31 @@ if ($data_json === false) {
                                     }
                                     
                                     // Parse Item Hex
-                                    $clean_hex = str_replace('0x', '', strtoupper((string)$item_hex_raw));
+                                    if (is_int($item_hex_raw)) {
+                                        $clean_hex = strtoupper(dechex($item_hex_raw));
+                                    } else {
+                                        $clean_hex = str_replace('0x', '', strtoupper((string)$item_hex_raw));
+                                    }
                                     $clean_hex = str_pad($clean_hex, 6, '0', STR_PAD_LEFT);
                                     
                                     $item_name = $hex_to_name[$clean_hex] ?? "Unknown Item ($item_hex_raw)";
+                                    
+                                    // Determine Item Type
+                                    $type_byte = substr($clean_hex, 0, 2);
+                                    $item_type = 'Unknown';
+                                    if ($type_byte === '00') $item_type = 'Weapon';
+                                    elseif ($type_byte === '01') {
+                                        $sub_byte = substr($clean_hex, 2, 2);
+                                        if ($sub_byte === '01') $item_type = 'Armor';
+                                        elseif ($sub_byte === '02') $item_type = 'Shield';
+                                        elseif ($sub_byte === '03') $item_type = 'Unit';
+                                        else $item_type = 'Armor/Shield/Unit';
+                                    }
+                                    elseif ($type_byte === '02') $item_type = 'Mag';
+                                    elseif ($type_byte === '03') $item_type = 'Tool';
+                                    
+                                    $item_subtype = $item_subtypes[strtolower($item_name)] ?? 'Other';
+                                    $item_equip_classes = $item_equips[strtolower(trim($item_name))] ?? null;
                                     
                                     // Clean up Monster Name (e.g. Box-Cave1 -> Cave 1 Box, HILDEBEAR -> Hildebear)
                                     $monster_clean = str_replace('_', ' ', $monster);
@@ -99,12 +139,20 @@ if ($data_json === false) {
                                         $monster_clean = ucwords(strtolower($monster_clean));
                                     }
                                     
+                                    // Deduplicate identical items from the same monster
+                                    $uniq = "$episode_num|$diff|$section_id|$monster_clean|$item_name";
+                                    if (isset($seen[$uniq])) continue;
+                                    $seen[$uniq] = true;
+                                    
                                     $flat_drops[] = [
                                         "episode" => $episode_num,
                                         "difficulty" => $diff,
                                         "section_id" => $section_id,
                                         "monster" => $monster_clean,
                                         "item" => $item_name,
+                                        "type" => $item_type,
+                                        "subtype" => $item_subtype,
+                                        "equippable_classes" => $item_equip_classes,
                                         "rate" => $rate_display,
                                         "rate_percent" => $rate_pct
                                     ];

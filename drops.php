@@ -56,6 +56,36 @@ $section_ids = ["Viridia", "Greenill", "Skyly", "Bluefull", "Purplenum", "Pinkal
             </div>
         </div>
 
+        <div class="filter-row" id="sub-type-row" style="display: none; margin-top: 15px;">
+            <div class="filter-group" style="width: 100%;">
+                <label id="sub-type-label">Sub-Category</label>
+                <div class="toggle-btn-group" id="sub-type-toggles" style="flex-wrap: wrap;">
+                    <!-- Dynamically populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-row" style="margin-top: 15px;">
+            <div class="filter-group" style="width: 100%;">
+                <label>Display Items only Usable By Class</label>
+                <div class="toggle-btn-group" id="class-toggles" style="flex-wrap: wrap;">
+                    <button class="toggle-btn class-toggle active" data-val="All">ALL</button>
+                    <button class="toggle-btn class-toggle" data-val="HUmar">HUmar</button>
+                    <button class="toggle-btn class-toggle" data-val="HUnewearl">HUnewearl</button>
+                    <button class="toggle-btn class-toggle" data-val="HUcast">HUcast</button>
+                    <button class="toggle-btn class-toggle" data-val="HUcaseal">HUcaseal</button>
+                    <button class="toggle-btn class-toggle" data-val="RAmar">RAmar</button>
+                    <button class="toggle-btn class-toggle" data-val="RAmarl">RAmarl</button>
+                    <button class="toggle-btn class-toggle" data-val="RAcast">RAcast</button>
+                    <button class="toggle-btn class-toggle" data-val="RAcaseal">RAcaseal</button>
+                    <button class="toggle-btn class-toggle" data-val="FOmar">FOmar</button>
+                    <button class="toggle-btn class-toggle" data-val="FOmarl">FOmarl</button>
+                    <button class="toggle-btn class-toggle" data-val="FOnewm">FOnewm</button>
+                    <button class="toggle-btn class-toggle" data-val="FOnewearl">FOnewearl</button>
+                </div>
+            </div>
+        </div>
+
         <div class="filter-group" style="width: 100%;">
             <label>Section ID</label>
             <div class="section-id-toggles">

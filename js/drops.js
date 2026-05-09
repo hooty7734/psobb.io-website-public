@@ -6,8 +6,18 @@ let currentFilters = {
     difficulty: 'Ultimate',
     sectionId: 'All',
     itemType: 'All',
+    itemSubType: 'All',
+    characterClass: 'All',
     search: '',
     sortBy: 'rarity_asc'
+};
+
+const SUBTYPES = {
+    'Weapon': ['Saber', 'Sword', 'Dagger', 'Partisan', 'Slicer', 'Twin Saber', 'Twin Sword', 'Claw', 'Katana', 'Fist', 'Handgun', 'Rifle', 'Mechgun', 'Shot', 'Launcher', 'Cane', 'Rod', 'Wand', 'Card'],
+    'Armor': ['Armor', 'Frame', 'Plate', 'Cloak', 'Garment', 'Field', 'Clothes'],
+    'Shield': ['Shield', 'Barrier', 'Merge', 'Ring', 'Gear', 'Wall'],
+    'Unit': ['Stat Bonus', 'Support', 'Status Cure'],
+    'Tool': ['Enemy Part', 'Mag Cell', 'Amplifier', 'Music Disk', 'Weapon Badge', 'Tool/Unique']
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -91,6 +101,8 @@ function initUIControls() {
             document.querySelectorAll('.type-toggle').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
             currentFilters.itemType = e.target.dataset.val;
+            currentFilters.itemSubType = 'All';
+            updateSubTypeUI(currentFilters.itemType);
             renderDrops();
         });
     });
@@ -103,6 +115,16 @@ function initUIControls() {
             renderDrops();
         });
     }
+
+    // Class Toggles
+    document.querySelectorAll('.class-toggle').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.class-toggle').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            currentFilters.characterClass = e.target.dataset.val;
+            renderDrops();
+        });
+    });
 
     // Sort Toggles
     document.querySelectorAll('.sort-toggle').forEach(btn => {
@@ -122,6 +144,36 @@ function updateSectionIdUI(sid) {
         } else {
             btn.classList.remove('active');
         }
+    });
+}
+
+function updateSubTypeUI(type) {
+    const row = document.getElementById('sub-type-row');
+    const container = document.getElementById('sub-type-toggles');
+    const label = document.getElementById('sub-type-label');
+    
+    if (type === 'All' || !SUBTYPES[type]) {
+        row.style.display = 'none';
+        return;
+    }
+    
+    row.style.display = 'flex';
+    label.textContent = type + ' Type';
+    
+    let html = `<button class="toggle-btn sub-type-toggle active" data-val="All">ALL</button>`;
+    SUBTYPES[type].forEach(sub => {
+        html += `<button class="toggle-btn sub-type-toggle" data-val="${sub}">${sub}</button>`;
+    });
+    container.innerHTML = html;
+    
+    // Attach listeners
+    document.querySelectorAll('.sub-type-toggle').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.sub-type-toggle').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            currentFilters.itemSubType = e.target.dataset.val;
+            renderDrops();
+        });
     });
 }
 
@@ -166,6 +218,18 @@ function renderDrops() {
         // Item Type
         if (currentFilters.itemType !== 'All') {
             if (drop.type !== currentFilters.itemType) return false;
+        }
+
+        // Item Sub-Type
+        if (currentFilters.itemSubType !== 'All') {
+            if (drop.subtype !== currentFilters.itemSubType) return false;
+        }
+
+        // Character Class
+        if (currentFilters.characterClass !== 'All') {
+            if (!drop.equippable_classes || !drop.equippable_classes.includes(currentFilters.characterClass)) {
+                return false;
+            }
         }
         
         // Search
@@ -220,6 +284,11 @@ function renderDrops() {
         if (drop.type) {
             typeBadge = `<span style="font-size:0.7rem; background: rgba(0,255,255,0.1); border: 1px solid #00ffff; color:#00ffff; padding: 2px 6px; border-radius: 4px; float: right;">${drop.type}</span>`;
         }
+        
+        let classBadge = '';
+        if (currentFilters.characterClass !== 'All' && drop.equippable_classes && drop.equippable_classes.includes(currentFilters.characterClass)) {
+            classBadge = `<span style="font-size:0.6rem; background: rgba(255,255,0,0.1); border: 1px solid #ffff00; color:#ffff00; padding: 2px 4px; border-radius: 4px; margin-right: 5px;">${currentFilters.characterClass} <i class="fas fa-check"></i></span>`;
+        }
 
         card.innerHTML = `
             <div class="dc-header">
@@ -228,7 +297,7 @@ function renderDrops() {
             </div>
             ${typeBadge}
             <div class="dc-monster" style="margin-top: 5px;">
-                <i class="fas fa-ghost"></i> <span>${escapeHtml(drop.monster)}</span>
+                ${classBadge}<i class="fas fa-ghost"></i> <span>${escapeHtml(drop.monster)}</span>
             </div>
             <div class="dc-details">
                 <div>
