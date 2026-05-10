@@ -171,17 +171,17 @@ function getClearObjective($type, $target) {
             $boss = $bosses[$target] ?? "Boss at Floor $target";
             return __('[Ep %s] Defeat the %s', $ep, htmlspecialchars(__($boss)));
         case 'MENTOR_BOSS':
-            if ($target === 'ANY_DRAGON') return __('Mentor a player through Any Dragon Boss (Forest, Sil, or Gol)');
+            if ($target === 'ANY_DRAGON') return __('Mentor a player (5+ levels lower) through Any Dragon Boss (Forest, Sil, or Gol)');
             $bosses = [11=>'Dragon (Forest)', 12=>'De Rol Le (Caves)', 13=>'Vol Opt (Mines)', 14=>'Dark Falz (Ruins)', 17=>'Barba Ray (Temple)', 16=>'Gol Dragon (Spaceship)', 15=>'Gal Gryphon (CCA)', 18=>'Olga Flow (Seabed)', 19=>'Saint-Million (Crater)'];
             $ep = ($target >= 15 && $target <= 18) ? '2' : ($target == 19 ? '4' : '1');
             $boss = $bosses[$target] ?? "Boss at Floor $target";
-            return __('[Ep %s] Carry a lower-level player through the %s fight', $ep, htmlspecialchars(__($boss)));
+            return __('[Ep %s] Carry a lower-level player (5+ levels lower) through the %s fight', $ep, htmlspecialchars(__($boss)));
         case 'HARDCORE_MENTOR':
-            if ($target === 'ANY_DRAGON') return __('Hardcore Carry 3 lower-level players through Any Dragon Boss');
+            if ($target === 'ANY_DRAGON') return __('Hardcore Carry 3 lower-level players (10+ levels lower) through Any Dragon Boss');
             $bosses = [11=>'Dragon (Forest)', 12=>'De Rol Le (Caves)', 13=>'Vol Opt (Mines)', 14=>'Dark Falz (Ruins)', 17=>'Barba Ray (Temple)', 16=>'Gol Dragon (Spaceship)', 15=>'Gal Gryphon (CCA)', 18=>'Olga Flow (Seabed)', 19=>'Saint-Million (Crater)'];
             $ep = ($target >= 15 && $target <= 18) ? '2' : ($target == 19 ? '4' : '1');
             $boss = $bosses[$target] ?? "Boss at Floor $target";
-            return __('[Ep %s] Hardcore Carry 3 lower-level players through the %s fight', $ep, htmlspecialchars(__($boss)));
+            return __('[Ep %s] Hardcore Carry 3 lower-level players (10+ levels lower) through the %s fight', $ep, htmlspecialchars(__($boss)));
         case 'DIVERSE_PARTY_BOSS':
             if ($target === 'ANY_DRAGON') return __('Defeat Any Dragon Boss with a diverse party (HU, RA, FO)');
             $bosses = [11=>'Dragon (Forest)', 12=>'De Rol Le (Caves)', 13=>'Vol Opt (Mines)', 14=>'Dark Falz (Ruins)', 17=>'Barba Ray (Temple)', 16=>'Gol Dragon (Spaceship)', 15=>'Gal Gryphon (CCA)', 18=>'Olga Flow (Seabed)', 19=>'Saint-Million (Crater)'];
