@@ -877,18 +877,6 @@ window.confirmChangePass = async function () {
     }
 };
 
-// Mobile Menu Toggle
-document.addEventListener('DOMContentLoaded', () => {
-    const mobileMenu = document.getElementById('mobile-menu');
-    const navList = document.querySelector('nav ul');
-
-    if (mobileMenu && navList) {
-        mobileMenu.addEventListener('click', () => {
-            navList.classList.toggle('active');
-        });
-    }
-});
-
 // Enhanced to update rates from the new fields in /api/server.php
 async function updateUIRates(data) {
     const expEl = document.getElementById('rate-exp');
