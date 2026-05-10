@@ -272,8 +272,31 @@ function renderRewardString($rewardStr) {
  * 
  * @return array Assc. array with "success" (bool), "dropped" (array of payloads), or "error" (string).
  */
-function parse_and_drop_items($accountId, $itemString) {
+function parse_and_drop_items($accountId, $itemString, $characterName = null) {
     global $NEWSERV_API_URL, $NEWSERV_COMMAND_PREFIX;
+    
+    // Disambiguate the target identity to bypass NewServ's "multiple clients found" bug.
+    // NewServ parses numeric identifiers as both Hex and Decimal simultaneously, causing collisions.
+    // BB Usernames are alphanumeric, bypassing this flaw.
+    $targetIdent = $accountId;
+    $clients_raw = @file_get_contents($NEWSERV_API_URL . "/y/clients");
+    if ($clients_raw !== FALSE) {
+        $clients = json_decode($clients_raw, true);
+        if (is_array($clients)) {
+            foreach ($clients as $c) {
+                if (isset($c['Account']) && $c['Account']['AccountID'] == $accountId) {
+                    // Enforce strict character matching if a character name was provided
+                    if ($characterName !== null && isset($c['Name']) && $c['Name'] !== $characterName) {
+                        continue;
+                    }
+                    if (!empty($c['Account']['BBLicenses']) && is_array($c['Account']['BBLicenses'])) {
+                        $targetIdent = $c['Account']['BBLicenses'][0]['UserName'];
+                    }
+                    break;
+                }
+            }
+        }
+    }
     
     // Ensure buildHexPayload is available (it's defined in redeem_bounty.php, but we might not have it loaded)
     if (!function_exists('buildHexPayload') && !function_exists('simpleBuildHexPayload')) {
@@ -374,7 +397,7 @@ function parse_and_drop_items($accountId, $itemString) {
         // Execute the drop multiple times if necessary
         for ($i = 0; $i < $multiplier; $i++) {
             $finalPayload = function_exists('buildHexPayload') ? buildHexPayload($baseItemName) : simpleBuildHexPayload($baseItemName);
-            $cmd = "on " . $accountId . " cc {$NEWSERV_COMMAND_PREFIX}item " . $finalPayload;
+            $cmd = "on " . $targetIdent . " cc {$NEWSERV_COMMAND_PREFIX}item " . $finalPayload;
             
             $url = $NEWSERV_API_URL . "/y/shell-exec";
             $opts = [

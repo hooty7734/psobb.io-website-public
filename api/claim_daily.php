@@ -101,7 +101,7 @@ if ($result['cnt'] > 0) {
 
 // 4. Pick a random daily reward
 $dailyPool = [
-    '04000000E80300000000000000000000' => ['weight' => 100, 'name' => '1000 Meseta'],
+    '040000000000000000000000E8030000' => ['weight' => 100, 'name' => '1000 Meseta'],
     '030500' => ['weight' => 60, 'name' => 'Star Atomizer'],
     '030400' => ['weight' => 80, 'name' => 'Moon Atomizer'],
     '030002' => ['weight' => 100, 'name' => 'Trimate'],
