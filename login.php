@@ -19,7 +19,7 @@ include 'includes/header.php';
                 <p><?= __('Access your account data, character stats, and bank.') ?></p>
                 <div id="login-error" style="color: #ff4444; display: none; margin-bottom: 1rem; background: rgba(255, 0, 0, 0.1); padding: 10px; border: 1px solid #ff4444; border-radius: 4px;"></div>
                 
-                <form class="login-form">
+                <form class="login-form" method="POST" action="login.php">
                     <div class="form-group">
                         <label for="username"><?= __('Username') ?></label>
                         <input type="text" id="username" name="username" placeholder="<?= __('Enter your username') ?>" required>

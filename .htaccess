@@ -34,6 +34,6 @@ RewriteRule ^decryption/(.+)$ - [L]
 RewriteRule ^decryption/?$ decryption.php [L]
 
 # 2. Internally rewrite /file to /file.php
+RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_FILENAME}.php -f
-RewriteRule ^(.*?)/?$ $1.php [L]
+RewriteRule ^([^\.]+)$ $1.php [NC,L]

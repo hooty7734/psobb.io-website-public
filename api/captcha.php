@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/config.php';
 start_secure_session();
 header('Content-Type: image/png');
 
