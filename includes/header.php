@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * PSOBB Website: Global Header Layout
  * 
@@ -6,7 +6,7 @@
  * imports, and navigation bar rendering. Crucially, it injects the CSRF token into 
  * a meta tag for frontend AJAX scripts to utilize securely.
  */
-require_once __DIR__ . '/../api/config.php'; 
+require_once __DIR__ . '/../api/config.php';
 start_secure_session();
 ?>
 <!DOCTYPE html>
@@ -34,51 +34,81 @@ start_secure_session();
         </div>
         <nav>
             <ul>
-                <li><a href="/downloads.php" class="<?php echo ($current_page == 'downloads') ? 'active' : ''; ?>"><?= __('Downloads') ?></a></li>
-                
+                <li><a href="/downloads.php"
+                        class="<?php echo ($current_page == 'downloads') ? 'active' : ''; ?>"><?= __('Downloads') ?></a>
+                </li>
+
                 <li class="dropdown">
-                    <a href="javascript:void(0)" class="dropbtn <?php echo in_array($current_page, ['drops', 'missions', 'top_hunters', 'stats']) ? 'active' : ''; ?>"><?= __('Game Info') ?> <i class="fas fa-caret-down"></i></a>
+                    <a href="javascript:void(0)"
+                        class="dropbtn <?php echo in_array($current_page, ['drops', 'missions', 'top_hunters', 'stats']) ? 'active' : ''; ?>"><?= __('Game Info') ?>
+                        <i class="fas fa-caret-down"></i></a>
                     <div class="dropdown-content">
-                        <a href="/drops.php" class="<?php echo ($current_page == 'drops') ? 'active' : ''; ?>"><?= __('Drop Chart') ?></a>
-                        <a href="/missions.php" class="<?php echo ($current_page == 'missions') ? 'active' : ''; ?>" style="color: var(--pso-orange);"><?= __('Bounty Board') ?></a>
-                        <a href="/top_hunters.php" class="<?php echo ($current_page == 'top_hunters') ? 'active' : ''; ?>"><?= __('Top Hunters') ?></a>
-                        <a href="/stats.php" class="<?php echo ($current_page == 'stats') ? 'active' : ''; ?>"><?= __('Server Stats') ?></a>
+                        <a href="/drops.php"
+                            class="<?php echo ($current_page == 'drops') ? 'active' : ''; ?>"><?= __('Drop Chart') ?></a>
+                        <a href="/missions.php" class="<?php echo ($current_page == 'missions') ? 'active' : ''; ?>"
+                            style="color: var(--pso-orange);"><?= __('Bounty Board') ?></a>
+                        <a href="/top_hunters.php"
+                            class="<?php echo ($current_page == 'top_hunters') ? 'active' : ''; ?>"><?= __('Top Hunters') ?></a>
+                        <a href="/stats.php"
+                            class="<?php echo ($current_page == 'stats') ? 'active' : ''; ?>"><?= __('Server Stats') ?></a>
                     </div>
                 </li>
 
                 <li class="dropdown">
-                    <a href="javascript:void(0)" class="dropbtn <?php echo in_array($current_page, ['team', 'about']) ? 'active' : ''; ?>"><?= __('Community') ?> <i class="fas fa-caret-down"></i></a>
+                    <a href="javascript:void(0)"
+                        class="dropbtn <?php echo in_array($current_page, ['team', 'about']) ? 'active' : ''; ?>"><?= __('Community') ?>
+                        <i class="fas fa-caret-down"></i></a>
                     <div class="dropdown-content">
-                        <a href="/team.php" id="nav-team-link" style="display: none;" class="<?php echo ($current_page == 'team') ? 'active' : ''; ?>"><?= __('Team List') ?></a>
-                        <a href="/about.php" class="<?php echo ($current_page == 'about') ? 'active' : ''; ?>"><?= __('About Us') ?></a>
+                        <a href="/team.php" id="nav-team-link" style="display: none;"
+                            class="<?php echo ($current_page == 'team') ? 'active' : ''; ?>"><?= __('Team List') ?></a>
+                        <a href="/about.php"
+                            class="<?php echo ($current_page == 'about') ? 'active' : ''; ?>"><?= __('About Us') ?></a>
                     </div>
                 </li>
 
                 <li class="dropdown">
-                    <a href="javascript:void(0)" class="dropbtn <?php echo in_array($current_page, ['mods', 'quest-editor', 'decryption']) ? 'active' : ''; ?>"><?= __('Development') ?> <i class="fas fa-caret-down"></i></a>
+                    <a href="javascript:void(0)"
+                        class="dropbtn <?php echo in_array($current_page, ['mods', 'quest-editor', 'decryption']) ? 'active' : ''; ?>"><?= __('Development') ?>
+                        <i class="fas fa-caret-down"></i></a>
                     <div class="dropdown-content">
-                        <a href="/mods.php" class="<?php echo ($current_page == 'mods') ? 'active' : ''; ?>"><?= __('Client Mods') ?></a>
-                        <a href="/quest-editor" class="<?php echo ($current_page == 'quest-editor') ? 'active' : ''; ?>"><?= __('Quest Editor') ?></a>
-                        <a href="/decryption.php" class="<?php echo ($current_page == 'decryption') ? 'active' : ''; ?>"><?= __('Data Decryption') ?></a>
+                        <a href="/mods.php"
+                            class="<?php echo ($current_page == 'mods') ? 'active' : ''; ?>"><?= __('Client Mods') ?></a>
+                        <a href="/quest-editor"
+                            class="<?php echo ($current_page == 'quest-editor') ? 'active' : ''; ?>"><?= __('Quest Editor') ?></a>
+                        <a href="/decryption.php"
+                            class="<?php echo ($current_page == 'decryption') ? 'active' : ''; ?>"><?= __('Data Decryption') ?></a>
+                        <a href="/development.php"
+                            class="<?php echo ($current_page == 'development') ? 'active' : ''; ?>"><?= __('Dev Resources') ?></a>
                     </div>
                 </li>
 
                 <li class="dropdown" id="nav-admin-dropdown" style="display: none;">
-                    <a href="javascript:void(0)" class="dropbtn <?php echo in_array($current_page, ['dashboard', 'telemetry', 'mission_manager']) ? 'active' : ''; ?>" style="color: #ff5555;"><?= __('Admin') ?> <i class="fas fa-caret-down"></i></a>
+                    <a href="javascript:void(0)"
+                        class="dropbtn <?php echo in_array($current_page, ['dashboard', 'telemetry', 'mission_manager']) ? 'active' : ''; ?>"
+                        style="color: #ff5555;"><?= __('Admin') ?> <i class="fas fa-caret-down"></i></a>
                     <div class="dropdown-content">
-                        <a href="/admin/dashboard.php" class="<?php echo ($current_page == 'dashboard') ? 'active' : ''; ?>"><?= __('Dashboard') ?></a>
-                        <a href="/admin/telemetry.php" class="<?php echo ($current_page == 'telemetry') ? 'active' : ''; ?>"><?= __('Telemetry') ?></a>
-                        <a href="/admin/mission_manager.php" class="<?php echo ($current_page == 'mission_manager') ? 'active' : ''; ?>"><?= __('Mission Manager') ?></a>
+                        <a href="/admin/dashboard.php"
+                            class="<?php echo ($current_page == 'dashboard') ? 'active' : ''; ?>"><?= __('Dashboard') ?></a>
+                        <a href="/admin/telemetry.php"
+                            class="<?php echo ($current_page == 'telemetry') ? 'active' : ''; ?>"><?= __('Telemetry') ?></a>
+                        <a href="/admin/mission_manager.php"
+                            class="<?php echo ($current_page == 'mission_manager') ? 'active' : ''; ?>"><?= __('Mission Manager') ?></a>
                     </div>
                 </li>
 
-                <li><a href="/register.php" class="<?php echo ($current_page == 'register') ? 'signup-nav-btn active' : 'signup-nav-btn'; ?>"><?= __('Sign Up') ?></a></li>
-                <li><a href="/login.php" class="<?php echo ($current_page == 'login') ? 'login-nav-btn active' : 'login-nav-btn'; ?>"><?= __('Login') ?></a></li>
+                <li><a href="/register.php"
+                        class="<?php echo ($current_page == 'register') ? 'signup-nav-btn active' : 'signup-nav-btn'; ?>"><?= __('Sign Up') ?></a>
+                </li>
+                <li><a href="/login.php"
+                        class="<?php echo ($current_page == 'login') ? 'login-nav-btn active' : 'login-nav-btn'; ?>"><?= __('Login') ?></a>
+                </li>
                 <li class="lang-toggle-nav">
                     <?php if (($_COOKIE['psobb_lang'] ?? 'en') === 'jp'): ?>
-                        <a href="/api/set_lang.php?lang=en" class="lang-toggle" title="Switch to English"><i class="fas fa-globe-americas"></i> EN</a>
+                        <a href="/api/set_lang.php?lang=en" class="lang-toggle" title="Switch to English"><i
+                                class="fas fa-globe-americas"></i> EN</a>
                     <?php else: ?>
-                        <a href="/api/set_lang.php?lang=jp" class="lang-toggle" title="日本語に切り替える"><i class="fas fa-globe-asia"></i> JP</a>
+                        <a href="/api/set_lang.php?lang=jp" class="lang-toggle" title="日本語に切り替える"><i
+                                class="fas fa-globe-asia"></i> JP</a>
                     <?php endif; ?>
                 </li>
             </ul>
