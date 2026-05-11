@@ -135,7 +135,7 @@ include 'includes/header.php';
                     <p>The primary source code repository for the PSOBB.IO website, backend APIs, and community tools. Manage issues, review merge requests, and deploy code.</p>
                 </a>
                 
-                <a href="https://pionner0.psobb.io" target="_blank" class="resource-card">
+                <a href="https://pioneer0.psobb.io" target="_blank" class="resource-card">
                     <h3><i class="fas fa-satellite-dish"></i> Pioneer 0 (Dev Server)</h3>
                     <p>Our staging and development game server environment. Used for live-testing new quests, drop tables, and backend modifications before public deployment.</p>
                 </a>
