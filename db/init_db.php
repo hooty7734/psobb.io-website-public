@@ -47,11 +47,12 @@ $db->exec("CREATE TABLE IF NOT EXISTS rewards_claimed (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     account_id INTEGER NOT NULL,
     character_name TEXT NOT NULL,
+    character_index INTEGER NOT NULL DEFAULT 0,
     level_milestone INTEGER NOT NULL,
     category TEXT NOT NULL,
     item_string TEXT NOT NULL,
     claimed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(account_id, character_name, level_milestone)
+    UNIQUE(account_id, character_name, character_index, level_milestone)
 )");
 
 // =============================================

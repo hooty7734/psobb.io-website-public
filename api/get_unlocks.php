@@ -67,13 +67,15 @@ if ($lobbyId !== null) {
 $level = $onlineCharacter['Level'] ?? 1;
 $name = $onlineCharacter['Name'] ?? 'Unknown';
 $charClass = $onlineCharacter['CharClass'] ?? 'HUmar';
+$charIndex = $onlineCharacter['BBCharacterIndex'] ?? 0;
 
 // 2. Query claimed rewards for this character
 try {
     $db = get_db();
-    $stmt = $db->prepare("SELECT level_milestone, category FROM rewards_claimed WHERE account_id = :aid AND character_name = :cname");
+    $stmt = $db->prepare("SELECT level_milestone, category FROM rewards_claimed WHERE account_id = :aid AND character_name = :cname AND character_index = :cidx");
     $stmt->bindValue(':aid', $accountId, SQLITE3_INTEGER);
     $stmt->bindValue(':cname', $name, SQLITE3_TEXT);
+    $stmt->bindValue(':cidx', $charIndex, SQLITE3_INTEGER);
     $result = $stmt->execute();
 
     $claimed = [];

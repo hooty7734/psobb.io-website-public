@@ -99,6 +99,7 @@ if (!$inGame) {
 $level = $onlineCharacter['Level'] ?? 1;
 $name = $onlineCharacter['Name'] ?? 'Unknown';
 $charClass = $onlineCharacter['CharClass'] ?? 'HUmar';
+$charIndex = $onlineCharacter['BBCharacterIndex'] ?? 0;
 
 if ($level < $milestone) {
     http_response_code(400);
@@ -110,9 +111,10 @@ try {
     $db = get_db();
     
     // 2. Check if already claimed
-    $stmt = $db->prepare("SELECT id FROM rewards_claimed WHERE account_id = :aid AND character_name = :cname AND level_milestone = :lvl");
+    $stmt = $db->prepare("SELECT id FROM rewards_claimed WHERE account_id = :aid AND character_name = :cname AND character_index = :cidx AND level_milestone = :lvl");
     $stmt->bindValue(':aid', $accountId, SQLITE3_INTEGER);
     $stmt->bindValue(':cname', $name, SQLITE3_TEXT);
+    $stmt->bindValue(':cidx', $charIndex, SQLITE3_INTEGER);
     $stmt->bindValue(':lvl', $milestone, SQLITE3_INTEGER);
     $res = $stmt->execute();
     if ($res->fetchArray()) {
@@ -298,9 +300,10 @@ try {
     $finalDisplayString = implode(" + ", $displayNames);   // readable for UI
 
     // 5. Store claim record in website DB
-    $stmt = $db->prepare("INSERT INTO rewards_claimed (account_id, character_name, level_milestone, category, item_string) VALUES (:aid, :cname, :lvl, :cat, :item)");
+    $stmt = $db->prepare("INSERT INTO rewards_claimed (account_id, character_name, character_index, level_milestone, category, item_string) VALUES (:aid, :cname, :cidx, :lvl, :cat, :item)");
     $stmt->bindValue(':aid', $accountId, SQLITE3_INTEGER);
     $stmt->bindValue(':cname', $name, SQLITE3_TEXT);
+    $stmt->bindValue(':cidx', $charIndex, SQLITE3_INTEGER);
     $stmt->bindValue(':lvl', $milestone, SQLITE3_INTEGER);
     $stmt->bindValue(':cat', $category, SQLITE3_TEXT);
     $stmt->bindValue(':item', $finalItemString, SQLITE3_TEXT);
