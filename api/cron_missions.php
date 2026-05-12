@@ -228,10 +228,12 @@ foreach ($clients as $client) {
     $completed_any = false;
     $last_completed_type = "training";
     $current_patrols = [];
+    $active_mission_types = [];
 
     while ($m = $res->fetchArray(SQLITE3_ASSOC)) {
         $has_active_missions = true;
         $active_mission_count++;
+        $active_mission_types[] = $m['goal_type'];
         $completed = false;
         
         // 4. Mission Evaluation Engine
@@ -857,6 +859,12 @@ foreach ($clients as $client) {
         if ($level >= 10) $available_goals[] = 'MENTOR_BOSS';
         if ($level >= 30) $available_goals[] = 'HARDCORE_MENTOR';
         if ($level >= 20) $available_goals[] = 'DIVERSE_PARTY_BOSS';
+
+        // Filter out any goal types the player already has active to prevent duplicate missions
+        $filtered_goals = array_values(array_diff($available_goals, $active_mission_types));
+        if (!empty($filtered_goals)) {
+            $available_goals = $filtered_goals;
+        }
 
         $selected_goal = $available_goals[array_rand($available_goals)];
         $selected_target_id = null;
