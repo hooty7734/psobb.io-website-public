@@ -250,11 +250,19 @@ foreach ($clients as $client) {
             
             // Map of generic weapon types to their Hex IDs for backwards compatibility
             $generic_weapon_hex_map = [
-                'Saber' => '007000', 'Dagger' => '000300', 'Handgun' => '000600', 'Rifle' => '007600', 'Cane' => '007900', 'Rod' => '007A00', 'Wand' => '007B00',
-                'Brand' => '000101', 'Knife' => '000301', 'Autogun' => '000601', 'Sniper' => '000701', 'Stick' => '000A01', 'Baton' => '000C02',
-                'Buster' => '000102', 'Blade' => '007200', 'Lockgun' => '000602', 'Blaster' => '000702', 'Mace' => '000A02', 'Scepter' => '000C03',
-                'Pallasch' => '000103', 'Claymore' => '000203', 'Edge' => '000303', 'Berdys' => '000403', 'Sawcer' => '000503', 'Railgun' => '000603', 'Beam' => '000703', 'Launcher' => '00A600', 'Gatling' => '000803', 'Club' => '000A03', 'Striker' => '000B03',
-                'Gladius' => '000104', 'Calibur' => '000204', 'Ripper' => '000304', 'Gungnir' => '000404', 'Diska' => '000504', 'Raygun' => '000604', 'Laser' => '000704', 'Arms' => '000904', 'Vulcan' => '000804',
+                'Saber' => '000100', 'Brand' => '000101', 'Buster' => '000102', 'Pallasch' => '000103', 'Gladius' => '000104',
+                'Sword' => '000200', 'Gigush' => '000201', 'Breaker' => '000202', 'Claymore' => '000203', 'Calibur' => '000204',
+                'Dagger' => '000300', 'Knife' => '000301', 'Blade' => '000302', 'Edge' => '000303', 'Ripper' => '000304',
+                'Partisan' => '000400', 'Halbert' => '000401', 'Glaive' => '000402', 'Berdys' => '000403', 'Gungnir' => '000404',
+                'Slicer' => '000500', 'Spinner' => '000501', 'Cutter' => '000502', 'Sawcer' => '000503', 'Diska' => '000504',
+                'Handgun' => '000600', 'Autogun' => '000601', 'Lockgun' => '000602', 'Railgun' => '000603', 'Raygun' => '000604',
+                'Rifle' => '000700', 'Sniper' => '000701', 'Blaster' => '000702', 'Beam' => '000703', 'Laser' => '000704',
+                'Mechgun' => '000800', 'Assault' => '000801', 'Repeater' => '000802', 'Gatling' => '000803', 'Vulcan' => '000804',
+                'Shot' => '000900', 'Spread' => '000901', 'Cannon' => '000902', 'Launcher' => '000903', 'Arms' => '000904',
+                'Cane' => '000A00', 'Stick' => '000A01', 'Mace' => '000A02', 'Club' => '000A03',
+                'Rod' => '000B00', 'Pole' => '000B01', 'Pillar' => '000B02', 'Striker' => '000B03',
+                'Wand' => '000C00', 'Staff' => '000C01', 'Baton' => '000C02', 'Scepter' => '000C03',
+                'Talis' => '008C00', 'Mahu' => '008C01', 'Hitogata' => '008C02'
             ];
             
             // Backwards compatibility for existing string-based missions (e.g. 'Stick')
@@ -986,26 +994,45 @@ foreach ($clients as $client) {
                 $selected_target_friendly = "the " . $selected_target_id . " technique";
                 break;
             case 'ITEM':
-                $generic_weapon_types = ['Saber', 'Dagger', 'Handgun', 'Rifle', 'Cane', 'Rod', 'Wand'];
-                if ($level >= 11) {
-                    $generic_weapon_types = array_merge($generic_weapon_types, ['Brand', 'Knife', 'Autogun', 'Sniper', 'Stick', 'Baton']);
-                }
-                if ($level >= 21) {
-                    $generic_weapon_types = array_merge($generic_weapon_types, ['Buster', 'Blade', 'Lockgun', 'Blaster', 'Mace', 'Scepter']);
-                }
-                if ($level >= 40) {
-                    $generic_weapon_types = array_merge($generic_weapon_types, ['Pallasch', 'Claymore', 'Edge', 'Berdys', 'Sawcer', 'Railgun', 'Beam', 'Launcher', 'Gatling', 'Club', 'Striker']);
-                }
-                if ($level >= 80) {
-                    $generic_weapon_types = array_merge($generic_weapon_types, ['Gladius', 'Calibur', 'Ripper', 'Gungnir', 'Diska', 'Raygun', 'Laser', 'Arms', 'Vulcan']);
+                $is_hunter = (stripos($class, 'HU') === 0);
+                $is_ranger = (stripos($class, 'RA') === 0);
+                $is_force = (stripos($class, 'FO') === 0);
+
+                $generic_weapon_types = [];
+                if ($is_hunter) {
+                    $generic_weapon_types = ['Saber', 'Dagger', 'Sword', 'Partisan', 'Slicer', 'Handgun', 'Mechgun'];
+                    if ($level >= 11) $generic_weapon_types = array_merge($generic_weapon_types, ['Brand', 'Knife', 'Gigush', 'Halbert', 'Spinner', 'Autogun', 'Assault']);
+                    if ($level >= 21) $generic_weapon_types = array_merge($generic_weapon_types, ['Buster', 'Blade', 'Breaker', 'Glaive', 'Cutter', 'Lockgun', 'Repeater']);
+                    if ($level >= 40) $generic_weapon_types = array_merge($generic_weapon_types, ['Pallasch', 'Edge', 'Claymore', 'Berdys', 'Sawcer', 'Railgun', 'Gatling']);
+                    if ($level >= 80) $generic_weapon_types = array_merge($generic_weapon_types, ['Gladius', 'Ripper', 'Calibur', 'Gungnir', 'Diska', 'Raygun', 'Vulcan']);
+                } elseif ($is_ranger) {
+                    $generic_weapon_types = ['Handgun', 'Rifle', 'Shot', 'Mechgun'];
+                    if ($level >= 11) $generic_weapon_types = array_merge($generic_weapon_types, ['Autogun', 'Sniper', 'Spread', 'Assault']);
+                    if ($level >= 21) $generic_weapon_types = array_merge($generic_weapon_types, ['Lockgun', 'Blaster', 'Cannon', 'Repeater']);
+                    if ($level >= 40) $generic_weapon_types = array_merge($generic_weapon_types, ['Railgun', 'Beam', 'Launcher', 'Gatling']);
+                    if ($level >= 80) $generic_weapon_types = array_merge($generic_weapon_types, ['Raygun', 'Laser', 'Arms', 'Vulcan']);
+                } else {
+                    $generic_weapon_types = ['Saber', 'Handgun', 'Cane', 'Rod', 'Wand', 'Talis'];
+                    if ($level >= 11) $generic_weapon_types = array_merge($generic_weapon_types, ['Brand', 'Autogun', 'Stick', 'Pole', 'Staff', 'Mahu']);
+                    if ($level >= 21) $generic_weapon_types = array_merge($generic_weapon_types, ['Buster', 'Lockgun', 'Mace', 'Pillar', 'Baton', 'Hitogata']);
+                    if ($level >= 40) $generic_weapon_types = array_merge($generic_weapon_types, ['Pallasch', 'Railgun', 'Club', 'Striker', 'Scepter']);
+                    if ($level >= 80) $generic_weapon_types = array_merge($generic_weapon_types, ['Gladius', 'Raygun']);
                 }
                 
                 $generic_weapon_hex_map = [
-                    'Saber' => '007000', 'Dagger' => '000300', 'Handgun' => '000600', 'Rifle' => '007600', 'Cane' => '007900', 'Rod' => '007A00', 'Wand' => '007B00',
-                    'Brand' => '000101', 'Knife' => '000301', 'Autogun' => '000601', 'Sniper' => '000701', 'Stick' => '000A01', 'Baton' => '000C02',
-                    'Buster' => '000102', 'Blade' => '007200', 'Lockgun' => '000602', 'Blaster' => '000702', 'Mace' => '000A02', 'Scepter' => '000C03',
-                    'Pallasch' => '000103', 'Claymore' => '000203', 'Edge' => '000303', 'Berdys' => '000403', 'Sawcer' => '000503', 'Railgun' => '000603', 'Beam' => '000703', 'Launcher' => '00A600', 'Gatling' => '000803', 'Club' => '000A03', 'Striker' => '000B03',
-                    'Gladius' => '000104', 'Calibur' => '000204', 'Ripper' => '000304', 'Gungnir' => '000404', 'Diska' => '000504', 'Raygun' => '000604', 'Laser' => '000704', 'Arms' => '000904', 'Vulcan' => '000804',
+                    'Saber' => '000100', 'Brand' => '000101', 'Buster' => '000102', 'Pallasch' => '000103', 'Gladius' => '000104',
+                    'Sword' => '000200', 'Gigush' => '000201', 'Breaker' => '000202', 'Claymore' => '000203', 'Calibur' => '000204',
+                    'Dagger' => '000300', 'Knife' => '000301', 'Blade' => '000302', 'Edge' => '000303', 'Ripper' => '000304',
+                    'Partisan' => '000400', 'Halbert' => '000401', 'Glaive' => '000402', 'Berdys' => '000403', 'Gungnir' => '000404',
+                    'Slicer' => '000500', 'Spinner' => '000501', 'Cutter' => '000502', 'Sawcer' => '000503', 'Diska' => '000504',
+                    'Handgun' => '000600', 'Autogun' => '000601', 'Lockgun' => '000602', 'Railgun' => '000603', 'Raygun' => '000604',
+                    'Rifle' => '000700', 'Sniper' => '000701', 'Blaster' => '000702', 'Beam' => '000703', 'Laser' => '000704',
+                    'Mechgun' => '000800', 'Assault' => '000801', 'Repeater' => '000802', 'Gatling' => '000803', 'Vulcan' => '000804',
+                    'Shot' => '000900', 'Spread' => '000901', 'Cannon' => '000902', 'Launcher' => '000903', 'Arms' => '000904',
+                    'Cane' => '000A00', 'Stick' => '000A01', 'Mace' => '000A02', 'Club' => '000A03',
+                    'Rod' => '000B00', 'Pole' => '000B01', 'Pillar' => '000B02', 'Striker' => '000B03',
+                    'Wand' => '000C00', 'Staff' => '000C01', 'Baton' => '000C02', 'Scepter' => '000C03',
+                    'Talis' => '008C00', 'Mahu' => '008C01', 'Hitogata' => '008C02'
                 ];
 
                 // Filter out items the player already has in inventory to prevent instant completion

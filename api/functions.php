@@ -135,12 +135,34 @@ function getClearObjective($type, $target) {
 
             if (ctype_xdigit($itemName) && strlen($itemName) >= 6) {
                 $hex_base = substr($itemName, 0, 6);
-                $map_path = __DIR__ . '/item_map.json';
-                if (file_exists($map_path)) {
-                    $map = json_decode(file_get_contents($map_path), true);
-                    $reverse_map = array_flip($map);
-                    if (isset($reverse_map[$hex_base])) {
-                        $itemName = ucwords($reverse_map[$hex_base]);
+                
+                $generic_weapon_hex_map = [
+                    'Saber' => '000100', 'Brand' => '000101', 'Buster' => '000102', 'Pallasch' => '000103', 'Gladius' => '000104',
+                    'Sword' => '000200', 'Gigush' => '000201', 'Breaker' => '000202', 'Claymore' => '000203', 'Calibur' => '000204',
+                    'Dagger' => '000300', 'Knife' => '000301', 'Blade' => '000302', 'Edge' => '000303', 'Ripper' => '000304',
+                    'Partisan' => '000400', 'Halbert' => '000401', 'Glaive' => '000402', 'Berdys' => '000403', 'Gungnir' => '000404',
+                    'Slicer' => '000500', 'Spinner' => '000501', 'Cutter' => '000502', 'Sawcer' => '000503', 'Diska' => '000504',
+                    'Handgun' => '000600', 'Autogun' => '000601', 'Lockgun' => '000602', 'Railgun' => '000603', 'Raygun' => '000604',
+                    'Rifle' => '000700', 'Sniper' => '000701', 'Blaster' => '000702', 'Beam' => '000703', 'Laser' => '000704',
+                    'Mechgun' => '000800', 'Assault' => '000801', 'Repeater' => '000802', 'Gatling' => '000803', 'Vulcan' => '000804',
+                    'Shot' => '000900', 'Spread' => '000901', 'Cannon' => '000902', 'Launcher' => '000903', 'Arms' => '000904',
+                    'Cane' => '000A00', 'Stick' => '000A01', 'Mace' => '000A02', 'Club' => '000A03',
+                    'Rod' => '000B00', 'Pole' => '000B01', 'Pillar' => '000B02', 'Striker' => '000B03',
+                    'Wand' => '000C00', 'Staff' => '000C01', 'Baton' => '000C02', 'Scepter' => '000C03',
+                    'Talis' => '008C00', 'Mahu' => '008C01', 'Hitogata' => '008C02'
+                ];
+                $reverse_generic_map = array_flip($generic_weapon_hex_map);
+                
+                if (isset($reverse_generic_map[$hex_base])) {
+                    $itemName = $reverse_generic_map[$hex_base];
+                } else {
+                    $map_path = __DIR__ . '/item_map.json';
+                    if (file_exists($map_path)) {
+                        $map = json_decode(file_get_contents($map_path), true);
+                        $reverse_map = array_flip($map);
+                        if (isset($reverse_map[$hex_base])) {
+                            $itemName = ucwords($reverse_map[$hex_base]);
+                        }
                     }
                 }
             }
@@ -168,31 +190,31 @@ function getClearObjective($type, $target) {
             // Maps Boss integer Floor IDs to the boss name to ensure users know where to go
             $bosses = [11=>'Dragon (Forest)', 12=>'De Rol Le (Caves)', 13=>'Vol Opt (Mines)', 14=>'Dark Falz (Ruins)', 17=>'Barba Ray (Temple)', 16=>'Gol Dragon (Spaceship)', 15=>'Gal Gryphon (CCA)', 18=>'Olga Flow (Seabed)', 19=>'Saint-Million (Crater)'];
             $ep = ($target >= 15 && $target <= 18) ? '2' : ($target == 19 ? '4' : '1');
-            $boss = $bosses[$target] ?? "Boss at Floor $target";
+            $boss = $bosses[$target] ?? (is_numeric($target) ? "Boss at Floor $target" : $target);
             return __('[Ep %s] Defeat the %s', $ep, htmlspecialchars(__($boss)));
         case 'MENTOR_BOSS':
             if ($target === 'ANY_DRAGON') return __('Mentor a player (5+ levels lower) through Any Dragon Boss (Forest, Sil, or Gol)');
             $bosses = [11=>'Dragon (Forest)', 12=>'De Rol Le (Caves)', 13=>'Vol Opt (Mines)', 14=>'Dark Falz (Ruins)', 17=>'Barba Ray (Temple)', 16=>'Gol Dragon (Spaceship)', 15=>'Gal Gryphon (CCA)', 18=>'Olga Flow (Seabed)', 19=>'Saint-Million (Crater)'];
             $ep = ($target >= 15 && $target <= 18) ? '2' : ($target == 19 ? '4' : '1');
-            $boss = $bosses[$target] ?? "Boss at Floor $target";
+            $boss = $bosses[$target] ?? (is_numeric($target) ? "Boss at Floor $target" : $target);
             return __('[Ep %s] Carry a lower-level player (5+ levels lower) through the %s fight', $ep, htmlspecialchars(__($boss)));
         case 'HARDCORE_MENTOR':
             if ($target === 'ANY_DRAGON') return __('Hardcore Carry 3 lower-level players (10+ levels lower) through Any Dragon Boss');
             $bosses = [11=>'Dragon (Forest)', 12=>'De Rol Le (Caves)', 13=>'Vol Opt (Mines)', 14=>'Dark Falz (Ruins)', 17=>'Barba Ray (Temple)', 16=>'Gol Dragon (Spaceship)', 15=>'Gal Gryphon (CCA)', 18=>'Olga Flow (Seabed)', 19=>'Saint-Million (Crater)'];
             $ep = ($target >= 15 && $target <= 18) ? '2' : ($target == 19 ? '4' : '1');
-            $boss = $bosses[$target] ?? "Boss at Floor $target";
+            $boss = $bosses[$target] ?? (is_numeric($target) ? "Boss at Floor $target" : $target);
             return __('[Ep %s] Hardcore Carry 3 lower-level players (10+ levels lower) through the %s fight', $ep, htmlspecialchars(__($boss)));
         case 'DIVERSE_PARTY_BOSS':
             if ($target === 'ANY_DRAGON') return __('Defeat Any Dragon Boss with a diverse party (HU, RA, FO)');
             $bosses = [11=>'Dragon (Forest)', 12=>'De Rol Le (Caves)', 13=>'Vol Opt (Mines)', 14=>'Dark Falz (Ruins)', 17=>'Barba Ray (Temple)', 16=>'Gol Dragon (Spaceship)', 15=>'Gal Gryphon (CCA)', 18=>'Olga Flow (Seabed)', 19=>'Saint-Million (Crater)'];
             $ep = ($target >= 15 && $target <= 18) ? '2' : ($target == 19 ? '4' : '1');
-            $boss = $bosses[$target] ?? "Boss at Floor $target";
+            $boss = $bosses[$target] ?? (is_numeric($target) ? "Boss at Floor $target" : $target);
             return __('[Ep %s] Defeat the %s with a diverse party (HU, RA, FO)', $ep, htmlspecialchars(__($boss)));
         case 'SPEEDRUN_BOSS':
             list($target_floor, $time_limit) = explode('_', $target);
             $bosses = [11=>'Dragon (Forest)', 12=>'De Rol Le (Caves)', 13=>'Vol Opt (Mines)', 14=>'Dark Falz (Ruins)', 17=>'Barba Ray (Temple)', 16=>'Gol Dragon (Spaceship)', 15=>'Gal Gryphon (CCA)', 18=>'Olga Flow (Seabed)', 19=>'Saint-Million (Crater)'];
             $ep = ($target_floor >= 15 && $target_floor <= 18) ? '2' : ($target_floor == 19 ? '4' : '1');
-            $boss = $bosses[$target_floor] ?? "Boss at Floor $target_floor";
+            $boss = $bosses[$target_floor] ?? (is_numeric($target_floor) ? "Boss at Floor $target_floor" : $target_floor);
             return __('[Ep %s] Defeat the %s in under %s seconds', $ep, htmlspecialchars(__($boss)), htmlspecialchars($time_limit));
         case 'SPEEDRUN_FLOOR':
             list($target_floor, $time_limit) = explode('_', $target);
