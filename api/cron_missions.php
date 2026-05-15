@@ -962,7 +962,7 @@ foreach ($clients as $client) {
                 if (empty($allowed_bosses)) $allowed_bosses = [11]; // fallback
 
                 $rand_boss = $allowed_bosses[array_rand($allowed_bosses)];
-                $time_limit = mt_rand(180, 480); // 3 to 8 minutes
+                $time_limit = mt_rand(600, 1200); // 10 to 20 minutes
                 $selected_target_id = $rand_boss . '_' . $time_limit;
                 $selected_target_friendly = $bosses[$rand_boss] . " in under " . floor($time_limit/60) . " minutes and " . ($time_limit%60) . " seconds";
                 $mission_episode = ($rand_boss >= 15 && $rand_boss <= 18) ? 2 : ($rand_boss == 19 ? 4 : 1);
