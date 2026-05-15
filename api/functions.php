@@ -215,6 +215,13 @@ function getClearObjective($type, $target) {
             $bosses = [11=>'Dragon (Forest)', 12=>'De Rol Le (Caves)', 13=>'Vol Opt (Mines)', 14=>'Dark Falz (Ruins)', 17=>'Barba Ray (Temple)', 16=>'Gol Dragon (Spaceship)', 15=>'Gal Gryphon (CCA)', 18=>'Olga Flow (Seabed)', 19=>'Saint-Million (Crater)'];
             $ep = ($target_floor >= 15 && $target_floor <= 18) ? '2' : ($target_floor == 19 ? '4' : '1');
             $boss = $bosses[$target_floor] ?? (is_numeric($target_floor) ? "Boss at Floor $target_floor" : $target_floor);
+            
+            $mins = floor($time_limit / 60);
+            $secs = $time_limit % 60;
+            if ($mins > 0) {
+                if ($secs == 0) return __('[Ep %s] Defeat the %s in under %s minutes', $ep, htmlspecialchars(__($boss)), $mins);
+                return __('[Ep %s] Defeat the %s in under %s minutes and %s seconds', $ep, htmlspecialchars(__($boss)), $mins, $secs);
+            }
             return __('[Ep %s] Defeat the %s in under %s seconds', $ep, htmlspecialchars(__($boss)), htmlspecialchars($time_limit));
         case 'SPEEDRUN_FLOOR':
             list($target_floor, $time_limit) = explode('_', $target);
