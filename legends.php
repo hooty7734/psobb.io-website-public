@@ -3,6 +3,7 @@ $page_title = 'Wall of Legends - PSOBB Private Server';
 $current_page = 'stats';
 include 'includes/header.php';
 require_once 'api/db.php';
+require_once 'api/functions.php';
 $db = get_db();
 
 // Fetch Completed Bounties (Wall of Legends)
@@ -47,7 +48,7 @@ while ($row = $cb_res->fetchArray(SQLITE3_ASSOC)) {
                                     <tr>
                                         <td style="color: #00ff88; font-weight:bold;"><?= htmlspecialchars($c['username']) ?></td>
                                         <td><?= htmlspecialchars($c['title']) ?></td>
-                                        <td style="color: #ffaa00; font-family: monospace; font-size: 0.9em;"><?= htmlspecialchars($c['reward_item_string']) ?></td>
+                                        <td style="color: #ffaa00; font-family: monospace; font-size: 0.9em;"><?= renderRewardString($c['reward_item_string']) ?></td>
                                         <td style="opacity:0.6; font-size: 0.85em;"><?= $c['completed_at'] ?></td>
                                     </tr>
                                 <?php endforeach; ?>
