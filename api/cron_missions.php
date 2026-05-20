@@ -840,8 +840,19 @@ foreach ($clients as $client) {
         $is_cast = (stripos($class, 'cast') !== false || stripos($class, 'caseal') !== false);
         if (!$is_cast) {
             // TECHNIQUE missions require the player to learn a tech they don't yet know.
-            // Only offer TECHNIQUE if at least one of the 8 base techs is still unknown.
-            $base_techs = ['Foie', 'Zonde', 'Barta', 'Megid', 'Resta', 'Anti', 'Shifta', 'Deband'];
+            // Only offer TECHNIQUE if at least one of the base techs learnable by their class is still unknown.
+            $base_techs = [];
+            $class_lower = strtolower($class);
+            if (strpos($class_lower, 'fo') === 0) {
+                $base_techs = ['Foie', 'Zonde', 'Barta', 'Megid', 'Grants', 'Resta', 'Anti', 'Shifta', 'Deband', 'Jellen', 'Zalure', 'Ryuker', 'Reverser'];
+            } elseif ($class_lower === 'hunewearl' || $class_lower === 'ramarl') {
+                $base_techs = ['Foie', 'Zonde', 'Barta', 'Resta', 'Anti', 'Shifta', 'Deband', 'Jellen', 'Zalure'];
+            } elseif ($class_lower === 'ramar') {
+                $base_techs = ['Foie', 'Zonde', 'Barta', 'Resta', 'Anti', 'Shifta', 'Deband'];
+            } elseif ($class_lower === 'humar') {
+                $base_techs = ['Foie', 'Zonde', 'Barta', 'Resta', 'Anti'];
+            }
+
             $tech_levels = $client['TechniqueLevels'] ?? [];
             $has_unknown_tech = false;
             foreach ($base_techs as $bt) {
@@ -851,7 +862,7 @@ foreach ($clients as $client) {
                 }
                 if (!$known) { $has_unknown_tech = true; break; }
             }
-            if ($has_unknown_tech) $available_goals[] = 'TECHNIQUE';
+            if ($has_unknown_tech && !empty($base_techs)) $available_goals[] = 'TECHNIQUE';
         }
 
         if ($hp_mats < 125) $available_goals[] = 'MAT_HP';
@@ -979,7 +990,18 @@ foreach ($clients as $client) {
                 $mission_episode = 1;
                 break;
             case 'TECHNIQUE':
-                $techs = ['Foie', 'Zonde', 'Barta', 'Megid', 'Resta', 'Anti', 'Shifta', 'Deband'];
+                $techs = [];
+                $class_lower = strtolower($class);
+                if (strpos($class_lower, 'fo') === 0) {
+                    $techs = ['Foie', 'Zonde', 'Barta', 'Megid', 'Grants', 'Resta', 'Anti', 'Shifta', 'Deband', 'Jellen', 'Zalure', 'Ryuker', 'Reverser'];
+                } elseif ($class_lower === 'hunewearl' || $class_lower === 'ramarl') {
+                    $techs = ['Foie', 'Zonde', 'Barta', 'Resta', 'Anti', 'Shifta', 'Deband', 'Jellen', 'Zalure'];
+                } elseif ($class_lower === 'ramar') {
+                    $techs = ['Foie', 'Zonde', 'Barta', 'Resta', 'Anti', 'Shifta', 'Deband'];
+                } elseif ($class_lower === 'humar') {
+                    $techs = ['Foie', 'Zonde', 'Barta', 'Resta', 'Anti'];
+                }
+
                 // Filter out techs the player already knows to prevent instant completion
                 $known_techs = $client['TechniqueLevels'] ?? [];
                 $unknown_techs = array_filter($techs, function($t) use ($known_techs) {
@@ -989,7 +1011,7 @@ foreach ($clients as $client) {
                     return true;
                 });
                 // Safety: if no unknown techs (should not happen due to guard), pick any
-                if (empty($unknown_techs)) $unknown_techs = $techs;
+                if (empty($unknown_techs)) $unknown_techs = !empty($techs) ? $techs : ['Foie'];
                 $selected_target_id = $unknown_techs[array_rand($unknown_techs)];
                 $selected_target_friendly = "the " . $selected_target_id . " technique";
                 break;
