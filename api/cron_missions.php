@@ -213,7 +213,7 @@ foreach ($clients as $client) {
     // 3. Fetch all active "in-progress" missions for the CURRENT CHARACTER.
     // If character_name is null/empty (legacy missions), it will still be evaluated for backwards compatibility.
     // However, new missions will strictly be tied to a character.
-    $stmt = $db->prepare("SELECT pm.id, pm.mission_id, u.discord_id, pm.character_name, m.title AS mission_title, m.goal_type, m.goal_target, m.reward_item_string 
+    $stmt = $db->prepare("SELECT pm.id, pm.mission_id, u.discord_id, pm.character_name, m.title AS mission_title, m.description AS mission_desc, m.goal_type, m.goal_target, m.reward_item_string 
                           FROM player_missions pm 
                           JOIN missions m ON pm.mission_id = m.id 
                           JOIN users u ON pm.account_id = u.account_id
@@ -339,44 +339,6 @@ foreach ($clients as $client) {
             $prev_f = (int)($prev_state['floor'] ?? -1);
             $was_fast_kill = false;
 
-            // =====================================================================
-            // EPISODE-AWARE PRECEDING FLOOR VALIDATION
-            // Floor IDs collide across episodes (e.g., Floor 13 = Vol Opt in Ep1 AND Olga Flow in Ep2).
-            // To prevent cross-episode false completions, we validate the player's pre-boss floor
-            // against episode-specific dungeon paths. Keyed by ORIGINAL target ID (before remapping).
-            //
-            //   Target 11 (Dragon, Ep1):        Must come from Forest (1-2)
-            //   Target 12 (De Rol Le, Ep1):     Must come from Cave (3-5)
-            //   Target 13 (Vol Opt, Ep1):       Must come from Mine (6-7)
-            //   Target 14 (Dark Falz, Ep1):     Must come from Ruins (8-10)
-            //   Target 15 (Gal Gryphon, Ep2):   Must come from CCA/Jungle/Mtn/Seaside (5-9)
-            //   Target 16 (Gol Dragon, Ep2):    Must come from VR Ship (3-4)
-            //   Target 17 (Barba Ray, Ep2):     Must come from VR Temple (1-2)
-            //   Target 18 (Olga Flow, Ep2):     Must come from Seabed (10-11)
-            //   Target 19 (Saint-Million, Ep4): Must come from Desert/Crater (5-8)
-            //   ANY_DRAGON:                     Forest (1-2) or VR Ship (3-4) or Crater (1-8)
-            // =====================================================================
-            $valid_preceding_floors = [
-                '11' => [1, 2],           // Dragon: Forest 1-2
-                '12' => [3, 4, 5],        // De Rol Le: Cave 1-3
-                '13' => [6, 7],           // Vol Opt: Mine 1-2
-                '14' => [8, 9, 10],       // Dark Falz: Ruins 1-3
-                '15' => [5, 6, 7, 8, 9],  // Gal Gryphon: CCA, Jungle, Mountain, Seaside
-                '16' => [3, 4],           // Gol Dragon: VR Ship Alpha/Beta
-                '17' => [1, 2],           // Barba Ray: VR Temple Alpha/Beta
-                '18' => [10, 11],         // Olga Flow: Seabed Upper/Lower
-                '19' => [5, 6, 7, 8],     // Saint-Million: Crater Interior / Desert
-            ];
-
-            $fast_kill_preceding = [
-                11 => [2], // Dragon from Forest 2
-                12 => [5, 6, 7, 8, 9], // De Rol Le from Cave 3, Gal Gryphon from CCA
-                13 => [7, 11], // Vol Opt from Mine 2, Olga Flow from Seabed Lower
-                14 => [10, 2], // Dark Falz from Ruins 3, Barba Ray from Temple Beta
-                15 => [4], // Gol Dragon from Spaceship Beta
-                9  => [8], // Saint-Million from Crater Interior
-            ];
-
             if ($target_floor === 'ANY_DRAGON') {
                 $dragon_floors = [11, 15]; // 11 = Ep1 Dragon + Ep4 Sil Dragon, 15 = Ep2 Gol Dragon
                 $recent_boss_fight = in_array($curr_f, $dragon_floors) || in_array($prev_f, $dragon_floors);
@@ -399,16 +361,50 @@ foreach ($clients as $client) {
                 }
             } else {
                 $target_floor = (int)$target_floor;
-                // Map Episode 2/4 Boss "Fake" Floor IDs back to actual PSO Client Floor IDs
-                $mapped_floor = $target_floor;
-                if ($target_floor === 15) $mapped_floor = 12; // Gal Gryphon -> De Rol Le Floor
-                elseif ($target_floor === 16) $mapped_floor = 15; // Gol Dragon -> VR Spaceship Final
-                elseif ($target_floor === 17) $mapped_floor = 14; // Barba Ray -> Dark Falz Floor
-                elseif ($target_floor === 18) $mapped_floor = 13; // Olga Flow -> Vol Opt Floor
-                elseif ($target_floor === 19) $mapped_floor = 9;  // Saint-Million -> Meteor Impact Site
+                
+                // Backwards compatibility / robust mapping of synthetic IDs to raw IDs + episode
+                $episode = null;
+                if ($target_floor === 15) {
+                    $mapped_floor = 12; // Gal Gryphon
+                    $episode = 2;
+                } elseif ($target_floor === 16) {
+                    $mapped_floor = 15; // Gol Dragon
+                    $episode = 2;
+                } elseif ($target_floor === 17) {
+                    $mapped_floor = 14; // Barba Ray
+                    $episode = 2;
+                } elseif ($target_floor === 18) {
+                    $mapped_floor = 13; // Olga Flow
+                    $episode = 2;
+                } elseif ($target_floor === 19) {
+                    $mapped_floor = 9;  // Saint-Million
+                    $episode = 4;
+                } else {
+                    $mapped_floor = $target_floor;
+                }
+
+                // If episode not determined by legacy synthetic ID, use the context parser!
+                if ($episode === null) {
+                    $episode = get_boss_episode_by_context($m['mission_title'], $m['mission_desc'] ?? '', $mapped_floor);
+                }
+
+                $comp_key = "{$mapped_floor}_{$episode}";
+
+                $fast_kill_preceding = [
+                    '11_1' => [2],             // Dragon from Forest 2
+                    '11_4' => [8],             // Sil Dragon
+                    '12_1' => [5],             // De Rol Le from Cave 3
+                    '12_2' => [5, 6, 7, 8, 9], // Gal Gryphon from CCA/Jungle/Mtn/Seaside
+                    '13_1' => [7],             // Vol Opt from Mine 2
+                    '13_2' => [11],            // Olga Flow from Seabed Lower
+                    '14_1' => [10],            // Dark Falz from Ruins 3
+                    '14_2' => [2],             // Barba Ray from Temple Beta
+                    '15_2' => [4],             // Gol Dragon from Spaceship Beta
+                    '9_4'  => [8],             // Saint-Million from Crater Interior
+                ];
 
                 // Catch players who enter the boss arena, kill the boss, and warp to town all within the 60-second cron window.
-                if (isset($fast_kill_preceding[$mapped_floor]) && in_array($prev_f, $fast_kill_preceding[$mapped_floor])) {
+                if (isset($fast_kill_preceding[$comp_key]) && in_array($prev_f, $fast_kill_preceding[$comp_key])) {
                     if ($curr_f !== $prev_f && $curr_f !== $mapped_floor) {
                         $was_fast_kill = true;
                     }
@@ -427,10 +423,22 @@ foreach ($clients as $client) {
                 // This prevents Floor 13 in Ep2 (Olga Flow) from completing a Vol Opt
                 // mission (also Floor 13 in Ep1), and vice versa.
                 // =====================================================================
-                $valid_floors_for_target = $valid_preceding_floors[(string)$original_target] ?? null;
+                $valid_preceding_floors = [
+                    '11_1' => [1, 2],           // Dragon: Forest 1-2
+                    '11_4' => [5, 6, 7, 8],     // Sil Dragon Crater/Desert
+                    '12_1' => [3, 4, 5],        // De Rol Le: Cave 1-3
+                    '12_2' => [5, 6, 7, 8, 9],  // Gal Gryphon: CCA, Jungle, Mountain, Seaside
+                    '13_1' => [6, 7],           // Vol Opt: Mine 1-2
+                    '13_2' => [10, 11],         // Olga Flow: Seabed Upper/Lower
+                    '14_1' => [8, 9, 10],       // Dark Falz: Ruins 1-3
+                    '14_2' => [1, 2],           // Barba Ray: VR Temple Alpha/Beta
+                    '15_2' => [3, 4],           // Gol Dragon: VR Ship Alpha/Beta
+                    '9_4'  => [5, 6, 7, 8],     // Saint-Million: Crater Interior / Desert
+                ];
+                $valid_floors_for_target = $valid_preceding_floors[$comp_key] ?? null;
                 if ($recent_boss_fight && $valid_floors_for_target !== null && $pre_boss_floor >= 0) {
                     if (!in_array($pre_boss_floor, $valid_floors_for_target)) {
-                        echo "[CRON] Boss target {$original_target} rejected: pre_boss_floor={$pre_boss_floor} not in valid set [" . implode(',', $valid_floors_for_target) . "] — wrong episode\n";
+                        echo "[CRON] Boss target {$original_target} (key {$comp_key}) rejected: pre_boss_floor={$pre_boss_floor} not in valid set [" . implode(',', $valid_floors_for_target) . "] — wrong episode\n";
                         $recent_boss_fight = false;
                     }
                 }
@@ -671,23 +679,51 @@ foreach ($clients as $client) {
             
             // Map Episode 2/4 Boss "Fake" Floor IDs back to actual PSO Client Floor IDs
             $mapped_floor = $target_floor;
-            if ($target_floor === 15) $mapped_floor = 12; // Gal Gryphon -> De Rol Le Floor
-            elseif ($target_floor === 16) $mapped_floor = 15; // Gol Dragon -> VR Spaceship Final
-            elseif ($target_floor === 17) $mapped_floor = 14; // Barba Ray -> Dark Falz Floor
-            elseif ($target_floor === 18) $mapped_floor = 13; // Olga Flow -> Vol Opt Floor
-            elseif ($target_floor === 19) $mapped_floor = 9;  // Saint-Million -> Meteor Impact Site
+            $episode = null;
+            if ($target_floor === 15) {
+                $mapped_floor = 12; // Gal Gryphon -> De Rol Le Floor
+                $episode = 2;
+            } elseif ($target_floor === 16) {
+                $mapped_floor = 15; // Gol Dragon -> VR Spaceship Final
+                $episode = 2;
+            } elseif ($target_floor === 17) {
+                $mapped_floor = 14; // Barba Ray -> Dark Falz Floor
+                $episode = 2;
+            } elseif ($target_floor === 18) {
+                $mapped_floor = 13; // Olga Flow -> Vol Opt Floor
+                $episode = 2;
+            } elseif ($target_floor === 19) {
+                $mapped_floor = 9;  // Saint-Million -> Meteor Impact Site
+                $episode = 4;
+            } else {
+                $mapped_floor = $target_floor;
+            }
+            
+            if ($episode === null) {
+                $episode = get_boss_episode_by_context($m['mission_title'], $m['mission_desc'] ?? '', $mapped_floor);
+            }
+            
             $target_floor = $mapped_floor;
-
             $prev_f = (int)($prev_state['floor'] ?? -1);
             
+            $comp_key = "{$target_floor}_{$episode}";
+            
             $fast_kill_preceding = [
-                11 => [2], 12 => [5, 6, 7, 8, 9], 13 => [7, 11],
-                14 => [10, 2], 15 => [4], 9 => [8],
+                '11_1' => [2],             // Dragon from Forest 2
+                '11_4' => [8],             // Sil Dragon
+                '12_1' => [5],             // De Rol Le from Cave 3
+                '12_2' => [5, 6, 7, 8, 9], // Gal Gryphon from CCA/Jungle/Mtn/Seaside
+                '13_1' => [7],             // Vol Opt from Mine 2
+                '13_2' => [11],            // Olga Flow from Seabed Lower
+                '14_1' => [10],            // Dark Falz from Ruins 3
+                '14_2' => [2],             // Barba Ray from Temple Beta
+                '15_2' => [4],             // Gol Dragon from Spaceship Beta
+                '9_4'  => [8],             // Saint-Million from Crater Interior
             ];
             
             // Catch players who enter the boss arena, kill the boss, and warp to town all within the 60-second cron window.
             $was_fast_kill = false;
-            if (isset($fast_kill_preceding[$target_floor]) && in_array($prev_f, $fast_kill_preceding[$target_floor])) {
+            if (isset($fast_kill_preceding[$comp_key]) && in_array($prev_f, $fast_kill_preceding[$comp_key])) {
                 if ($curr_f !== $prev_f && $curr_f !== $target_floor) {
                     $was_fast_kill = true;
                 }
@@ -706,14 +742,21 @@ foreach ($clients as $client) {
             
             // Episode validation: same as BOSS_ARENA — prevent cross-episode collisions
             $valid_preceding_floors_speedrun = [
-                '11' => [1, 2], '12' => [3, 4, 5], '13' => [6, 7], '14' => [8, 9, 10],
-                '15' => [5, 6, 7, 8, 9], '16' => [3, 4], '17' => [1, 2],
-                '18' => [10, 11], '19' => [5, 6, 7, 8],
+                '11_1' => [1, 2],           // Dragon: Forest 1-2
+                '11_4' => [5, 6, 7, 8],     // Sil Dragon Crater/Desert
+                '12_1' => [3, 4, 5],        // De Rol Le: Cave 1-3
+                '12_2' => [5, 6, 7, 8, 9],  // Gal Gryphon: CCA, Jungle, Mountain, Seaside
+                '13_1' => [6, 7],           // Vol Opt: Mine 1-2
+                '13_2' => [10, 11],         // Olga Flow: Seabed Upper/Lower
+                '14_1' => [8, 9, 10],       // Dark Falz: Ruins 1-3
+                '14_2' => [1, 2],           // Barba Ray: VR Temple Alpha/Beta
+                '15_2' => [3, 4],           // Gol Dragon: VR Ship Alpha/Beta
+                '9_4'  => [5, 6, 7, 8],     // Saint-Million: Crater Interior / Desert
             ];
-            $valid_floors_for_speedrun = $valid_preceding_floors_speedrun[(string)$speedrun_target_id] ?? null;
+            $valid_floors_for_speedrun = $valid_preceding_floors_speedrun[$comp_key] ?? null;
             if ($recent_boss_fight && $valid_floors_for_speedrun !== null && $pre_boss_floor >= 0) {
                 if (!in_array($pre_boss_floor, $valid_floors_for_speedrun)) {
-                    echo "[CRON] SPEEDRUN_BOSS target {$speedrun_target_id} rejected: pre_boss_floor={$pre_boss_floor} — wrong episode\n";
+                    echo "[CRON] SPEEDRUN_BOSS target {$speedrun_target_id} (key {$comp_key}) rejected: pre_boss_floor={$pre_boss_floor} — wrong episode\n";
                     $recent_boss_fight = false;
                 }
             }
@@ -950,6 +993,13 @@ foreach ($clients as $client) {
                 $selected_target_id = $allowed_bosses[array_rand($allowed_bosses)];
                 $selected_target_friendly = $bosses[$selected_target_id];
                 $mission_episode = ($selected_target_id >= 15 && $selected_target_id <= 18) ? 2 : ($selected_target_id == 19 ? 4 : 1);
+                
+                // Transition to raw floor targets for DB storage
+                if ($selected_target_id === 15) $selected_target_id = 12; // Gal Gryphon
+                elseif ($selected_target_id === 16) $selected_target_id = 15; // Gol Dragon
+                elseif ($selected_target_id === 17) $selected_target_id = 14; // Barba Ray
+                elseif ($selected_target_id === 18) $selected_target_id = 13; // Olga Flow
+                elseif ($selected_target_id === 19) $selected_target_id = 9;  // Saint-Million
                 break;
             case 'SPEEDRUN_BOSS':
                 $bosses = [11=>'Dragon', 12=>'De Rol Le', 13=>'Vol Opt', 14=>'Dark Falz', 17=>'Barba Ray', 16=>'Gol Dragon', 15=>'Gal Gryphon', 18=>'Olga Flow', 19=>'Saint-Million'];
@@ -974,9 +1024,18 @@ foreach ($clients as $client) {
 
                 $rand_boss = $allowed_bosses[array_rand($allowed_bosses)];
                 $time_limit = mt_rand(600, 1200); // 10 to 20 minutes
-                $selected_target_id = $rand_boss . '_' . $time_limit;
-                $selected_target_friendly = $bosses[$rand_boss] . " in under " . floor($time_limit/60) . " minutes and " . ($time_limit%60) . " seconds";
                 $mission_episode = ($rand_boss >= 15 && $rand_boss <= 18) ? 2 : ($rand_boss == 19 ? 4 : 1);
+                
+                // Transition to raw floor targets for DB storage
+                $mapped_boss = $rand_boss;
+                if ($rand_boss === 15) $mapped_boss = 12; // Gal Gryphon
+                elseif ($rand_boss === 16) $mapped_boss = 15; // Gol Dragon
+                elseif ($rand_boss === 17) $mapped_boss = 14; // Barba Ray
+                elseif ($rand_boss === 18) $mapped_boss = 13; // Olga Flow
+                elseif ($rand_boss === 19) $mapped_boss = 9;  // Saint-Million
+                
+                $selected_target_id = $mapped_boss . '_' . $time_limit;
+                $selected_target_friendly = $bosses[$rand_boss] . " in under " . floor($time_limit/60) . " minutes and " . ($time_limit%60) . " seconds";
                 break;
             case 'SPEEDRUN_FLOOR':
                 $floors = [1=>'Forest 1',2=>'Forest 2',3=>'Cave 1',4=>'Cave 2',5=>'Cave 3',6=>'Mine 1',7=>'Mine 2',8=>'Ruins 1',9=>'Ruins 2',10=>'Ruins 3'];

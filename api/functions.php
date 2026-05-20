@@ -122,9 +122,61 @@ function send_personal_mail($client_acc_id, $from_name, $text)
  *
  * @param string $type The category of the objective (e.g., 'ITEM', 'BOSS_ARENA').
  * @param mixed $target The specific numerical ID or string required to satisfy the goal.
+ * @param string $title The title of the mission for context disambiguation.
+ * @param string $desc The description of the mission for context disambiguation.
  * @return string A fully formatted, user-friendly description of what the player must do.
  */
-function getClearObjective($type, $target)
+function get_boss_episode_by_context($title, $desc, $default_floor)
+{
+    $text = strtolower($title . ' ' . $desc);
+    $default_floor = (int)$default_floor;
+
+    // Olga Flow (Ep2) vs Vol Opt (Ep1)
+    if ($default_floor === 13) {
+        if (strpos($text, 'olga') !== false || strpos($text, 'flow') !== false || strpos($text, 'seabed') !== false || strpos($text, 'フロウ') !== false || strpos($text, '海底') !== false) {
+            return 2;
+        }
+        return 1;
+    }
+
+    // Gal Gryphon (Ep2) vs De Rol Le (Ep1)
+    if ($default_floor === 12) {
+        if (strpos($text, 'gryphon') !== false || strpos($text, 'gal') !== false || strpos($text, 'cca') !== false || strpos($text, 'jungle') !== false || strpos($text, 'mountain') !== false || strpos($text, 'seaside') !== false || strpos($text, 'グリフォン') !== false || strpos($text, '中央管理区') !== false || strpos($text, '高山') !== false || strpos($text, '海岸') !== false || strpos($text, 'ジャングル') !== false) {
+            return 2;
+        }
+        return 1;
+    }
+
+    // Barba Ray (Ep2) vs Dark Falz (Ep1)
+    if ($default_floor === 14) {
+        if (strpos($text, 'barba') !== false || strpos($text, 'ray') !== false || strpos($text, 'temple') !== false || strpos($text, 'バルバレイ') !== false || strpos($text, '神殿') !== false) {
+            return 2;
+        }
+        return 1;
+    }
+
+    // Gol Dragon (Ep2)
+    if ($default_floor === 15) {
+        return 2;
+    }
+
+    // Saint-Million (Ep4)
+    if ($default_floor === 9) {
+        return 4;
+    }
+
+    // Sil Dragon (Ep4) vs Dragon (Ep1)
+    if ($default_floor === 11) {
+        if (strpos($text, 'sil') !== false || strpos($text, 'シル') !== false || strpos($text, 'desert') !== false || strpos($text, 'crater') !== false || strpos($text, '砂漠') !== false || strpos($text, 'クレーター') !== false) {
+            return 4;
+        }
+        return 1;
+    }
+
+    return 1;
+}
+
+function getClearObjective($type, $target, $title = '', $desc = '')
 {
     switch ($type) {
         case 'MESETA':
@@ -265,10 +317,24 @@ function getClearObjective($type, $target)
         case 'BOSS_ARENA':
             if ($target === 'ANY_DRAGON')
                 return __('Defeat Any Dragon Boss (Forest, Sil, or Gol)');
-            // Maps Boss integer Floor IDs to the boss name to ensure users know where to go
-            $bosses = [11 => 'Dragon (Forest)', 12 => 'De Rol Le (Caves)', 13 => 'Vol Opt (Mines)', 14 => 'Dark Falz (Ruins)', 17 => 'Barba Ray (Temple)', 16 => 'Gol Dragon (Spaceship)', 15 => 'Gal Gryphon (CCA)', 18 => 'Olga Flow (Seabed)', 19 => 'Saint-Million (Crater)'];
-            $ep = ($target >= 15 && $target <= 18) ? '2' : ($target == 19 ? '4' : '1');
-            $boss = $bosses[$target] ?? (is_numeric($target) ? "Boss at Floor $target" : $target);
+            
+            $target_floor = (int)$target;
+            $ep = (string)get_boss_episode_by_context($title, $desc, $target_floor);
+            
+            $boss = "Boss at Floor $target_floor";
+            if ($target_floor === 11) {
+                $boss = ($ep === '4') ? 'Sil Dragon (Crater)' : 'Dragon (Forest)';
+            } elseif ($target_floor === 12) {
+                $boss = ($ep === '2') ? 'Gal Gryphon (CCA)' : 'De Rol Le (Caves)';
+            } elseif ($target_floor === 13) {
+                $boss = ($ep === '2') ? 'Olga Flow (Seabed)' : 'Vol Opt (Mines)';
+            } elseif ($target_floor === 14) {
+                $boss = ($ep === '2') ? 'Barba Ray (Temple)' : 'Dark Falz (Ruins)';
+            } elseif ($target_floor === 15) {
+                $boss = 'Gol Dragon (Spaceship)';
+            } elseif ($target_floor === 9) {
+                $boss = 'Saint-Million (Crater)';
+            }
             
             $has_the = true;
             foreach (['Vol Opt', 'Dark Falz', 'Olga Flow', 'Gal Gryphon', 'Saint-Million', 'Gol Dragon'] as $ntb) {
@@ -285,23 +351,68 @@ function getClearObjective($type, $target)
         case 'MENTOR_BOSS':
             if ($target === 'ANY_DRAGON')
                 return __('Mentor a player (5+ levels lower) through Any Dragon Boss (Forest, Sil, or Gol)');
-            $bosses = [11 => 'Dragon (Forest)', 12 => 'De Rol Le (Caves)', 13 => 'Vol Opt (Mines)', 14 => 'Dark Falz (Ruins)', 17 => 'Barba Ray (Temple)', 16 => 'Gol Dragon (Spaceship)', 15 => 'Gal Gryphon (CCA)', 18 => 'Olga Flow (Seabed)', 19 => 'Saint-Million (Crater)'];
-            $ep = ($target >= 15 && $target <= 18) ? '2' : ($target == 19 ? '4' : '1');
-            $boss = $bosses[$target] ?? (is_numeric($target) ? "Boss at Floor $target" : $target);
+            
+            $target_floor = (int)$target;
+            $ep = (string)get_boss_episode_by_context($title, $desc, $target_floor);
+            
+            $boss = "Boss at Floor $target_floor";
+            if ($target_floor === 11) {
+                $boss = ($ep === '4') ? 'Sil Dragon (Crater)' : 'Dragon (Forest)';
+            } elseif ($target_floor === 12) {
+                $boss = ($ep === '2') ? 'Gal Gryphon (CCA)' : 'De Rol Le (Caves)';
+            } elseif ($target_floor === 13) {
+                $boss = ($ep === '2') ? 'Olga Flow (Seabed)' : 'Vol Opt (Mines)';
+            } elseif ($target_floor === 14) {
+                $boss = ($ep === '2') ? 'Barba Ray (Temple)' : 'Dark Falz (Ruins)';
+            } elseif ($target_floor === 15) {
+                $boss = 'Gol Dragon (Spaceship)';
+            } elseif ($target_floor === 9) {
+                $boss = 'Saint-Million (Crater)';
+            }
             return __('[Ep %s] Carry a lower-level player (5+ levels lower) through the %s fight', $ep, htmlspecialchars(__($boss)));
         case 'HARDCORE_MENTOR':
             if ($target === 'ANY_DRAGON')
                 return __('Hardcore Carry 3 lower-level players (10+ levels lower) through Any Dragon Boss');
-            $bosses = [11 => 'Dragon (Forest)', 12 => 'De Rol Le (Caves)', 13 => 'Vol Opt (Mines)', 14 => 'Dark Falz (Ruins)', 17 => 'Barba Ray (Temple)', 16 => 'Gol Dragon (Spaceship)', 15 => 'Gal Gryphon (CCA)', 18 => 'Olga Flow (Seabed)', 19 => 'Saint-Million (Crater)'];
-            $ep = ($target >= 15 && $target <= 18) ? '2' : ($target == 19 ? '4' : '1');
-            $boss = $bosses[$target] ?? (is_numeric($target) ? "Boss at Floor $target" : $target);
+            
+            $target_floor = (int)$target;
+            $ep = (string)get_boss_episode_by_context($title, $desc, $target_floor);
+            
+            $boss = "Boss at Floor $target_floor";
+            if ($target_floor === 11) {
+                $boss = ($ep === '4') ? 'Sil Dragon (Crater)' : 'Dragon (Forest)';
+            } elseif ($target_floor === 12) {
+                $boss = ($ep === '2') ? 'Gal Gryphon (CCA)' : 'De Rol Le (Caves)';
+            } elseif ($target_floor === 13) {
+                $boss = ($ep === '2') ? 'Olga Flow (Seabed)' : 'Vol Opt (Mines)';
+            } elseif ($target_floor === 14) {
+                $boss = ($ep === '2') ? 'Barba Ray (Temple)' : 'Dark Falz (Ruins)';
+            } elseif ($target_floor === 15) {
+                $boss = 'Gol Dragon (Spaceship)';
+            } elseif ($target_floor === 9) {
+                $boss = 'Saint-Million (Crater)';
+            }
             return __('[Ep %s] Hardcore Carry 3 lower-level players (10+ levels lower) through the %s fight', $ep, htmlspecialchars(__($boss)));
         case 'DIVERSE_PARTY_BOSS':
             if ($target === 'ANY_DRAGON')
                 return __('Defeat Any Dragon Boss with a diverse party (HU, RA, FO)');
-            $bosses = [11 => 'Dragon (Forest)', 12 => 'De Rol Le (Caves)', 13 => 'Vol Opt (Mines)', 14 => 'Dark Falz (Ruins)', 17 => 'Barba Ray (Temple)', 16 => 'Gol Dragon (Spaceship)', 15 => 'Gal Gryphon (CCA)', 18 => 'Olga Flow (Seabed)', 19 => 'Saint-Million (Crater)'];
-            $ep = ($target >= 15 && $target <= 18) ? '2' : ($target == 19 ? '4' : '1');
-            $boss = $bosses[$target] ?? (is_numeric($target) ? "Boss at Floor $target" : $target);
+            
+            $target_floor = (int)$target;
+            $ep = (string)get_boss_episode_by_context($title, $desc, $target_floor);
+            
+            $boss = "Boss at Floor $target_floor";
+            if ($target_floor === 11) {
+                $boss = ($ep === '4') ? 'Sil Dragon (Crater)' : 'Dragon (Forest)';
+            } elseif ($target_floor === 12) {
+                $boss = ($ep === '2') ? 'Gal Gryphon (CCA)' : 'De Rol Le (Caves)';
+            } elseif ($target_floor === 13) {
+                $boss = ($ep === '2') ? 'Olga Flow (Seabed)' : 'Vol Opt (Mines)';
+            } elseif ($target_floor === 14) {
+                $boss = ($ep === '2') ? 'Barba Ray (Temple)' : 'Dark Falz (Ruins)';
+            } elseif ($target_floor === 15) {
+                $boss = 'Gol Dragon (Spaceship)';
+            } elseif ($target_floor === 9) {
+                $boss = 'Saint-Million (Crater)';
+            }
             
             $has_the = true;
             foreach (['Vol Opt', 'Dark Falz', 'Olga Flow', 'Gal Gryphon', 'Saint-Million', 'Gol Dragon'] as $ntb) {
@@ -317,9 +428,23 @@ function getClearObjective($type, $target)
             }
         case 'SPEEDRUN_BOSS':
             list($target_floor, $time_limit) = explode('_', $target);
-            $bosses = [11 => 'Dragon (Forest)', 12 => 'De Rol Le (Caves)', 13 => 'Vol Opt (Mines)', 14 => 'Dark Falz (Ruins)', 17 => 'Barba Ray (Temple)', 16 => 'Gol Dragon (Spaceship)', 15 => 'Gal Gryphon (CCA)', 18 => 'Olga Flow (Seabed)', 19 => 'Saint-Million (Crater)'];
-            $ep = ($target_floor >= 15 && $target_floor <= 18) ? '2' : ($target_floor == 19 ? '4' : '1');
-            $boss = $bosses[$target_floor] ?? (is_numeric($target_floor) ? "Boss at Floor $target_floor" : $target_floor);
+            $target_floor = (int)$target_floor;
+            $ep = (string)get_boss_episode_by_context($title, $desc, $target_floor);
+            
+            $boss = "Boss at Floor $target_floor";
+            if ($target_floor === 11) {
+                $boss = ($ep === '4') ? 'Sil Dragon (Crater)' : 'Dragon (Forest)';
+            } elseif ($target_floor === 12) {
+                $boss = ($ep === '2') ? 'Gal Gryphon (CCA)' : 'De Rol Le (Caves)';
+            } elseif ($target_floor === 13) {
+                $boss = ($ep === '2') ? 'Olga Flow (Seabed)' : 'Vol Opt (Mines)';
+            } elseif ($target_floor === 14) {
+                $boss = ($ep === '2') ? 'Barba Ray (Temple)' : 'Dark Falz (Ruins)';
+            } elseif ($target_floor === 15) {
+                $boss = 'Gol Dragon (Spaceship)';
+            } elseif ($target_floor === 9) {
+                $boss = 'Saint-Million (Crater)';
+            }
 
             $has_the = true;
             foreach (['Vol Opt', 'Dark Falz', 'Olga Flow', 'Gal Gryphon', 'Saint-Million', 'Gol Dragon'] as $ntb) {

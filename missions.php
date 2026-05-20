@@ -510,7 +510,7 @@ if ($account_id) {
                             <div class="bounty-meta">
                                 <div class="bounty-meta-row">
                                     <span class="bounty-meta-label"><?= __('Directive') ?></span>
-                                    <span class="bounty-meta-val"><?= getClearObjective($ce['goal_type'], $ce['goal_target']) ?></span>
+                                    <span class="bounty-meta-val"><?= getClearObjective($ce['goal_type'], $ce['goal_target'], $ce['title'], $ce['description']) ?></span>
                                 </div>
                                 <div class="bounty-meta-row">
                                     <span class="bounty-meta-label"><?= __('Community Reward') ?></span>
@@ -579,7 +579,7 @@ if ($account_id) {
                                 <div class="bounty-meta-row">
                                     <span class="bounty-meta-label"><?= __('Directive') ?></span>
                                     <span class="bounty-meta-val">
-                                        <?= getClearObjective($b['goal_type'], $b['goal_target']) ?>
+                                        <?= getClearObjective($b['goal_type'], $b['goal_target'], $b['title'], $b['description']) ?>
                                     </span>
                                 </div>
                                 <div class="bounty-meta-row">

@@ -19,7 +19,7 @@ $floor_map = [
 
 $boss_map = [
     'Dragon' => 11, 'De Rol Le' => 12, 'Vol Opt' => 13, 'Dark Falz' => 14, 
-    'Barba Ray' => 17, 'Gol Dragon' => 16, 'Gal Gryphon' => 15, 'Olga Flow' => 18, 'Saint-Million' => 19
+    'Barba Ray' => 14, 'Gol Dragon' => 15, 'Gal Gryphon' => 12, 'Olga Flow' => 13, 'Saint-Million' => 9
 ];
 
 $missions_repaired = 0;
@@ -143,6 +143,35 @@ foreach ($missions_to_check as $m) {
                     $repaired_target = $bid . '_' . $total_seconds;
                     break;
                 }
+            }
+        }
+    }
+
+    // E. Convert any existing synthetic targets to raw floor IDs
+    if (in_array($goal_type, ['BOSS_ARENA', 'MENTOR_BOSS', 'HARDCORE_MENTOR', 'DIVERSE_PARTY_BOSS'])) {
+        if (is_numeric($goal_target)) {
+            $val = (int)$goal_target;
+            if ($val === 15) $repaired_target = '12';      // Gal Gryphon -> De Rol Le Floor
+            elseif ($val === 16) $repaired_target = '15';   // Gol Dragon -> VR Spaceship Final
+            elseif ($val === 17) $repaired_target = '14';   // Barba Ray -> Dark Falz Floor
+            elseif ($val === 18) $repaired_target = '13';   // Olga Flow -> Vol Opt Floor
+            elseif ($val === 19) $repaired_target = '9';    // Saint-Million -> Meteor Impact Site
+        }
+    }
+    elseif ($goal_type === 'SPEEDRUN_BOSS') {
+        $parts = explode('_', $goal_target);
+        if (count($parts) >= 2 && is_numeric($parts[0])) {
+            $val = (int)$parts[0];
+            $time_limit = (int)$parts[1];
+            $mapped_floor = null;
+            if ($val === 15) $mapped_floor = 12;
+            elseif ($val === 16) $mapped_floor = 15;
+            elseif ($val === 17) $mapped_floor = 14;
+            elseif ($val === 18) $mapped_floor = 13;
+            elseif ($val === 19) $mapped_floor = 9;
+            
+            if ($mapped_floor !== null) {
+                $repaired_target = $mapped_floor . '_' . $time_limit;
             }
         }
     }
