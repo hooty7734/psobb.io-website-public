@@ -1219,7 +1219,7 @@ CRITICAL RULE: Return ONLY valid JSON properly formatted with double quotes stri
                                 $is_rare = false;
                             }
                             $max_retries--;
-                        } while ($max_retries > 0 && stripos($base_reward, $questData['goal_target']) !== false);
+                        } while ($max_retries > 0 && ($selected_target_id !== null && stripos($base_reward, (string)$selected_target_id) !== false));
                         
                         if ($is_rare) $rare_count++;
                         
@@ -1237,7 +1237,7 @@ CRITICAL RULE: Return ONLY valid JSON properly formatted with double quotes stri
                                 $stats[$index] = $amount;
                             }
                             $single_item_string .= " " . implode("/", $stats);
-                        } else if ($category === 'Armor' || $category === 'Shield' || $category === 'Unit') {
+                        } else if ($category === 'Armor' || $category === 'Shield') {
                             $defBonus = rand(0, 5) * 5;
                             $evpBonus = rand(0, 5) * 5;
                             
@@ -1247,6 +1247,9 @@ CRITICAL RULE: Return ONLY valid JSON properly formatted with double quotes stri
                             if ($category === 'Armor') {
                                 $single_item_string .= " +4";
                             }
+                        } else if ($category === 'Unit') {
+                            // Units natively receive their + or ++ modifiers inside their hex payload.
+                            // They do not use def/evp text modifiers.
                         }
                         $reward_items_array[] = $single_item_string;
                     }
@@ -1259,8 +1262,8 @@ CRITICAL RULE: Return ONLY valid JSON properly formatted with double quotes stri
                     $ins = $db->prepare("INSERT INTO missions (title, description, goal_type, goal_target, reward_item_string) VALUES (:t, :d, :gt, :gta, :ri)");
                     $ins->bindValue(':t', $questData['title'], SQLITE3_TEXT);
                     $ins->bindValue(':d', $questData['description'], SQLITE3_TEXT);
-                    $ins->bindValue(':gt', $questData['goal_type'], SQLITE3_TEXT);
-                    $ins->bindValue(':gta', $questData['goal_target'], SQLITE3_TEXT);
+                    $ins->bindValue(':gt', $selected_goal, SQLITE3_TEXT);
+                    $ins->bindValue(':gta', $selected_target_id, SQLITE3_TEXT);
                     $ins->bindValue(':ri', $reward_item_string, SQLITE3_TEXT);
                     
                     if ($ins->execute()) {
