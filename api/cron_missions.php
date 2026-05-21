@@ -744,8 +744,18 @@ foreach ($clients as $client) {
             
             $prev_f = (int)($prev_state['floor'] ?? -1);
             
-            // Detect a pure +1 floor transition (e.g. Forest 1 -> Forest 2)
-            if ($prev_f === $target_floor && $curr_f === ($target_floor + 1)) {
+            $valid_next = [$target_floor + 1];
+            if ($target_floor === 2) { $valid_next = [3, 11, 14]; } // Forest 2 -> Dragon(11), Temple Beta -> Barba Ray(14)
+            elseif ($target_floor === 4) { $valid_next = [5, 11, 15]; } // Cave 2 -> Cave 3(5), Ship Beta -> Gol Dragon(15)
+            elseif ($target_floor === 5) { $valid_next = [6, 7, 8, 9, 12]; } // Cave 3 -> De Rol Le(12), CCA -> Jungle/Mtn/Seaside(6,7,8,9)
+            elseif ($target_floor === 7) { $valid_next = [8, 13]; } // Mine 2 -> Vol Opt(13)
+            elseif ($target_floor === 8) { $valid_next = [9, 12]; } // Mountain -> Gal Gryphon(12)
+            elseif ($target_floor === 9) { $valid_next = [10, 12]; } // Seaside -> Gal Gryphon(12)
+            elseif ($target_floor === 10) { $valid_next = [11, 14]; } // Ruins 3 -> Dark Falz(14)
+            elseif ($target_floor === 11) { $valid_next = [12, 13]; } // Seabed Lower -> Olga Flow(13)
+            
+            // Detect floor transition
+            if ($prev_f === $target_floor && in_array($curr_f, $valid_next)) {
                 // Validate that the time spent on the PREVIOUS floor (before transitioning) is under the limit.
                 $time_taken = time() - ($prev_state['floor_entered_time'] ?? time());
                 if ($time_taken <= $time_limit) {
