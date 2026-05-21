@@ -5,6 +5,7 @@
  */
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/functions.php';
 
 $db = get_db();
 
@@ -187,6 +188,13 @@ foreach ($clients as $client) {
         $last_boss_arena_time = time();
     }
 
+    // Track the last non-boss floor the player was on.
+    $boss_floors_list = [9, 11, 12, 13, 14, 15];
+    $pre_boss_floor = $prev_state['pre_boss_floor'] ?? -1;
+    if (!in_array($curr_f, $boss_floors_list) && $curr_f >= 0) {
+        $pre_boss_floor = $curr_f;
+    }
+
     // =====================================================================
     // NEWSERV FLOOR ID REFERENCE (from /y/clients -> LocationFloor)
     // Each episode reuses the same floor numbering starting from 0.
@@ -314,20 +322,11 @@ foreach ($clients as $client) {
             }
         } elseif ($ce['goal_type'] === 'BOSS_ARENA') {
             $target_floor = $ce['goal_target'];
+            $original_target = $target_floor;
             $recent_boss_fight = false;
             
             $prev_f = (int)($prev_state['floor'] ?? -1);
             $curr_f = (int)($client['LocationFloor'] ?? -1);
-
-            $fast_kill_preceding = [
-                11 => [2], // Dragon
-                12 => [5, 6, 7, 8, 9], // De Rol Le, Gal Gryphon
-                13 => [7, 11], // Vol Opt, Olga Flow
-                14 => [10, 2], // Dark Falz, Barba Ray
-                15 => [4], // Gol Dragon
-                9  => [8], // Saint-Million
-            ];
-            
             $was_fast_kill = false;
 
             if ($target_floor === 'ANY_DRAGON') {
@@ -344,23 +343,52 @@ foreach ($clients as $client) {
                 }
                 $recent_boss_fight = $recent_boss_fight || $was_fast_kill;
             } else {
-                // The admin panel uses "Fake" Floor IDs (15=Gal Gryphon, 16=Gol Dragon, etc.)
-                // to distinguish Ep2 bosses from Ep1 bosses. We must remap them back to the
-                // REAL LocationFloor values that newserv /y/clients reports.
-                //   Admin Panel -> Real LocationFloor:
-                //     15 (Gal Gryphon) -> 12 (same floor as De Rol Le)
-                //     16 (Gol Dragon)  -> 15
-                //     17 (Barba Ray)   -> 14 (same floor as Dark Falz)
-                //     18 (Olga Flow)   -> 13 (same floor as Vol Opt)
-                //     19 (Saint-Million) -> 9
-                if ($target_floor === 15) $target_floor = 12;
-                elseif ($target_floor === 16) $target_floor = 15;
-                elseif ($target_floor === 17) $target_floor = 14;
-                elseif ($target_floor === 18) $target_floor = 13;
-                elseif ($target_floor === 19) $target_floor = 9;
+                $target_floor = (int)$target_floor;
+                
+                // Backwards compatibility / robust mapping of synthetic IDs to raw IDs + episode
+                $episode = null;
+                if ($target_floor === 15) {
+                    $mapped_floor = 12; // Gal Gryphon
+                    $episode = 2;
+                } elseif ($target_floor === 16) {
+                    $mapped_floor = 15; // Gol Dragon
+                    $episode = 2;
+                } elseif ($target_floor === 17) {
+                    $mapped_floor = 14; // Barba Ray
+                    $episode = 2;
+                } elseif ($target_floor === 18) {
+                    $mapped_floor = 13; // Olga Flow
+                    $episode = 2;
+                } elseif ($target_floor === 19) {
+                    $mapped_floor = 9;  // Saint-Million
+                    $episode = 4;
+                } else {
+                    $mapped_floor = $target_floor;
+                }
 
-                // Fast-Kill Race Condition Fix:
-                if (isset($fast_kill_preceding[$target_floor]) && in_array($prev_f, $fast_kill_preceding[$target_floor])) {
+                // If episode not determined by legacy synthetic ID, use the context parser!
+                if ($episode === null) {
+                    $episode = get_boss_episode_by_context($ce['title'], $ce['description'] ?? '', $mapped_floor);
+                }
+
+                $target_floor = $mapped_floor;
+                $comp_key = "{$target_floor}_{$episode}";
+
+                $fast_kill_preceding = [
+                    '11_1' => [2],             // Dragon from Forest 2
+                    '11_4' => [8],             // Sil Dragon
+                    '12_1' => [5],             // De Rol Le from Cave 3
+                    '12_2' => [5, 6, 7, 8, 9], // Gal Gryphon from CCA/Jungle/Mtn/Seaside
+                    '13_1' => [7],             // Vol Opt from Mine 2
+                    '13_2' => [11],            // Olga Flow from Seabed Lower
+                    '14_1' => [10],            // Dark Falz from Ruins 3
+                    '14_2' => [2],             // Barba Ray from Temple Beta
+                    '15_2' => [4],             // Gol Dragon from Spaceship Beta
+                    '9_4'  => [8],             // Saint-Million from Crater Interior
+                ];
+
+                // Catch players who enter the boss arena, kill the boss, and warp to town all within the 60-second cron window.
+                if (isset($fast_kill_preceding[$comp_key]) && in_array($prev_f, $fast_kill_preceding[$comp_key])) {
                     if ($curr_f !== $prev_f && $curr_f !== $target_floor) {
                         $was_fast_kill = true;
                     }
@@ -370,6 +398,27 @@ foreach ($clients as $client) {
                     $was_fast_kill = true;
                 }
                 $recent_boss_fight = ($curr_f === $target_floor) || ($prev_f === $target_floor) || $was_fast_kill;
+
+                // Preceding floor validation for community events to prevent cross-episode collision false positives!
+                $valid_preceding_floors = [
+                    '11_1' => [1, 2],           // Dragon: Forest 1-2
+                    '11_4' => [5, 6, 7, 8],     // Sil Dragon Crater/Desert
+                    '12_1' => [3, 4, 5],        // De Rol Le: Cave 1-3
+                    '12_2' => [5, 6, 7, 8, 9],  // Gal Gryphon: CCA, Jungle, Mountain, Seaside
+                    '13_1' => [6, 7],           // Vol Opt: Mine 1-2
+                    '13_2' => [10, 11],         // Olga Flow: Seabed Upper/Lower
+                    '14_1' => [8, 9, 10],       // Dark Falz: Ruins 1-3
+                    '14_2' => [1, 2],           // Barba Ray: VR Temple Alpha/Beta
+                    '15_2' => [3, 4],           // Gol Dragon: VR Ship Alpha/Beta
+                    '9_4'  => [5, 6, 7, 8],     // Saint-Million: Crater Interior / Desert
+                ];
+                $valid_floors_for_target = $valid_preceding_floors[$comp_key] ?? null;
+                if ($recent_boss_fight && $valid_floors_for_target !== null && $pre_boss_floor >= 0) {
+                    if (!in_array($pre_boss_floor, $valid_floors_for_target)) {
+                        echo "[CRON_COMMUNITY] Boss target {$original_target} (key {$comp_key}) rejected: pre_boss_floor={$pre_boss_floor} not in valid set [" . implode(',', $valid_floors_for_target) . "] — wrong episode\n";
+                        $recent_boss_fight = false;
+                    }
+                }
             }
 
             $exp_gain = ($current_exp - $prev_exp) >= 300;
@@ -417,7 +466,8 @@ foreach ($clients as $client) {
         'chal' => $curr_chal,
         'mats' => $curr_mats,
         'last_boss_arena' => $last_boss_arena,
-        'last_boss_arena_time' => $last_boss_arena_time
+        'last_boss_arena_time' => $last_boss_arena_time,
+        'pre_boss_floor' => $pre_boss_floor
     ];
 }
 

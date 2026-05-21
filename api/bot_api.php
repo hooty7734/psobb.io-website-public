@@ -114,49 +114,7 @@ if ($action === 'link') {
     $missions_res = $stmt->execute();
     $missions = [];
     while ($m = $missions_res->fetchArray(SQLITE3_ASSOC)) {
-        // Hex to string conversion logic for Discord Bot
-        $target = $m['goal_target'];
-        $type = $m['goal_type'];
-        
-        $friendly_obj = "";
-        switch ($type) {
-            case 'MESETA': 
-                if ($target === 'ANY') $friendly_obj = __('Collect Meseta (Any source)');
-                else $friendly_obj = __('Hold at least %s Meseta in inventory', number_format((int)$target));
-                break;
-            case 'LEVEL': $friendly_obj = __('Reach Level %s', htmlspecialchars($target)); break;
-            case 'ITEM':
-                $parts = explode(':', $target, 2);
-                $itemName = isset($parts[1]) ? $parts[1] : $target;
-                $itemName = explode(' ', $itemName)[0];
-                if (ctype_xdigit($itemName) && strlen($itemName) >= 6) {
-                    $hex_base = substr($itemName, 0, 6);
-                    $map_path = __DIR__ . '/item_map.json';
-                    if (file_exists($map_path)) {
-                        $map = json_decode(file_get_contents($map_path), true);
-                        $reverse_map = array_flip($map);
-                        if (isset($reverse_map[$hex_base])) {
-                            $itemName = ucwords($reverse_map[$hex_base]);
-                        }
-                    }
-                }
-                $friendly_obj = __('Find and hold the item: %s', htmlspecialchars(__($itemName)));
-                break;
-            case 'EXPLORATION':
-                $floors = [1=>'Forest 1',2=>'Forest 2',3=>'Cave 1',4=>'Cave 2',5=>'Cave 3',6=>'Mine 1',7=>'Mine 2',8=>'Ruins 1',9=>'Ruins 2',10=>'Ruins 3'];
-                $loc = $floors[$target] ?? "Floor $target";
-                $friendly_obj = __('Explore the %s', htmlspecialchars(__($loc)));
-                break;
-            case 'BOSS_ARENA':
-                $bosses = [11=>'Dragon (Forest)', 12=>'De Rol Le (Caves)', 13=>'Vol Opt (Mines)', 14=>'Dark Falz (Ruins)', 17=>'Barba Ray (Temple)', 16=>'Gol Dragon (Spaceship)', 15=>'Gal Gryphon (CCA)', 18=>'Olga Flow (Seabed)'];
-                $boss = $bosses[$target] ?? "Boss at Floor $target";
-                $friendly_obj = __('Defeat the %s', htmlspecialchars(__($boss)));
-                break;
-            default:
-                $friendly_obj = htmlspecialchars($type) . ": " . htmlspecialchars($target);
-        }
-        
-        $m['friendly_objective'] = $friendly_obj;
+        $m['friendly_objective'] = getClearObjective($m['goal_type'], $m['goal_target'], $m['title'], $m['description']);
         $missions[] = $m;
     }
     $response_data['website_stats']['missions'] = $missions;
@@ -181,7 +139,7 @@ if ($action === 'link') {
             "targetAmount" => (int)$row['target_amount'],
             "currentProgress" => (int)$row['current_progress'],
             "rewardItemString" => $row['reward_item_string'],
-            "friendly_objective" => getClearObjective($row['goal_type'], $row['goal_target']),
+            "friendly_objective" => getClearObjective($row['goal_type'], $row['goal_target'], $row['title'], $row['description']),
             "friendly_reward" => renderRewardString($row['reward_item_string']),
             "status" => $row['status']
         ];
