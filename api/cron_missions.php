@@ -46,7 +46,7 @@ $state_cache_file = __DIR__ . '/../db/.cron_player_state.json';
 $script_start = time();
 // Loop for up to 55 seconds to fit within a standard 1-minute crontab resolution
 while (time() - $script_start < 55) {
-    // 1. Fetch live clients
+    // 1. Fetch live clients and lobbies
     $url = $NEWSERV_API_URL . "/y/clients";
     $data = @file_get_contents($url);
     if (!$data) {
@@ -59,6 +59,19 @@ while (time() - $script_start < 55) {
     if (!is_array($clients) || empty($clients)) {
         sleep(10);
         continue;
+    }
+
+    $lobbies_url = $NEWSERV_API_URL . "/y/lobbies";
+    $lobbies_data = @file_get_contents($lobbies_url);
+    $lobbies = [];
+    if ($lobbies_data) {
+        $lobbies = json_decode($lobbies_data, true) ?: [];
+    }
+    $lobby_episode_map = [];
+    foreach ($lobbies as $l) {
+        if (isset($l['ID']) && isset($l['Episode'])) {
+            $lobby_episode_map[$l['ID']] = $l['Episode'];
+        }
     }
 
     echo "[CRON] Processing " . count($clients) . " clients...\n";
@@ -93,6 +106,9 @@ foreach ($clients as $client) {
     }
     $curr_f = (int)($client['LocationFloor'] ?? -1);
     $prev_f = (int)($prev_state['floor'] ?? -1);
+    
+    $lobby_id = $client['LobbyID'] ?? null;
+    $lobby_episode = ($lobby_id !== null && isset($lobby_episode_map[$lobby_id])) ? $lobby_episode_map[$lobby_id] : null;
     
     $floor_entered_time = ($curr_f === $prev_f) ? ($prev_state['floor_entered_time'] ?? time()) : time();
     
@@ -405,7 +421,7 @@ foreach ($clients as $client) {
 
                 // Catch players who enter the boss arena, kill the boss, and warp to town all within the 60-second cron window.
                 if (isset($fast_kill_preceding[$comp_key]) && in_array($prev_f, $fast_kill_preceding[$comp_key])) {
-                    if ($curr_f !== $prev_f && $curr_f !== $mapped_floor) {
+                    if ($curr_f !== $prev_f && $curr_f !== $mapped_floor && $curr_f >= 0) {
                         $was_fast_kill = true;
                     }
                 }
@@ -441,6 +457,13 @@ foreach ($clients as $client) {
                         echo "[CRON] Boss target {$original_target} (key {$comp_key}) rejected: pre_boss_floor={$pre_boss_floor} not in valid set [" . implode(',', $valid_floors_for_target) . "] — wrong episode\n";
                         $recent_boss_fight = false;
                     }
+                }
+
+                // Strict Episode Validation using LobbyEpisode telemetry
+                $expected_lobby_episode = "Episode " . $episode;
+                if ($recent_boss_fight && $lobby_episode !== null && $lobby_episode !== $expected_lobby_episode) {
+                    echo "[CRON] Boss target {$original_target} (key {$comp_key}) rejected: player is in {$lobby_episode}, but mission is for {$expected_lobby_episode}\n";
+                    $recent_boss_fight = false;
                 }
                 
                 // Use mapped floor for all subsequent checks
@@ -724,7 +747,7 @@ foreach ($clients as $client) {
             // Catch players who enter the boss arena, kill the boss, and warp to town all within the 60-second cron window.
             $was_fast_kill = false;
             if (isset($fast_kill_preceding[$comp_key]) && in_array($prev_f, $fast_kill_preceding[$comp_key])) {
-                if ($curr_f !== $prev_f && $curr_f !== $target_floor) {
+                if ($curr_f !== $prev_f && $curr_f !== $target_floor && $curr_f >= 0) {
                     $was_fast_kill = true;
                 }
             }
@@ -759,6 +782,13 @@ foreach ($clients as $client) {
                     echo "[CRON] SPEEDRUN_BOSS target {$speedrun_target_id} (key {$comp_key}) rejected: pre_boss_floor={$pre_boss_floor} — wrong episode\n";
                     $recent_boss_fight = false;
                 }
+            }
+
+            // Strict Episode Validation using LobbyEpisode telemetry
+            $expected_lobby_episode = "Episode " . $episode;
+            if ($recent_boss_fight && $lobby_episode !== null && $lobby_episode !== $expected_lobby_episode) {
+                echo "[CRON] SPEEDRUN_BOSS target {$speedrun_target_id} (key {$comp_key}) rejected: player is in {$lobby_episode}, but mission is for {$expected_lobby_episode}\n";
+                $recent_boss_fight = false;
             }
             
             if ($just_entered) {

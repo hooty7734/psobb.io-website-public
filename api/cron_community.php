@@ -38,6 +38,18 @@ if (!$response) {
 
 $clients = json_decode($response, true) ?: [];
 
+$lobbies_response = @file_get_contents($NEWSERV_API_URL . '/y/lobbies', false, $context);
+$lobbies = [];
+if ($lobbies_response) {
+    $lobbies = json_decode($lobbies_response, true) ?: [];
+}
+$lobby_episode_map = [];
+foreach ($lobbies as $l) {
+    if (isset($l['ID']) && isset($l['Episode'])) {
+        $lobby_episode_map[$l['ID']] = $l['Episode'];
+    }
+}
+
 if (empty($clients)) {
     echo "[CRON_COMMUNITY] No clients online. Exiting.\n";
     exit;
@@ -166,6 +178,9 @@ foreach ($clients as $client) {
     
     $current_patrols = [];
     $curr_f = (int)($client['LocationFloor'] ?? -1);
+    
+    $lobby_id = $client['LobbyID'] ?? null;
+    $lobby_episode = ($lobby_id !== null && isset($lobby_episode_map[$lobby_id])) ? $lobby_episode_map[$lobby_id] : null;
     
     // Protect against Zero-EXP spikes during loading screens where NewServ briefly reports 0 EXP.
     // If we don't skip this tick, $prev_exp gets saved as 0, and the NEXT tick will show a massive delta!
@@ -389,7 +404,7 @@ foreach ($clients as $client) {
 
                 // Catch players who enter the boss arena, kill the boss, and warp to town all within the 60-second cron window.
                 if (isset($fast_kill_preceding[$comp_key]) && in_array($prev_f, $fast_kill_preceding[$comp_key])) {
-                    if ($curr_f !== $prev_f && $curr_f !== $target_floor) {
+                    if ($curr_f !== $prev_f && $curr_f !== $target_floor && $curr_f >= 0) {
                         $was_fast_kill = true;
                     }
                 }
@@ -418,6 +433,13 @@ foreach ($clients as $client) {
                         echo "[CRON_COMMUNITY] Boss target {$original_target} (key {$comp_key}) rejected: pre_boss_floor={$pre_boss_floor} not in valid set [" . implode(',', $valid_floors_for_target) . "] — wrong episode\n";
                         $recent_boss_fight = false;
                     }
+                }
+
+                // Strict Episode Validation using LobbyEpisode telemetry
+                $expected_lobby_episode = "Episode " . $episode;
+                if ($recent_boss_fight && $lobby_episode !== null && $lobby_episode !== $expected_lobby_episode) {
+                    echo "[CRON_COMMUNITY] Boss target {$original_target} (key {$comp_key}) rejected: player is in {$lobby_episode}, but mission is for {$expected_lobby_episode}\n";
+                    $recent_boss_fight = false;
                 }
             }
 
