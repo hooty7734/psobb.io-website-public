@@ -12,7 +12,7 @@ $bosses = [
     'Gol Dragon' => 16,
     'Gal Gryphon' => 15,
     'Olga Flow' => 18,
-    'Saint-Million' => 19
+    'Saint-Milion' => 19
 ];
 
 $total_updated = 0;
@@ -26,19 +26,10 @@ foreach ($bosses as $name => $id) {
     $total_updated += $db->changes();
 
     // 2. Fix SPEEDRUN_BOSS missions (format: "BossName_TimeLimit")
+    // We fetch them first because we need to preserve the time limit
     $res = $db->query("SELECT id, goal_target FROM missions WHERE goal_type = 'SPEEDRUN_BOSS'");
     while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
-        if ($row['goal_target'] === $name) {
-            // It's purely "Dragon" with no time limit!
-            $new_target = $id . '_300'; // Default 5 minutes
-            
-            $upd = $db->prepare("UPDATE missions SET goal_target = :new_target WHERE id = :id");
-            $upd->bindValue(':new_target', $new_target, SQLITE3_TEXT);
-            $upd->bindValue(':id', $row['id'], SQLITE3_INTEGER);
-            $upd->execute();
-            $total_updated += $db->changes();
-        } elseif (strpos($row['goal_target'], $name . '_') === 0) {
-            // It's "Dragon_300"
+        if (strpos($row['goal_target'], $name . '_') === 0) {
             $parts = explode('_', $row['goal_target']);
             $time_limit = $parts[1] ?? 300;
             $new_target = $id . '_' . $time_limit;

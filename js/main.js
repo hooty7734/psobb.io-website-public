@@ -227,11 +227,14 @@ function showDashboard(user) {
 
         const adminBtn = document.getElementById('admin-panel-btn');
         const bountyBtn = document.getElementById('bounty-board-btn');
+        const lfgBtn = document.getElementById('lfg-panel-btn');
         
         if (user.isAdmin) {
             if (adminBtn) adminBtn.style.display = 'block';
+            if (lfgBtn) lfgBtn.style.display = 'block';
         } else {
             if (adminBtn) adminBtn.style.display = 'none';
+            if (lfgBtn) lfgBtn.style.display = 'none';
         }
         
         // Rewards Panel Button (all players)
@@ -634,6 +637,25 @@ function renderPlayerList(clients) {
 
     // Filter out players with no name (connecting)
     const activeClients = (clients || []).filter(c => c.Name);
+
+    // Dynamic Class Archetype Counter
+    let huCount = 0;
+    let raCount = 0;
+    let foCount = 0;
+    activeClients.forEach(c => {
+        if (c.Class) {
+            const upper = c.Class.toUpperCase();
+            if (upper.startsWith('HU')) huCount++;
+            else if (upper.startsWith('RA')) raCount++;
+            else if (upper.startsWith('FO')) foCount++;
+        }
+    });
+    const huEl = document.getElementById('class-hu-count');
+    const raEl = document.getElementById('class-ra-count');
+    const foEl = document.getElementById('class-fo-count');
+    if (huEl) huEl.textContent = huCount;
+    if (raEl) raEl.textContent = raCount;
+    if (foEl) foEl.textContent = foCount;
 
     if (activeClients.length === 0) {
         list.innerHTML = '<tr><td colspan="4" style="text-align:center">No players online</td></tr>';

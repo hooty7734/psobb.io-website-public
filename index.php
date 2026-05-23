@@ -30,6 +30,20 @@ include 'includes/header.php';
         <div class="layout-grid">
             <section class="main-content">
                 <!-- AUTO-MISSION-START -->
+                <article class="news-item animate-fade-in">
+                    <div class="event-badge" style="background: #00ff88; color: #000; padding: 2px 8px; display: inline-block; border-radius: 4px; font-size: 0.8rem; margin-bottom: 0.5rem; font-weight: bold;">Active Event</div>
+                    <h3 style="color: var(--pso-orange);">Deep Scan Titan 557: Double EXP</h3>
+                    <p><strong>Mission Window:</strong> May 22, 2026 (12 AM PST) - May 25, 2026 (12 AM PST)</p>
+                    <p>The Hunter's Guild is running a veterans' training cycle. All enemies defeated this weekend will grant **2x Experience Points**!</p>
+                    <div style="font-size: 0.85rem; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px; border-left: 3px solid var(--pso-blue);">
+                        <strong>Global Start Times:</strong><br>
+                        🇺🇸 PST: Friday, 12:00 AM<br>
+                        🇺🇸 EST: Friday, 3:00 AM<br>
+                        🇬🇧 GMT: Friday, 8:00 AM<br>
+                        🇯🇵 JST: Friday, 5:00 PM
+                    </div>
+                    <p style="margin-top: 10px;"><em>Good luck down there, Hunters! Stay safe on the surface.</em></p>
+                </article>
                 <!-- AUTO-MISSION-END -->
 
                 <article class="news-item">

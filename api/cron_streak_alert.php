@@ -1,10 +1,7 @@
 <?php
 /**
- * PSOBB Cron: Streak Expiration Alert
- * 
- * Sends a Discord DM to any player whose login streak is about to expire.
- * Run daily at ~11:00 PM server time via crontab.
- * Requires BOT_TOKEN to be set in .env.
+ * PSOBB Streak Expiration Alert
+ * Run this every day at 11:00 PM (Server Time)
  */
 require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/db.php";
@@ -15,11 +12,8 @@ $db = get_db();
 $today = date("Y-m-d");
 $yesterday = date("Y-m-d", strtotime("-1 day"));
 
-$botToken = $_ENV['BOT_TOKEN'] ?? '';
-if (empty($botToken)) {
-    echo "[CRON] Error: BOT_TOKEN is not defined in .env. Cannot send streak alerts.\n";
-    exit(1);
-}
+$discordConfig = json_decode(file_get_contents("/psobb-bot/discord_config.json"), true);
+$botToken = $discordConfig["bot_token"];
 
 // 1. Find all users who logged in yesterday but NOT today
 $query = "SELECT u.discord_id, u.username, u.account_id 

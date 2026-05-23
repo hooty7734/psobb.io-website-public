@@ -1,0 +1,762 @@
+[
+    {
+        "id": 2310,
+        "name": "Meteor Smash"
+    },
+    {
+        "id": 50432,
+        "name": "Glide Divine"
+    },
+    {
+        "id": 1032,
+        "name": "Asteron Belt"
+    },
+    {
+        "id": 51200,
+        "name": "Daylight Scar"
+    },
+    {
+        "id": 66386,
+        "name": "Divine Protection"
+    },
+    {
+        "id": 2564,
+        "name": "Club of Laconium"
+    },
+    {
+        "id": 8960,
+        "name": "Sting Tip"
+    },
+    {
+        "id": 46848,
+        "name": "Shouren"
+    },
+    {
+        "id": 13824,
+        "name": "Twin Chakram"
+    },
+    {
+        "id": 66383,
+        "name": "Swordsman Lore"
+    },
+    {
+        "id": 66126,
+        "name": "Yellow Barrier"
+    },
+    {
+        "id": 11520,
+        "name": "Red Saber"
+    },
+    {
+        "id": 37636,
+        "name": "Purplenum Card"
+    },
+    {
+        "id": 11776,
+        "name": "Meteor Cudgel"
+    },
+    {
+        "id": 66380,
+        "name": "V801"
+    },
+    {
+        "id": 52480,
+        "name": "Tanegashima"
+    },
+    {
+        "id": 4353,
+        "name": "Soul Banish"
+    },
+    {
+        "id": 3842,
+        "name": "God Hand"
+    },
+    {
+        "id": 35073,
+        "name": "Yamato"
+    },
+    {
+        "id": 35841,
+        "name": "Mahu"
+    },
+    {
+        "id": 37634,
+        "name": "Skyly Card"
+    },
+    {
+        "id": 40192,
+        "name": "Dark Flow"
+    },
+    {
+        "id": 66125,
+        "name": "Blue Barrier"
+    },
+    {
+        "id": 15872,
+        "name": "Red Partisan"
+    },
+    {
+        "id": 35328,
+        "name": "Sange"
+    },
+    {
+        "id": 66089,
+        "name": "Standstill Shield"
+    },
+    {
+        "id": 37635,
+        "name": "Bluefull Card"
+    },
+    {
+        "id": 20480,
+        "name": "Windmill"
+    },
+    {
+        "id": 46592,
+        "name": "Guren"
+    },
+    {
+        "id": 49920,
+        "name": "Clio"
+    },
+    {
+        "id": 775,
+        "name": "Cross Scar"
+    },
+    {
+        "id": 35072,
+        "name": "Musashi"
+    },
+    {
+        "id": 50688,
+        "name": "Shichishito"
+    },
+    {
+        "id": 66087,
+        "name": "Red Ring"
+    },
+    {
+        "id": 2054,
+        "name": "H&S25 Justice"
+    },
+    {
+        "id": 66083,
+        "name": "Regene Gear Adv."
+    },
+    {
+        "id": 2820,
+        "name": "Battle Verge"
+    },
+    {
+        "id": 1798,
+        "name": "Wals-MK2"
+    },
+    {
+        "id": 37638,
+        "name": "Redria Card"
+    },
+    {
+        "id": 66081,
+        "name": "Proto Regene Gear"
+    },
+    {
+        "id": 3328,
+        "name": "Photon Claw"
+    },
+    {
+        "id": 45824,
+        "name": "Vivienne"
+    },
+    {
+        "id": 47360,
+        "name": "Flamberge"
+    },
+    {
+        "id": 37639,
+        "name": "Oran Card"
+    },
+    {
+        "id": 47616,
+        "name": "Yunchang"
+    },
+    {
+        "id": 8704,
+        "name": "Caduceus"
+    },
+    {
+        "id": 3331,
+        "name": "Phoenix Claw"
+    },
+    {
+        "id": 2311,
+        "name": "Final Impact"
+    },
+    {
+        "id": 5120,
+        "name": "Inferno Bazooka"
+    },
+    {
+        "id": 53760,
+        "name": "Ano Bazooka"
+    },
+    {
+        "id": 27136,
+        "name": "Yasminkov 2000H"
+    },
+    {
+        "id": 518,
+        "name": "Last Survivor"
+    },
+    {
+        "id": 25856,
+        "name": "Yasminkov 3000R"
+    },
+    {
+        "id": 35584,
+        "name": "Photon Launcher"
+    },
+    {
+        "id": 3840,
+        "name": "Brave Knuckle"
+    },
+    {
+        "id": 2823,
+        "name": "Valkyrie"
+    },
+    {
+        "id": 44288,
+        "name": "Rage de Feu"
+    },
+    {
+        "id": 26112,
+        "name": "Ano Rifle"
+    },
+    {
+        "id": 14592,
+        "name": "Red Dagger"
+    },
+    {
+        "id": 9984,
+        "name": "Ancient Saber"
+    },
+    {
+        "id": 7936,
+        "name": "Lavis Cannon"
+    },
+    {
+        "id": 66069,
+        "name": "Invisible Guard"
+    },
+    {
+        "id": 66070,
+        "name": "Sacred Guard"
+    },
+    {
+        "id": 23296,
+        "name": "The Sigh of a God"
+    },
+    {
+        "id": 1031,
+        "name": "Gae Bolg"
+    },
+    {
+        "id": 9472,
+        "name": "Technical Crozier"
+    },
+    {
+        "id": 37888,
+        "name": "Morning Glory"
+    },
+    {
+        "id": 11264,
+        "name": "Elysion"
+    },
+    {
+        "id": 19456,
+        "name": "Red Mechgun"
+    },
+    {
+        "id": 66186,
+        "name": "Yata Mirror"
+    },
+    {
+        "id": 13056,
+        "name": "Sealed J-Sword"
+    },
+    {
+        "id": 1287,
+        "name": "Diska of Braveman"
+    },
+    {
+        "id": 26880,
+        "name": "Heart of Poumn"
+    },
+    {
+        "id": 66185,
+        "name": "Rupika"
+    },
+    {
+        "id": 37376,
+        "name": "Guardianna"
+    },
+    {
+        "id": 35330,
+        "name": "Kamui"
+    },
+    {
+        "id": 5122,
+        "name": "L&K38 Combat"
+    },
+    {
+        "id": 35074,
+        "name": "Asuka"
+    },
+    {
+        "id": 24064,
+        "name": "Twin Blaze"
+    },
+    {
+        "id": 26624,
+        "name": "Branch of Pakupaku"
+    },
+    {
+        "id": 2053,
+        "name": "M&A60 Vise"
+    },
+    {
+        "id": 1286,
+        "name": "Diska of Liberator"
+    },
+    {
+        "id": 4608,
+        "name": "Spread Needle"
+    },
+    {
+        "id": 1797,
+        "name": "Visk-235W"
+    },
+    {
+        "id": 66088,
+        "name": "Tripolic Shield"
+    },
+    {
+        "id": 35587,
+        "name": "Phonon Maser"
+    },
+    {
+        "id": 66073,
+        "name": "Light Relief"
+    },
+    {
+        "id": 66082,
+        "name": "Regenerate Gear"
+    },
+    {
+        "id": 66078,
+        "name": "Attribute Wall"
+    },
+    {
+        "id": 66181,
+        "name": "Gratia"
+    },
+    {
+        "id": 35329,
+        "name": "Yasha"
+    },
+    {
+        "id": 9728,
+        "name": "Suppressed Gun"
+    },
+    {
+        "id": 48128,
+        "name": "Flapjack Flapper"
+    },
+    {
+        "id": 48640,
+        "name": "Maguwa"
+    },
+    {
+        "id": 46336,
+        "name": "Sacred Duster"
+    },
+    {
+        "id": 264,
+        "name": "Galatine"
+    },
+    {
+        "id": 66124,
+        "name": "Red Barrier"
+    },
+    {
+        "id": 4864,
+        "name": "Holy Ray"
+    },
+    {
+        "id": 1800,
+        "name": "Rianov 303SNR"
+    },
+    {
+        "id": 8448,
+        "name": "Chain Sawd"
+    },
+    {
+        "id": 66182,
+        "name": "Tripolic Reflector"
+    },
+    {
+        "id": 2566,
+        "name": "Club of Zumiuran"
+    },
+    {
+        "id": 2821,
+        "name": "Brave Hammer"
+    },
+    {
+        "id": 774,
+        "name": "Bloody Art"
+    },
+    {
+        "id": 262,
+        "name": "Kaladbolg"
+    },
+    {
+        "id": 46080,
+        "name": "Kusanagi"
+    },
+    {
+        "id": 27392,
+        "name": "Yasminkov 7000V"
+    },
+    {
+        "id": 18688,
+        "name": "Twin Psychogun"
+    },
+    {
+        "id": 37633,
+        "name": "Greenill Card"
+    },
+    {
+        "id": 51456,
+        "name": "Decalog"
+    },
+    {
+        "id": 47872,
+        "name": "Snake Spire"
+    },
+    {
+        "id": 17408,
+        "name": "Red Handgun"
+    },
+    {
+        "id": 3329,
+        "name": "Silence Claw"
+    },
+    {
+        "id": 19968,
+        "name": "Panzer Faust"
+    },
+    {
+        "id": 36096,
+        "name": "NUG2000-Bazooka"
+    },
+    {
+        "id": 66122,
+        "name": "Recovery Barrier"
+    },
+    {
+        "id": 66378,
+        "name": "V501"
+    },
+    {
+        "id": 20736,
+        "name": "Evil Curst"
+    },
+    {
+        "id": 1285,
+        "name": "Slicer of Assassin"
+    },
+    {
+        "id": 35842,
+        "name": "Hitogata"
+    },
+    {
+        "id": 37632,
+        "name": "Viridia Card"
+    },
+    {
+        "id": 10496,
+        "name": "Yamigarasu"
+    },
+    {
+        "id": 12032,
+        "name": "Monkey King Bar"
+    },
+    {
+        "id": 44800,
+        "name": "Ophelie Seize"
+    },
+    {
+        "id": 13312,
+        "name": "Red Sword"
+    },
+    {
+        "id": 22017,
+        "name": "Fatsia"
+    },
+    {
+        "id": 16384,
+        "name": "Flight Fan"
+    },
+    {
+        "id": 66080,
+        "name": "Combat Gear"
+    },
+    {
+        "id": 66381,
+        "name": "Limiter"
+    },
+    {
+        "id": 776,
+        "name": "Zero Divide"
+    },
+    {
+        "id": 49664,
+        "name": "Solferino"
+    },
+    {
+        "id": 17920,
+        "name": "Anti Android Rifle"
+    },
+    {
+        "id": 66384,
+        "name": "Proof of Sword-Saint"
+    },
+    {
+        "id": 1799,
+        "name": "Justy-23ST"
+    },
+    {
+        "id": 41728,
+        "name": "Ruby Bullet"
+    },
+    {
+        "id": 35840,
+        "name": "Talis"
+    },
+    {
+        "id": 3841,
+        "name": "Angry Fist"
+    },
+    {
+        "id": 2565,
+        "name": "Mace of Adaman"
+    },
+    {
+        "id": 2822,
+        "name": "Alive Aqhu"
+    },
+    {
+        "id": 5376,
+        "name": "Flame Visit"
+    },
+    {
+        "id": 66382,
+        "name": "Adept"
+    },
+    {
+        "id": 49152,
+        "name": "Cannon Rouge"
+    },
+    {
+        "id": 519,
+        "name": "Dragon Slayer"
+    },
+    {
+        "id": 37637,
+        "name": "Pinkal Card"
+    },
+    {
+        "id": 3585,
+        "name": "Stag Cutlery"
+    },
+    {
+        "id": 66184,
+        "name": "Regenerate Gear B.P."
+    },
+    {
+        "id": 66079,
+        "name": "Secret Gear"
+    },
+    {
+        "id": 66385,
+        "name": "Smartlink"
+    },
+    {
+        "id": 773,
+        "name": "Blade Dance"
+    },
+    {
+        "id": 66091,
+        "name": "Kasami Bracer"
+    },
+    {
+        "id": 1030,
+        "name": "Vjaya"
+    },
+    {
+        "id": 27904,
+        "name": "Maser Beam"
+    },
+    {
+        "id": 50176,
+        "name": "Siren Glass Hammer"
+    },
+    {
+        "id": 23040,
+        "name": "Prophets of Motav"
+    },
+    {
+        "id": 1543,
+        "name": "Bravace"
+    },
+    {
+        "id": 2055,
+        "name": "L&K14 Combat"
+    },
+    {
+        "id": 43520,
+        "name": "Slicer of Fanatic"
+    },
+    {
+        "id": 15616,
+        "name": "Berdysh"
+    },
+    {
+        "id": 2309,
+        "name": "Crush Bullet"
+    },
+    {
+        "id": 17664,
+        "name": "Frozen Shooter"
+    },
+    {
+        "id": 27648,
+        "name": "Yasminkov 9000M"
+    },
+    {
+        "id": 22016,
+        "name": "Plantain Leaf"
+    },
+    {
+        "id": 3584,
+        "name": "Double Saber"
+    },
+    {
+        "id": 35586,
+        "name": "Red Scorpio"
+    },
+    {
+        "id": 66191,
+        "name": "DF Shield"
+    },
+    {
+        "id": 35585,
+        "name": "Guilty Light"
+    },
+    {
+        "id": 8193,
+        "name": "Laconium Axe"
+    },
+    {
+        "id": 22272,
+        "name": "Demonic Fork"
+    },
+    {
+        "id": 16640,
+        "name": "Red Slicer"
+    },
+    {
+        "id": 21760,
+        "name": "Rabbit Wand"
+    },
+    {
+        "id": 15360,
+        "name": "Imperial Pick"
+    },
+    {
+        "id": 8192,
+        "name": "Victor Axe"
+    },
+    {
+        "id": 7424,
+        "name": "Psycho Wand"
+    },
+    {
+        "id": 39424,
+        "name": "Demolition Comet"
+    },
+    {
+        "id": 66377,
+        "name": "V101"
+    },
+    {
+        "id": 7680,
+        "name": "Heaven Punisher"
+    },
+    {
+        "id": 66201,
+        "name": "Stink Shield"
+    },
+    {
+        "id": 38656,
+        "name": "Zanba"
+    },
+    {
+        "id": 66101,
+        "name": "Secure Feet"
+    },
+    {
+        "id": 263,
+        "name": "Durandal"
+    },
+    {
+        "id": 39168,
+        "name": "Angel Harp"
+    },
+    {
+        "id": 1541,
+        "name": "Varista"
+    },
+    {
+        "id": 3586,
+        "name": "Twin Brand"
+    },
+    {
+        "id": 37641,
+        "name": "Whitill Card"
+    },
+    {
+        "id": 66183,
+        "name": "Striker Plus"
+    },
+    {
+        "id": 16128,
+        "name": "Flight Cutter"
+    },
+    {
+        "id": 66379,
+        "name": "V502"
+    },
+    {
+        "id": 1029,
+        "name": "Brionac"
+    },
+    {
+        "id": 48896,
+        "name": "Heaven Striker"
+    },
+    {
+        "id": 37640,
+        "name": "Yellowboze Card"
+    }
+]

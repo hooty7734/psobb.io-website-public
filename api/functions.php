@@ -160,7 +160,7 @@ function get_boss_episode_by_context($title, $desc, $default_floor)
         return 2;
     }
 
-    // Saint-Million (Ep4)
+    // Saint-Milion (Ep4)
     if ($default_floor === 9) {
         return 4;
     }
@@ -318,7 +318,21 @@ function getClearObjective($type, $target, $title = '', $desc = '')
             if ($target === 'ANY_DRAGON')
                 return __('Defeat Any Dragon Boss (Forest, Sil, or Gol)');
             
+            // Custom multi-boss community event targets (tracked dynamically in cron_community.php)
+            $custom_boss_events = [
+                'DIGITAL_BLASPHEMY' => __('Defeat Vol Opt (+1 pt), Gol Dragon (+2 pts), or Shambertin (+3 pts). Difficulty bonus: +1 Hard, +2 VHard, +3 Ult'),
+                'EP1_BOSS_RUSH'    => __('Defeat Any Episode 1 Boss'),
+                'EP2_BOSS_RUSH'    => __('Defeat Any Episode 2 Boss'),
+                'ALL_BOSSES'       => __('Defeat Any Boss (All Episodes)'),
+                'DRACONIC_DOMINION'=> __('Defeat Dragon (Ep1), Gol Dragon (Ep2), or Shambertin (Ep4)'),
+                'CATACLYSMIC_CORE' => __('Defeat Dark Falz (Ep1), Olga Flow (Ep2), or Shambertin (Ep4)'),
+            ];
+            if (isset($custom_boss_events[$target]))
+                return $custom_boss_events[$target];
+            
             $target_floor = (int)$target;
+            if ($target_floor === 0)
+                return __('Boss Bounty Completed!');
             $ep = (string)get_boss_episode_by_context($title, $desc, $target_floor);
             
             $boss = "Boss at Floor $target_floor";
@@ -333,11 +347,11 @@ function getClearObjective($type, $target, $title = '', $desc = '')
             } elseif ($target_floor === 15) {
                 $boss = 'Gol Dragon (Spaceship)';
             } elseif ($target_floor === 9) {
-                $boss = 'Saint-Million (Crater)';
+                $boss = 'Saint-Milion (Crater)';
             }
             
             $has_the = true;
-            foreach (['Vol Opt', 'Dark Falz', 'Olga Flow', 'Gal Gryphon', 'Saint-Million', 'Gol Dragon'] as $ntb) {
+            foreach (['Vol Opt', 'Dark Falz', 'Olga Flow', 'Gal Gryphon', 'Saint-Milion', 'Gol Dragon'] as $ntb) {
                 if (stripos($boss, $ntb) !== false) {
                     $has_the = false;
                     break;
@@ -353,6 +367,8 @@ function getClearObjective($type, $target, $title = '', $desc = '')
                 return __('Mentor a player (5+ levels lower) through Any Dragon Boss (Forest, Sil, or Gol)');
             
             $target_floor = (int)$target;
+            if ($target_floor === 0)
+                return __('Mentor Bounty Completed!');
             $ep = (string)get_boss_episode_by_context($title, $desc, $target_floor);
             
             $boss = "Boss at Floor $target_floor";
@@ -367,7 +383,7 @@ function getClearObjective($type, $target, $title = '', $desc = '')
             } elseif ($target_floor === 15) {
                 $boss = 'Gol Dragon (Spaceship)';
             } elseif ($target_floor === 9) {
-                $boss = 'Saint-Million (Crater)';
+                $boss = 'Saint-Milion (Crater)';
             }
             return __('[Ep %s] Carry a lower-level player (5+ levels lower) through the %s fight', $ep, htmlspecialchars(__($boss)));
         case 'HARDCORE_MENTOR':
@@ -375,6 +391,8 @@ function getClearObjective($type, $target, $title = '', $desc = '')
                 return __('Hardcore Carry 3 lower-level players (10+ levels lower) through Any Dragon Boss');
             
             $target_floor = (int)$target;
+            if ($target_floor === 0)
+                return __('Hardcore Carry Completed!');
             $ep = (string)get_boss_episode_by_context($title, $desc, $target_floor);
             
             $boss = "Boss at Floor $target_floor";
@@ -389,7 +407,7 @@ function getClearObjective($type, $target, $title = '', $desc = '')
             } elseif ($target_floor === 15) {
                 $boss = 'Gol Dragon (Spaceship)';
             } elseif ($target_floor === 9) {
-                $boss = 'Saint-Million (Crater)';
+                $boss = 'Saint-Milion (Crater)';
             }
             return __('[Ep %s] Hardcore Carry 3 lower-level players (10+ levels lower) through the %s fight', $ep, htmlspecialchars(__($boss)));
         case 'DIVERSE_PARTY_BOSS':
@@ -397,6 +415,8 @@ function getClearObjective($type, $target, $title = '', $desc = '')
                 return __('Defeat Any Dragon Boss with a diverse party (HU, RA, FO)');
             
             $target_floor = (int)$target;
+            if ($target_floor === 0)
+                return __('Diverse Party Bounty Completed!');
             $ep = (string)get_boss_episode_by_context($title, $desc, $target_floor);
             
             $boss = "Boss at Floor $target_floor";
@@ -411,11 +431,11 @@ function getClearObjective($type, $target, $title = '', $desc = '')
             } elseif ($target_floor === 15) {
                 $boss = 'Gol Dragon (Spaceship)';
             } elseif ($target_floor === 9) {
-                $boss = 'Saint-Million (Crater)';
+                $boss = 'Saint-Milion (Crater)';
             }
             
             $has_the = true;
-            foreach (['Vol Opt', 'Dark Falz', 'Olga Flow', 'Gal Gryphon', 'Saint-Million', 'Gol Dragon'] as $ntb) {
+            foreach (['Vol Opt', 'Dark Falz', 'Olga Flow', 'Gal Gryphon', 'Saint-Milion', 'Gol Dragon'] as $ntb) {
                 if (stripos($boss, $ntb) !== false) {
                     $has_the = false;
                     break;
@@ -443,11 +463,11 @@ function getClearObjective($type, $target, $title = '', $desc = '')
             } elseif ($target_floor === 15) {
                 $boss = 'Gol Dragon (Spaceship)';
             } elseif ($target_floor === 9) {
-                $boss = 'Saint-Million (Crater)';
+                $boss = 'Saint-Milion (Crater)';
             }
 
             $has_the = true;
-            foreach (['Vol Opt', 'Dark Falz', 'Olga Flow', 'Gal Gryphon', 'Saint-Million', 'Gol Dragon'] as $ntb) {
+            foreach (['Vol Opt', 'Dark Falz', 'Olga Flow', 'Gal Gryphon', 'Saint-Milion', 'Gol Dragon'] as $ntb) {
                 if (stripos($boss, $ntb) !== false) {
                     $has_the = false;
                     break;

@@ -19,7 +19,8 @@ $email = trim($input['email'] ?? '');
 // Validation
 if (empty($username) || empty($password) || empty($email)) {
     http_response_code(400);
-    echo json_encode(['error' => 'All fields required.']);
+    $raw = file_get_contents('php://input');
+    echo json_encode(['error' => 'All fields required. Debug: Received ' . strlen($raw) . ' bytes. Content: ' . substr($raw, 0, 100)]);
     exit;
 }
 if (strlen($username) > 16 || strlen($password) > 16) {

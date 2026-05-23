@@ -105,6 +105,11 @@ include 'includes/header.php';
                         <!-- Bounty Board Button -->
                         <a id="bounty-board-btn" href="missions.php" class="dl-btn" style="display:none; text-align:center; width: 100%; box-sizing: border-box;"><?= __('🎯 Hunter\'s Guild Bounty Board') ?></a>
         
+                        <!-- Looking for Group Button -->
+                        <a id="lfg-panel-btn" href="lfg.php" class="dl-btn" style="display:none; text-align:center; width: 100%; box-sizing: border-box; border-color: #ffaa00; background: rgba(255, 170, 0, 0.15); color: #ffaa00;">
+                            <i class="fas fa-users"></i> <?= __('🤝 Looking for Group') ?>
+                        </a>
+
                         <!-- Admin Button -->
                         <a id="admin-panel-btn" href="/admin/dashboard" class="dl-btn" style="display:none; text-align:center; width: 100%; box-sizing: border-box;"><?= __('Open Admin Panel') ?></a>
         

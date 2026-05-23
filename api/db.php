@@ -198,6 +198,52 @@ function get_db()
         // Clean up legacy draft table if it exists to prevent conflicts
         $db->exec("DROP TABLE IF EXISTS game_mods");
 
+        // --- Auto-migration for LFG requests table ---
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS lfg_requests (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                account_id INTEGER NOT NULL,
+                character_name TEXT NOT NULL,
+                class TEXT NOT NULL,
+                level INTEGER NOT NULL,
+                section_id TEXT NOT NULL,
+                game_id INTEGER,
+                game_name TEXT,
+                bounty_id INTEGER,
+                looking_for TEXT,
+                description TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+        ");
+
+        // Check for bounty_id column
+        $hasBountyId = false;
+        $result = $db->query("PRAGMA table_info(lfg_requests)");
+        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+            if ($row['name'] === 'bounty_id') {
+                $hasBountyId = true;
+                break;
+            }
+        }
+        $result->finalize();
+        if (!$hasBountyId) {
+            $db->exec("ALTER TABLE lfg_requests ADD COLUMN bounty_id INTEGER");
+        }
+
+        // Check for looking_for column
+        $hasLookingFor = false;
+        $result = $db->query("PRAGMA table_info(lfg_requests)");
+        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+            if ($row['name'] === 'looking_for') {
+                $hasLookingFor = true;
+                break;
+            }
+        }
+        $result->finalize();
+        if (!$hasLookingFor) {
+            $db->exec("ALTER TABLE lfg_requests ADD COLUMN looking_for TEXT");
+        }
+
         return $db;
     } catch (Exception $e) {
         throw $e;

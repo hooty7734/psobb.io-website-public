@@ -44,9 +44,15 @@ if ($lobbies_response) {
     $lobbies = json_decode($lobbies_response, true) ?: [];
 }
 $lobby_episode_map = [];
+$lobby_difficulty_map = [];
 foreach ($lobbies as $l) {
-    if (isset($l['ID']) && isset($l['Episode'])) {
-        $lobby_episode_map[$l['ID']] = $l['Episode'];
+    if (isset($l['ID'])) {
+        if (isset($l['Episode'])) {
+            $lobby_episode_map[$l['ID']] = $l['Episode'];
+        }
+        if (isset($l['Difficulty'])) {
+            $lobby_difficulty_map[$l['ID']] = $l['Difficulty'];
+        }
     }
 }
 
@@ -181,6 +187,7 @@ foreach ($clients as $client) {
     
     $lobby_id = $client['LobbyID'] ?? null;
     $lobby_episode = ($lobby_id !== null && isset($lobby_episode_map[$lobby_id])) ? $lobby_episode_map[$lobby_id] : null;
+    $lobby_difficulty = ($lobby_id !== null && isset($lobby_difficulty_map[$lobby_id])) ? $lobby_difficulty_map[$lobby_id] : 'Normal';
     
     // Protect against Zero-EXP spikes during loading screens where NewServ briefly reports 0 EXP.
     // If we don't skip this tick, $prev_exp gets saved as 0, and the NEXT tick will show a massive delta!
@@ -195,7 +202,7 @@ foreach ($clients as $client) {
     // These are the RAW LocationFloor values as reported by newserv /y/clients:
     //   Ep1: 11=Dragon, 12=De Rol Le, 13=Vol Opt, 14=Dark Falz
     //   Ep2: 12=Gal Gryphon, 13=Olga Flow, 14=Barba Ray, 15=Gol Dragon
-    //   Ep4: 9=Saint-Million
+    //   Ep4: 9=Saint-Milion
     // Note: Floor IDs overlap across episodes (e.g. 12 = De Rol Le in Ep1, Gal Gryphon in Ep2).
     // This is acceptable because we only use these for EXP-delta-based kill detection.
     if (in_array($curr_f, [11, 12, 13, 14, 15, 9])) {
@@ -225,9 +232,9 @@ foreach ($clients as $client) {
     //   6 | Mine 1          | Jungle North    | Desert 1
     //   7 | Mine 2          | Jungle South    | Desert 2
     //   8 | Ruins 1         | Mountain        | Desert 3
-    //   9 | Ruins 2         | Seaside         | *Saint-Million*
-    //  10 | Ruins 3         | Seabed Upper    | —
-    //  11 | *Dragon*        | Seabed Lower    | *Sil Dragon*
+    //   9 | Ruins 2         | Seaside         | *Saint-Milion/Shambertin/Kondrieu*
+    //  10 | Ruins 3         | Seabed Upper    | Test Map
+    //  11 | *Dragon*        | Seabed Lower    | —
     //  12 | *De Rol Le*     | *Gal Gryphon*   | —
     //  13 | *Vol Opt*       | *Olga Flow*     | —
     //  14 | *Dark Falz*     | *Barba Ray*     | —
@@ -241,7 +248,7 @@ foreach ($clients as $client) {
         13 => 'Vol Opt / Olga Flow',     // Ep1 Mine Boss / Ep2 Seabed Boss
         14 => 'Dark Falz / Barba Ray',   // Ep1 Ruins Boss / Ep2 Temple Boss
         15 => 'Gol Dragon',              // Ep2 Spaceship Boss
-        9  => 'Saint-Million'            // Ep4 Boss
+        9  => 'Saint-Milion / Shambertin / Kondrieu', // Ep4 Meteor Impact Site Boss (all three share floor 9)
     ];
     $floor = $curr_f;
     $prev_floor = (int)($prev_state['floor'] ?? -1);
@@ -344,7 +351,114 @@ foreach ($clients as $client) {
             $curr_f = (int)($client['LocationFloor'] ?? -1);
             $was_fast_kill = false;
 
-            if ($target_floor === 'ANY_DRAGON') {
+            if ($target_floor === 'DIGITAL_BLASPHEMY' || $target_floor === 'EP1_BOSS_RUSH' || $target_floor === 'EP2_BOSS_RUSH' || $target_floor === 'ALL_BOSSES' || $target_floor === 'DRACONIC_DOMINION' || $target_floor === 'CATACLYSMIC_CORE') {
+                $boss_type = null; // 'dragon', 'de_rol_le', 'vol_opt', 'dark_falz', 'barba_ray', 'gol_dragon', 'gal_gryphon', 'olga_flow', 'shambertin'
+                $boss_episode = null;
+                $boss_floor_resolved = null;
+                
+                // 1. Identify which boss arena was entered or exited
+                if ($lobby_episode === 'Episode 1') {
+                    if ($curr_f === 11 || $prev_f === 11 || $last_boss_arena === 11) { $boss_type = 'dragon'; $boss_episode = 'Episode 1'; $boss_floor_resolved = 11; }
+                    elseif ($curr_f === 12 || $prev_f === 12 || $last_boss_arena === 12) { $boss_type = 'de_rol_le'; $boss_episode = 'Episode 1'; $boss_floor_resolved = 12; }
+                    elseif ($curr_f === 13 || $prev_f === 13 || $last_boss_arena === 13) { $boss_type = 'vol_opt'; $boss_episode = 'Episode 1'; $boss_floor_resolved = 13; }
+                    elseif ($curr_f === 14 || $prev_f === 14 || $last_boss_arena === 14) { $boss_type = 'dark_falz'; $boss_episode = 'Episode 1'; $boss_floor_resolved = 14; }
+                } elseif ($lobby_episode === 'Episode 2') {
+                    if ($curr_f === 14 || $prev_f === 14 || $last_boss_arena === 14) { $boss_type = 'barba_ray'; $boss_episode = 'Episode 2'; $boss_floor_resolved = 14; }
+                    elseif ($curr_f === 15 || $prev_f === 15 || $last_boss_arena === 15) { $boss_type = 'gol_dragon'; $boss_episode = 'Episode 2'; $boss_floor_resolved = 15; }
+                    elseif ($curr_f === 12 || $prev_f === 12 || $last_boss_arena === 12) { $boss_type = 'gal_gryphon'; $boss_episode = 'Episode 2'; $boss_floor_resolved = 12; }
+                    elseif ($curr_f === 13 || $prev_f === 13 || $last_boss_arena === 13) { $boss_type = 'olga_flow'; $boss_episode = 'Episode 2'; $boss_floor_resolved = 13; }
+                } elseif ($lobby_episode === 'Episode 4') {
+                    if ($curr_f === 9 || $prev_f === 9 || $last_boss_arena === 9) { $boss_type = 'shambertin'; $boss_episode = 'Episode 4'; $boss_floor_resolved = 9; }
+                }
+                
+                // Fast-Kill checking
+                if ($curr_f >= 0 && $curr_f !== $prev_f) {
+                    if ($lobby_episode === 'Episode 1') {
+                        if ($prev_f === 2) { $was_fast_kill = true; $boss_type = 'dragon'; $boss_episode = 'Episode 1'; $boss_floor_resolved = 11; }
+                        elseif ($prev_f === 5) { $was_fast_kill = true; $boss_type = 'de_rol_le'; $boss_episode = 'Episode 1'; $boss_floor_resolved = 12; }
+                        elseif ($prev_f === 7) { $was_fast_kill = true; $boss_type = 'vol_opt'; $boss_episode = 'Episode 1'; $boss_floor_resolved = 13; }
+                        elseif ($prev_f === 10) { $was_fast_kill = true; $boss_type = 'dark_falz'; $boss_episode = 'Episode 1'; $boss_floor_resolved = 14; }
+                    } elseif ($lobby_episode === 'Episode 2') {
+                        if ($prev_f === 2) { $was_fast_kill = true; $boss_type = 'barba_ray'; $boss_episode = 'Episode 2'; $boss_floor_resolved = 14; }
+                        elseif ($prev_f === 4) { $was_fast_kill = true; $boss_type = 'gol_dragon'; $boss_episode = 'Episode 2'; $boss_floor_resolved = 15; }
+                        elseif ($prev_f === 9) { $was_fast_kill = true; $boss_type = 'gal_gryphon'; $boss_episode = 'Episode 2'; $boss_floor_resolved = 12; }
+                        elseif ($prev_f === 11) { $was_fast_kill = true; $boss_type = 'olga_flow'; $boss_episode = 'Episode 2'; $boss_floor_resolved = 13; }
+                    } elseif ($lobby_episode === 'Episode 4') {
+                        if ($prev_f === 8) { $was_fast_kill = true; $boss_type = 'shambertin'; $boss_episode = 'Episode 4'; $boss_floor_resolved = 9; }
+                    }
+                }
+                
+                if (time() - $last_boss_arena_time < 120) {
+                    if ($last_boss_arena === 11 && $lobby_episode === 'Episode 1') { $boss_type = 'dragon'; $boss_episode = 'Episode 1'; }
+                    elseif ($last_boss_arena === 12 && $lobby_episode === 'Episode 1') { $boss_type = 'de_rol_le'; $boss_episode = 'Episode 1'; }
+                    elseif ($last_boss_arena === 13 && $lobby_episode === 'Episode 1') { $boss_type = 'vol_opt'; $boss_episode = 'Episode 1'; }
+                    elseif ($last_boss_arena === 14 && $lobby_episode === 'Episode 1') { $boss_type = 'dark_falz'; $boss_episode = 'Episode 1'; }
+                    elseif ($last_boss_arena === 14 && $lobby_episode === 'Episode 2') { $boss_type = 'barba_ray'; $boss_episode = 'Episode 2'; }
+                    elseif ($last_boss_arena === 15 && $lobby_episode === 'Episode 2') { $boss_type = 'gol_dragon'; $boss_episode = 'Episode 2'; }
+                    elseif ($last_boss_arena === 12 && $lobby_episode === 'Episode 2') { $boss_type = 'gal_gryphon'; $boss_episode = 'Episode 2'; }
+                    elseif ($last_boss_arena === 13 && $lobby_episode === 'Episode 2') { $boss_type = 'olga_flow'; $boss_episode = 'Episode 2'; }
+                    elseif ($last_boss_arena === 9 && $lobby_episode === 'Episode 4') { $boss_type = 'shambertin'; $boss_episode = 'Episode 4'; }
+                }
+                
+                $recent_boss_fight = ($boss_type !== null);
+                
+                if ($recent_boss_fight) {
+                    $exp_gain = ($current_exp - $prev_exp) >= 300;
+                    $loot_gain = (($client['Level'] ?? 1) >= 200) && ($current_item_count > $prev_items);
+                    
+                    if ($exp_gain || $loot_gain) {
+                        // Calculate score based on difficulty and boss type
+                        $diff_bonus = 0;
+                        if ($lobby_difficulty === 'Hard') $diff_bonus = 1;
+                        elseif ($lobby_difficulty === 'Very Hard') $diff_bonus = 2;
+                        elseif ($lobby_difficulty === 'Ultimate') $diff_bonus = 3;
+                        
+                        $base_score = 1;
+                        $valid_for_event = false;
+                        
+                        if ($target_floor === 'DIGITAL_BLASPHEMY') {
+                            if ($boss_type === 'vol_opt') { $base_score = 1; $valid_for_event = true; }
+                            elseif ($boss_type === 'gol_dragon') { $base_score = 2; $valid_for_event = true; }
+                            elseif ($boss_type === 'shambertin') { $base_score = 3; $valid_for_event = true; }
+                        } elseif ($target_floor === 'EP1_BOSS_RUSH') {
+                            if ($boss_episode === 'Episode 1') {
+                                $valid_for_event = true;
+                                if ($boss_type === 'dragon') $base_score = 1;
+                                elseif ($boss_type === 'de_rol_le') $base_score = 2;
+                                elseif ($boss_type === 'vol_opt') $base_score = 3;
+                                elseif ($boss_type === 'dark_falz') $base_score = 4;
+                            }
+                        } elseif ($target_floor === 'EP2_BOSS_RUSH') {
+                            if ($boss_episode === 'Episode 2') {
+                                $valid_for_event = true;
+                                if ($boss_type === 'barba_ray') $base_score = 1;
+                                elseif ($boss_type === 'gol_dragon') $base_score = 2;
+                                elseif ($boss_type === 'gal_gryphon') $base_score = 3;
+                                elseif ($boss_type === 'olga_flow') $base_score = 4;
+                            }
+                        } elseif ($target_floor === 'ALL_BOSSES') {
+                            $valid_for_event = true;
+                            if (in_array($boss_type, ['dragon', 'barba_ray'])) $base_score = 1;
+                            elseif (in_array($boss_type, ['de_rol_le', 'gol_dragon'])) $base_score = 2;
+                            elseif (in_array($boss_type, ['vol_opt', 'gal_gryphon'])) $base_score = 3;
+                            elseif (in_array($boss_type, ['dark_falz', 'olga_flow', 'shambertin'])) $base_score = 4;
+                        } elseif ($target_floor === 'DRACONIC_DOMINION') {
+                            if ($boss_type === 'dragon') { $base_score = 1; $valid_for_event = true; }
+                            elseif ($boss_type === 'gol_dragon') { $base_score = 2; $valid_for_event = true; }
+                            elseif ($boss_type === 'shambertin') { $base_score = 3; $valid_for_event = true; }
+                        } elseif ($target_floor === 'CATACLYSMIC_CORE') {
+                            if ($boss_type === 'dark_falz') { $base_score = 3; $valid_for_event = true; }
+                            elseif ($boss_type === 'olga_flow') { $base_score = 4; $valid_for_event = true; }
+                            elseif ($boss_type === 'shambertin') { $base_score = 4; $valid_for_event = true; }
+                        }
+                        
+                        if ($valid_for_event) {
+                            $ce_contribution = $base_score + $diff_bonus;
+                            echo "[CRON_COMMUNITY] Special Boss Rush kill: Event={$target_floor}, Boss={$boss_type}, Diff={$lobby_difficulty}, Contribution={$ce_contribution}\n";
+                        }
+                    }
+                }
+            } elseif ($target_floor === 'ANY_DRAGON') {
                 $dragon_floors = [11, 15]; // 11 = Ep1 Dragon + Ep4 Sil Dragon, 15 = Ep2 Gol Dragon
                 $recent_boss_fight = in_array($curr_f, $dragon_floors) || in_array($prev_f, $dragon_floors);
                 
@@ -357,6 +471,12 @@ foreach ($clients as $client) {
                     $was_fast_kill = true;
                 }
                 $recent_boss_fight = $recent_boss_fight || $was_fast_kill;
+                
+                $exp_gain = ($current_exp - $prev_exp) >= 300;
+                $loot_gain = (($client['Level'] ?? 1) >= 200) && ($current_item_count > $prev_items);
+                if ($recent_boss_fight && ($exp_gain || $loot_gain)) {
+                    $ce_contribution = 1;
+                }
             } else {
                 $target_floor = (int)$target_floor;
                 
@@ -375,7 +495,7 @@ foreach ($clients as $client) {
                     $mapped_floor = 13; // Olga Flow
                     $episode = 2;
                 } elseif ($target_floor === 19) {
-                    $mapped_floor = 9;  // Saint-Million
+                    $mapped_floor = 9;  // Saint-Milion
                     $episode = 4;
                 } else {
                     $mapped_floor = $target_floor;
@@ -399,7 +519,7 @@ foreach ($clients as $client) {
                     '14_1' => [10],            // Dark Falz from Ruins 3
                     '14_2' => [2],             // Barba Ray from Temple Beta
                     '15_2' => [4],             // Gol Dragon from Spaceship Beta
-                    '9_4'  => [8],             // Saint-Million from Crater Interior
+                    '9_4'  => [8],             // Saint-Milion from Crater Interior
                 ];
 
                 // Catch players who enter the boss arena, kill the boss, and warp to town all within the 60-second cron window.
@@ -425,7 +545,7 @@ foreach ($clients as $client) {
                     '14_1' => [8, 9, 10],       // Dark Falz: Ruins 1-3
                     '14_2' => [1, 2],           // Barba Ray: VR Temple Alpha/Beta
                     '15_2' => [3, 4],           // Gol Dragon: VR Ship Alpha/Beta
-                    '9_4'  => [5, 6, 7, 8],     // Saint-Million: Crater Interior / Desert
+                    '9_4'  => [5, 6, 7, 8],     // Saint-Milion: Crater Interior / Desert
                 ];
                 $valid_floors_for_target = $valid_preceding_floors[$comp_key] ?? null;
                 if ($recent_boss_fight && $valid_floors_for_target !== null && $pre_boss_floor >= 0) {
@@ -441,12 +561,12 @@ foreach ($clients as $client) {
                     echo "[CRON_COMMUNITY] Boss target {$original_target} (key {$comp_key}) rejected: player is in {$lobby_episode}, but mission is for {$expected_lobby_episode}\n";
                     $recent_boss_fight = false;
                 }
-            }
-
-            $exp_gain = ($current_exp - $prev_exp) >= 300;
-            $loot_gain = (($client['Level'] ?? 1) >= 200) && ($current_item_count > $prev_items);
-            if ($recent_boss_fight && ($exp_gain || $loot_gain)) {
-                $ce_contribution = 1;
+                
+                $exp_gain = ($current_exp - $prev_exp) >= 300;
+                $loot_gain = (($client['Level'] ?? 1) >= 200) && ($current_item_count > $prev_items);
+                if ($recent_boss_fight && ($exp_gain || $loot_gain)) {
+                    $ce_contribution = 1;
+                }
             }
         } elseif ($ce['goal_type'] === 'PATROL') {
             if (($client['LocationFloor'] ?? -1) === (int)$ce['goal_target']) {

@@ -710,8 +710,8 @@ function get_reward_item($level_milestone, $charClass, $category, $options = [])
     // If it is a Unit (Hex starts with 0103 and length is 6)
     if (strpos($chosen, '0103') === 0 && strlen($chosen) === 6) {
         // Only basic stat units get modifiers. God/Heavenly units shouldn't, but 1-2 doesn't hurt.
-        // We'll give early/mid game units a + or ++ modifier (1 or 2).
-        $modifier = mt_rand(1, 2);
+        // Grant all units the ++ modifier (2) to ensure maximum stat boosts.
+        $modifier = 2;
         return build_pso_armor($chosen, 0, $modifier, 0);
     }
     
@@ -848,7 +848,7 @@ function get_common_reward_item($level_milestone, $charClass, $category, $option
             case 6: $units = ['010333' /* HP/Restorate */, '010336' /* TP/Restorate */, '010339' /* PB/Amplifier */]; break;
         }
                 $chosenUnit = $units[array_rand($units)];
-        $modifier = mt_rand(1, 2); // 1 = +, 2 = ++
+        $modifier = 2; // Always grant ++ modifier for max stats
         return build_pso_armor($chosenUnit, 0, $modifier, 0); // Units use same hex base logic
     }
     

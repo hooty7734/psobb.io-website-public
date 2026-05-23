@@ -6,13 +6,11 @@ __pycache__/
 .env
 node_modules/
 
-# Runtime data - never commit
+
 db/website.db
-db/*.log
-db/mail.log
 downloads/
-uploads/mods/
 api/bot_secret.php
+db/*.log
 api/*.log
 db/.cron_player_state.json
 api/agent_state.json

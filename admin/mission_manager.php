@@ -135,6 +135,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $message = "<div style='color:#ff4444'>All fields are required. Target Amount must be > 0.</div>";
         }
+    } elseif ($action === 'launch_curated_event') {
+        require_once __DIR__ . '/../api/event_roster.php';
+        $idx = (int)$_POST['event_index'];
+        if (launch_event($db, $roster, $idx)) {
+            $message = "<div style='color:#00C851'>Curated Event #{$idx} (\"" . htmlspecialchars($roster[$idx]['title']) . "\") launched successfully!</div>";
+        } else {
+            $message = "<div style='color:#ff4444'>Failed to launch curated event.</div>";
+        }
     }
 }
 
@@ -478,7 +486,7 @@ while ($ce = $tele_res->fetchArray(SQLITE3_ASSOC)) {
                         <option value="1 Photon Sphere">
                         <option value="999999 Meseta">
                         <!-- Mag Cells & Evolutions -->
-                        <option value="Cell of Mag 502">
+                        <option value="Cell of MAG 502">
                         <option value="Cell of Mag 213">
                         <option value="Parts of RoboChao">
                         <option value="Heart of Opa Opa">
@@ -487,16 +495,16 @@ while ($ce = $tele_res->fetchArray(SQLITE3_ASSOC)) {
                         <option value="Heart of Chu Chu">
                         <option value="Heart of Angel">
                         <option value="Heart of Devil">
-                        <option value="Kit of hamburger">
-                        <option value="Kit of Dreamcast">
-                        <option value="Kit of Sega Saturn">
-                        <option value="Kit of Genesis">
-                        <option value="Kit of Master System">
-                        <option value="Kit of Mark3">
+                        <option value="Kit of Hamburger">
+                        <option value="Kit of DREAMCAST">
+                        <option value="Kit of SEGA SATURN">
+                        <option value="Kit of GENESIS">
+                        <option value="Kit of MASTER SYSTEM">
+                        <option value="Kit of MARK3">
                         <option value="Panther's Spirit">
                         <option value="Halo Soul">
                         <!-- Super Rare Cosmetics/Weapons -->
-                        <option value="Dragon's Scale">
+                        <option value="Dragon Scale">
                         <option value="Heaven Striker Coat">
                         <option value="Pioneer Parts">
                         <option value="Amitie's Memo">
@@ -512,11 +520,11 @@ while ($ce = $tele_res->fetchArray(SQLITE3_ASSOC)) {
                     <select name="top_3_reward_item_string[]" multiple style="height: 180px; width: 100%; padding: 8px; background: rgba(0,0,0,0.4); border: 1px solid #444; color: #fff;">
                         <option value="">-- No Bonus Reward --</option>
                         <optgroup label="Sega Console Kits">
-                            <option value="Kit of Dreamcast">Kit of Dreamcast</option>
-                            <option value="Kit of Sega Saturn">Kit of Sega Saturn</option>
-                            <option value="Kit of Genesis">Kit of Genesis</option>
-                            <option value="Kit of Master System">Kit of Master System</option>
-                            <option value="Kit of Mark3">Kit of Mark3</option>
+                            <option value="Kit of DREAMCAST">Kit of DREAMCAST</option>
+                            <option value="Kit of SEGA SATURN">Kit of SEGA SATURN</option>
+                            <option value="Kit of GENESIS">Kit of GENESIS</option>
+                            <option value="Kit of MASTER SYSTEM">Kit of MASTER SYSTEM</option>
+                            <option value="Kit of MARK3">Kit of MARK3</option>
                         </optgroup>
                         <optgroup label="Creature Hearts">
                             <option value="Heart of Chao">Heart of Chao</option>
@@ -531,14 +539,14 @@ while ($ce = $tele_res->fetchArray(SQLITE3_ASSOC)) {
                             <option value="Heart of Devil">Heart of Devil</option>
                         </optgroup>
                         <optgroup label="Special & Joke Mags">
-                            <option value="Kit of hamburger">Kit of hamburger</option>
+                            <option value="Kit of Hamburger">Kit of Hamburger</option>
                             <option value="Panther's Spirit">Panther's Spirit</option>
                             <option value="Halo Soul">Halo Soul</option>
-                            <option value="Cell of Mag 502">Cell of Mag 502 (Soniti)</option>
+                            <option value="Cell of MAG 502">Cell of MAG 502 (Soniti)</option>
                             <option value="Cell of Mag 213">Cell of Mag 213 (Pitri)</option>
                             <option value="Amitie's Memo">Amitie's Memo (Kapu Kapu)</option>
                             <option value="Pioneer Parts">Pioneer Parts (Pioneer 2)</option>
-                            <option value="Dragon's Scale">Dragon's Scale (Tellusis)</option>
+                            <option value="Dragon Scale">Dragon Scale (Tellusis)</option>
                             <option value="Heaven Striker Coat">Heaven Striker Coat (Striker Unit)</option>
                         </optgroup>
                     </select>
@@ -546,6 +554,35 @@ while ($ce = $tele_res->fetchArray(SQLITE3_ASSOC)) {
 
                 <button type="submit" class="dl-btn" style="width:100%; border-color:#ffaa00; color:#ffaa00; background:rgba(255,170,0,0.15);">Start Global Event!</button>
             </form>
+        </div>
+
+        <!-- Launch Curated Event Form -->
+        <div class="admin-card" style="grid-column: span 3; border-color: #ffaa00;">
+            <h3 style="color: #ffaa00;">Launch Curated Monthly Event</h3>
+            <p style="opacity:0.8; font-size:0.9rem; margin-bottom:1.5rem;">
+                Select and immediately activate one of the curated, high-volume month-long **Boss Rush** server-wide events:
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+                <?php 
+                require_once __DIR__ . '/../api/event_roster.php';
+                foreach ($roster as $idx => $event): 
+                ?>
+                    <div style="background:rgba(255,255,255,0.05); padding:1rem; border-radius:6px; border:1px solid rgba(255,170,0,0.15); display:flex; flex-direction:column; justify-content:space-between;">
+                        <div>
+                            <h4 style="margin:0 0 5px 0; color:#ffaa00; font-size:1.05rem;">[Month <?php echo $idx; ?>] <?php echo htmlspecialchars($event['title']); ?></h4>
+                            <p style="font-size:0.8rem; margin:0 0 10px 0; opacity:0.8; line-height:1.3; flex-grow:1;"><?php echo htmlspecialchars($event['description']); ?></p>
+                            <div style="font-size:0.75rem; opacity:0.6; margin-bottom:10px;">
+                                <strong>Target:</strong> <?php echo number_format($event['target_amount']); ?> points (<?php echo htmlspecialchars($event['goal_target']); ?>)
+                            </div>
+                        </div>
+                        <form method="POST" style="margin:0;">
+                            <input type="hidden" name="action" value="launch_curated_event">
+                            <input type="hidden" name="event_index" value="<?php echo $idx; ?>">
+                            <button type="submit" class="dl-btn" style="width:100%; border-color:#ffaa00; color:#ffaa00; background:rgba(255,170,0,0.1); padding:6px; font-size:0.85rem;" onclick="return confirm('Are you sure you want to deactivate the active event and launch <?php echo htmlspecialchars(addslashes($event['title'])); ?>?');">Launch Event</button>
+                        </form>
+                    </div>
+                <?php endforeach; ?>
+            </div>
         </div>
 
         <div class="admin-card" style="grid-column: span 3;">

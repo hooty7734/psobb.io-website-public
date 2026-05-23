@@ -125,7 +125,7 @@ foreach ($clients as $client) {
     // These are the RAW LocationFloor values as reported by newserv /y/clients:
     //   Ep1: 11=Dragon, 12=De Rol Le, 13=Vol Opt, 14=Dark Falz
     //   Ep2: 12=Gal Gryphon, 13=Olga Flow, 14=Barba Ray, 15=Gol Dragon
-    //   Ep4: 9=Saint-Million
+    //   Ep4: 9=Saint-Milion
     // Note: Floor IDs overlap across episodes (e.g. 12 = De Rol Le in Ep1, Gal Gryphon in Ep2).
     // This is acceptable because we only use these for EXP-delta-based kill detection.
     if (in_array($curr_f, [11, 12, 13, 14, 15, 9])) {
@@ -157,7 +157,7 @@ foreach ($clients as $client) {
     //   6 | Mine 1          | Jungle North    | Desert 1
     //   7 | Mine 2          | Jungle South    | Desert 2
     //   8 | Ruins 1         | Mountain        | Desert 3
-    //   9 | Ruins 2         | Seaside         | *Saint-Million*
+    //   9 | Ruins 2         | Seaside         | *Saint-Milion*
     //  10 | Ruins 3         | Seabed Upper    | —
     //  11 | *Dragon*        | Seabed Lower    | *Sil Dragon*
     //  12 | *De Rol Le*     | *Gal Gryphon*   | —
@@ -393,7 +393,7 @@ foreach ($clients as $client) {
                     $mapped_floor = 13; // Olga Flow
                     $episode = 2;
                 } elseif ($target_floor === 19) {
-                    $mapped_floor = 9;  // Saint-Million
+                    $mapped_floor = 9;  // Saint-Milion
                     $episode = 4;
                 } else {
                     $mapped_floor = $target_floor;
@@ -416,7 +416,7 @@ foreach ($clients as $client) {
                     '14_1' => [10],            // Dark Falz from Ruins 3
                     '14_2' => [2],             // Barba Ray from Temple Beta
                     '15_2' => [4],             // Gol Dragon from Spaceship Beta
-                    '9_4'  => [8],             // Saint-Million from Crater Interior
+                    '9_4'  => [8],             // Saint-Milion from Crater Interior
                 ];
 
                 // Catch players who enter the boss arena, kill the boss, and warp to town all within the 60-second cron window.
@@ -449,7 +449,7 @@ foreach ($clients as $client) {
                     '14_1' => [8, 9, 10],       // Dark Falz: Ruins 1-3
                     '14_2' => [1, 2],           // Barba Ray: VR Temple Alpha/Beta
                     '15_2' => [3, 4],           // Gol Dragon: VR Ship Alpha/Beta
-                    '9_4'  => [5, 6, 7, 8],     // Saint-Million: Crater Interior / Desert
+                    '9_4'  => [5, 6, 7, 8],     // Saint-Milion: Crater Interior / Desert
                 ];
                 $valid_floors_for_target = $valid_preceding_floors[$comp_key] ?? null;
                 if ($recent_boss_fight && $valid_floors_for_target !== null && $pre_boss_floor >= 0) {
@@ -563,7 +563,7 @@ foreach ($clients as $client) {
                         // NOTE: Newserv's internal class ID ordering differs from standard PSO client
                         // ordering (e.g. newserv ID 3=RAmar, not HUcaseal), but this map is only
                         // used as a fallback when the API returns null/0, defaulting to HUmar.
-                        $class_map = [0 => 'HUmar', 1 => 'HUnewearl', 2 => 'HUcast', 3 => 'HUcaseal', 4 => 'RAmar', 5 => 'RAmarl', 6 => 'RAcast', 7 => 'RAcaseal', 8 => 'FOmar', 9 => 'FOmarl', 10 => 'FOnewm', 11 => 'FOnewearl'];
+                        $class_map = [0 => 'HUmar', 1 => 'HUnewearl', 2 => 'HUcast', 3 => 'RAmar', 4 => 'RAcast', 5 => 'RAcaseal', 6 => 'FOmarl', 7 => 'FOnewm', 8 => 'FOnewearl', 9 => 'HUcaseal', 10 => 'FOmar', 11 => 'RAmarl'];
                         foreach ($mentees as $mentee) {
                             $m_acc = $mentee['Account']['AccountID'] ?? 0;   // Nested: Account.AccountID (Account.cc:263)
                             $m_char = $mentee['Name'] ?? 'Unknown';          // Decoded character name (HTTPServer.cc:180)
@@ -630,10 +630,13 @@ foreach ($clients as $client) {
                                     elseif (strpos($c_class, 'RA') === 0) $party_classes['RA'] = true;
                                     elseif (strpos($c_class, 'FO') === 0) $party_classes['FO'] = true;
                                 } else {
-                                    // Numeric fallback (dead code path in practice — kept for safety)
-                                    if ($c_class >= 0 && $c_class <= 3) $party_classes['HU'] = true;
-                                    elseif ($c_class >= 4 && $c_class <= 7) $party_classes['RA'] = true;
-                                    elseif ($c_class >= 8 && $c_class <= 11) $party_classes['FO'] = true;
+                                    // Numeric fallback — uses newserv class IDs (StaticGameData.cc:294)
+                                    // HU: 0=HUmar, 1=HUnewearl, 2=HUcast, 9=HUcaseal
+                                    // RA: 3=RAmar, 4=RAcast, 5=RAcaseal, 11=RAmarl
+                                    // FO: 6=FOmarl, 7=FOnewm, 8=FOnewearl, 10=FOmar
+                                    if (in_array($c_class, [0, 1, 2, 9])) $party_classes['HU'] = true;
+                                    elseif (in_array($c_class, [3, 4, 5, 11])) $party_classes['RA'] = true;
+                                    elseif (in_array($c_class, [6, 7, 8, 10])) $party_classes['FO'] = true;
                                 }
                             }
                         }
@@ -647,7 +650,7 @@ foreach ($clients as $client) {
                         }
                         
                         // Fallback class_map (see HARDCORE_MENTOR comments above for details)
-                        $class_map = [0 => 'HUmar', 1 => 'HUnewearl', 2 => 'HUcast', 3 => 'HUcaseal', 4 => 'RAmar', 5 => 'RAmarl', 6 => 'RAcast', 7 => 'RAcaseal', 8 => 'FOmar', 9 => 'FOmarl', 10 => 'FOnewm', 11 => 'FOnewearl'];
+                        $class_map = [0 => 'HUmar', 1 => 'HUnewearl', 2 => 'HUcast', 3 => 'RAmar', 4 => 'RAcast', 5 => 'RAcaseal', 6 => 'FOmarl', 7 => 'FOnewm', 8 => 'FOnewearl', 9 => 'HUcaseal', 10 => 'FOmar', 11 => 'RAmarl'];
                         
                         // Collect all OTHER party members (exclude the bounty owner from rewards)
                         $party_members = [];
@@ -716,7 +719,7 @@ foreach ($clients as $client) {
                 $mapped_floor = 13; // Olga Flow -> Vol Opt Floor
                 $episode = 2;
             } elseif ($target_floor === 19) {
-                $mapped_floor = 9;  // Saint-Million -> Meteor Impact Site
+                $mapped_floor = 9;  // Saint-Milion -> Meteor Impact Site
                 $episode = 4;
             } else {
                 $mapped_floor = $target_floor;
@@ -741,7 +744,7 @@ foreach ($clients as $client) {
                 '14_1' => [10],            // Dark Falz from Ruins 3
                 '14_2' => [2],             // Barba Ray from Temple Beta
                 '15_2' => [4],             // Gol Dragon from Spaceship Beta
-                '9_4'  => [8],             // Saint-Million from Crater Interior
+                '9_4'  => [8],             // Saint-Milion from Crater Interior
             ];
             
             // Catch players who enter the boss arena, kill the boss, and warp to town all within the 60-second cron window.
@@ -774,7 +777,7 @@ foreach ($clients as $client) {
                 '14_1' => [8, 9, 10],       // Dark Falz: Ruins 1-3
                 '14_2' => [1, 2],           // Barba Ray: VR Temple Alpha/Beta
                 '15_2' => [3, 4],           // Gol Dragon: VR Ship Alpha/Beta
-                '9_4'  => [5, 6, 7, 8],     // Saint-Million: Crater Interior / Desert
+                '9_4'  => [5, 6, 7, 8],     // Saint-Milion: Crater Interior / Desert
             ];
             $valid_floors_for_speedrun = $valid_preceding_floors_speedrun[$comp_key] ?? null;
             if ($recent_boss_fight && $valid_floors_for_speedrun !== null && $pre_boss_floor >= 0) {
@@ -877,9 +880,9 @@ foreach ($clients as $client) {
         
         // Maps
         $class_map = [
-            0 => 'HUmar', 1 => 'HUnewearl', 2 => 'HUcast', 3 => 'HUcaseal', 
-            4 => 'RAmar', 5 => 'RAmarl', 6 => 'RAcast', 7 => 'RAcaseal', 
-            8 => 'FOmar', 9 => 'FOmarl', 10 => 'FOnewm', 11 => 'FOnewearl'
+            0 => 'HUmar', 1 => 'HUnewearl', 2 => 'HUcast', 3 => 'RAmar', 
+            4 => 'RAcast', 5 => 'RAcaseal', 6 => 'FOmarl', 7 => 'FOnewm', 
+            8 => 'FOnewearl', 9 => 'HUcaseal', 10 => 'FOmar', 11 => 'RAmarl'
         ];
 
         $level = $client['Level'] ?? 1;
@@ -1010,7 +1013,7 @@ foreach ($clients as $client) {
             case 'MENTOR_BOSS':
             case 'HARDCORE_MENTOR':
             case 'DIVERSE_PARTY_BOSS':
-                $bosses = [11=>'Dragon', 12=>'De Rol Le', 13=>'Vol Opt', 14=>'Dark Falz', 17=>'Barba Ray', 16=>'Gol Dragon', 15=>'Gal Gryphon', 18=>'Olga Flow', 19=>'Saint-Million'];
+                $bosses = [11=>'Dragon', 12=>'De Rol Le', 13=>'Vol Opt', 14=>'Dark Falz', 17=>'Barba Ray', 16=>'Gol Dragon', 15=>'Gal Gryphon', 18=>'Olga Flow', 19=>'Saint-Milion'];
                 $allowed_bosses = [];
                 if ($level >= 1) { $allowed_bosses[] = 11; $allowed_bosses[] = 17; }
                 if ($level >= 10) { $allowed_bosses[] = 12; $allowed_bosses[] = 16; }
@@ -1039,10 +1042,10 @@ foreach ($clients as $client) {
                 elseif ($selected_target_id === 16) $selected_target_id = 15; // Gol Dragon
                 elseif ($selected_target_id === 17) $selected_target_id = 14; // Barba Ray
                 elseif ($selected_target_id === 18) $selected_target_id = 13; // Olga Flow
-                elseif ($selected_target_id === 19) $selected_target_id = 9;  // Saint-Million
+                elseif ($selected_target_id === 19) $selected_target_id = 9;  // Saint-Milion
                 break;
             case 'SPEEDRUN_BOSS':
-                $bosses = [11=>'Dragon', 12=>'De Rol Le', 13=>'Vol Opt', 14=>'Dark Falz', 17=>'Barba Ray', 16=>'Gol Dragon', 15=>'Gal Gryphon', 18=>'Olga Flow', 19=>'Saint-Million'];
+                $bosses = [11=>'Dragon', 12=>'De Rol Le', 13=>'Vol Opt', 14=>'Dark Falz', 17=>'Barba Ray', 16=>'Gol Dragon', 15=>'Gal Gryphon', 18=>'Olga Flow', 19=>'Saint-Milion'];
                 $allowed_bosses = [];
                 if ($level >= 1) { $allowed_bosses[] = 11; $allowed_bosses[] = 17; }
                 if ($level >= 10) { $allowed_bosses[] = 12; $allowed_bosses[] = 16; }
@@ -1072,7 +1075,7 @@ foreach ($clients as $client) {
                 elseif ($rand_boss === 16) $mapped_boss = 15; // Gol Dragon
                 elseif ($rand_boss === 17) $mapped_boss = 14; // Barba Ray
                 elseif ($rand_boss === 18) $mapped_boss = 13; // Olga Flow
-                elseif ($rand_boss === 19) $mapped_boss = 9;  // Saint-Million
+                elseif ($rand_boss === 19) $mapped_boss = 9;  // Saint-Milion
                 
                 $selected_target_id = $mapped_boss . '_' . $time_limit;
                 $selected_target_friendly = $bosses[$rand_boss] . " in under " . floor($time_limit/60) . " minutes and " . ($time_limit%60) . " seconds";

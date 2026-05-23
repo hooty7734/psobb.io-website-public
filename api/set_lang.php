@@ -16,11 +16,6 @@ if (in_array($lang, ['en', 'jp'])) {
         $stmt->execute();
     }
 }
-// Only redirect to local paths to prevent open redirect
-$referer = $_SERVER['HTTP_REFERER'] ?? '/';
-$parsed = parse_url($referer);
-$redirect = (isset($parsed['path']) && strpos($parsed['path'], '/') === 0) ? $parsed['path'] : '/';
-header("Location: " . $redirect);
-
+header("Location: " . ($_SERVER['HTTP_REFERER'] ?? '/'));
 exit;
 ?>

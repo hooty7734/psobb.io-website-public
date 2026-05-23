@@ -19,7 +19,7 @@ $floor_map = [
 
 $boss_map = [
     'Dragon' => 11, 'De Rol Le' => 12, 'Vol Opt' => 13, 'Dark Falz' => 14, 
-    'Barba Ray' => 14, 'Gol Dragon' => 15, 'Gal Gryphon' => 12, 'Olga Flow' => 13, 'Saint-Million' => 9
+    'Barba Ray' => 14, 'Gol Dragon' => 15, 'Gal Gryphon' => 12, 'Olga Flow' => 13, 'Saint-Milion' => 9
 ];
 
 $missions_repaired = 0;
@@ -155,7 +155,7 @@ foreach ($missions_to_check as $m) {
             elseif ($val === 16) $repaired_target = '15';   // Gol Dragon -> VR Spaceship Final
             elseif ($val === 17) $repaired_target = '14';   // Barba Ray -> Dark Falz Floor
             elseif ($val === 18) $repaired_target = '13';   // Olga Flow -> Vol Opt Floor
-            elseif ($val === 19) $repaired_target = '9';    // Saint-Million -> Meteor Impact Site
+            elseif ($val === 19) $repaired_target = '9';    // Saint-Milion -> Meteor Impact Site
         }
     }
     elseif ($goal_type === 'SPEEDRUN_BOSS') {

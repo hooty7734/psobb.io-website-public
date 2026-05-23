@@ -93,7 +93,7 @@ try {
     $db = get_db();
 
     // Verify event is completed, player participated, and hasn't claimed
-    $stmt = $db->prepare("SELECT ce.reward_item_string, ce.top_3_reward_item_string 
+    $stmt = $db->prepare("SELECT ce.reward_item_string, ce.top_3_reward_item_string, cep.contribution_count 
                           FROM community_event_participants cep
                           JOIN community_events ce ON cep.event_id = ce.id
                           WHERE cep.event_id = :eid AND cep.account_id = :accId AND ce.status = 'completed' AND cep.reward_claimed = 0");
@@ -191,7 +191,45 @@ try {
         exit;
     }
 
-    $raw_string = str_ireplace(' and ', ',', $event['reward_item_string']);
+    $raw_reward = $event['reward_item_string'];
+    $num_drops = 1;
+    $contribution = intval($event['contribution_count'] ?? 0);
+    
+    if (stripos($raw_reward, '3x Random Rare Drops') !== false || stripos($raw_reward, '3_RANDOM_RARE_FIT_FOR_LEVEL') !== false) {
+        if (!function_exists('get_reward_item')) {
+            require_once 'reward_tables.php';
+        }
+        $charLevel = intval($onlineCharacter['Level'] ?? 1);
+        $charClass = $onlineCharacter['CharClass'] ?? $onlineCharacter['Class'] ?? 'HUmar';
+        if (is_numeric($charClass)) {
+            $class_map = [0 => 'HUmar', 1 => 'HUnewearl', 2 => 'HUcast', 3 => 'RAmar', 4 => 'RAcast', 5 => 'RAcaseal', 6 => 'FOmarl', 7 => 'FOnewm', 8 => 'FOnewearl', 9 => 'HUcaseal', 10 => 'FOmar', 11 => 'RAmarl'];
+            $charClass = $class_map[intval($charClass)] ?? 'HUmar';
+        }
+        
+        $num_drops = 1 + floor($contribution / 50);
+        if ($num_drops > 10) {
+            $num_drops = 10;
+        }
+        
+        $random_items = [];
+        for ($i = 0; $i < $num_drops; $i++) {
+            $categories = ['Weapon', 'Armor', 'Shield'];
+            $category = $categories[array_rand($categories)];
+            $random_items[] = get_reward_item($charLevel, $charClass, $category);
+        }
+        $raw_string = implode(',', $random_items);
+    } else {
+        $raw_string = str_ireplace(' and ', ',', $raw_reward);
+    }
+
+    if ($is_top_3) {
+        $meseta_reward = 100000;
+    } else {
+        $meseta_reward = 5000 + (floor($contribution / 50) * 5000);
+        if ($meseta_reward > 50000) {
+            $meseta_reward = 50000;
+        }
+    }
     if ($is_top_3 && !empty($event['top_3_reward_item_string'])) {
         $choices = array_map('trim', explode('|', $event['top_3_reward_item_string']));
         
@@ -211,6 +249,9 @@ try {
 
     $raw_string = trim($raw_string, ',');
     
+    // Always append the calculated Meseta reward
+    $raw_string .= ',' . $meseta_reward . ' Meseta';
+    
     if (!function_exists('parse_and_drop_items')) {
         require_once 'functions.php';
     }
@@ -224,12 +265,19 @@ try {
     }
     
     // Mark claimed
+    // Mark the participant's reward as claimed in the database to prevent double-redemptions
     $upd = $db->prepare("UPDATE community_event_participants SET reward_claimed = 1 WHERE event_id = :eid AND account_id = :accId");
     $upd->bindValue(':eid', $event_id, SQLITE3_INTEGER);
     $upd->bindValue(':accId', $accId, SQLITE3_INTEGER);
     $upd->execute();
     
-    echo json_encode(["success" => true, "message" => "Community Reward dispensed in-game!"]);
+    // Construct a rich success message confirming the exact quantity of random rares and Meseta dispensed
+    if (stripos($raw_reward, '3x Random Rare Drops') !== false || stripos($raw_reward, '3_RANDOM_RARE_FIT_FOR_LEVEL') !== false) {
+        $msg = "Community Reward ($num_drops random rare drops and " . number_format($meseta_reward) . " Meseta) dispensed in-game!";
+    } else {
+        $msg = "Community Reward dispensed in-game!";
+    }
+    echo json_encode(["success" => true, "message" => $msg]);
 
 } catch (Exception $e) {
     http_response_code(500);

@@ -1,6 +1,7 @@
 <?php
 // Comprehensive patch script to fix ALL broken mission targets
 require_once 'db.php';
+require_once 'reward_tables.php';
 $db = get_db();
 
 $total_updated = 0;
@@ -13,7 +14,7 @@ $floor_map = [
 
 $boss_map = [
     'Dragon' => 11, 'De Rol Le' => 12, 'Vol Opt' => 13, 'Dark Falz' => 14, 
-    'Barba Ray' => 17, 'Gol Dragon' => 16, 'Gal Gryphon' => 15, 'Olga Flow' => 18, 'Saint-Million' => 19
+    'Barba Ray' => 17, 'Gol Dragon' => 16, 'Gal Gryphon' => 15, 'Olga Flow' => 18, 'Saint-Milion' => 19
 ];
 
 // 1. Fix EXPLORATION and PATROL
@@ -147,6 +148,69 @@ while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
                 break;
             }
         }
+    }
+}
+
+// 4. Fix Invalid/Hallucinated Reward Strings
+$res = $db->query("SELECT id, reward_item_string FROM missions");
+while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
+    $reward_string = trim($row['reward_item_string']);
+    $segments = explode(',', $reward_string);
+    $is_valid = true;
+    $needs_clean = false;
+    $clean_segments = [];
+    
+    foreach ($segments as $segment) {
+        $segment = trim($segment);
+        if (empty($segment)) continue;
+        
+        // Valid Meseta string
+        if (preg_match('/^\d+\s+meseta$/i', $segment)) {
+            $clean_segments[] = $segment;
+            continue;
+        }
+        
+        // Valid Hex String (starting with 6 or 32 character hex)
+        $first_part = explode(' ', $segment)[0];
+        if (ctype_xdigit($first_part) && (strlen($first_part) === 6 || strlen($first_part) >= 32)) {
+            // Strip "+Xevp" and "+Xdef" from Units (hex starts with 0103)
+            if (strpos($first_part, '0103') === 0) {
+                $cleaned = preg_replace('/\s+\+\d+(?:def|evp)/i', '', $segment);
+                if ($cleaned !== $segment) {
+                    $needs_clean = true;
+                    $segment = $cleaned;
+                }
+            }
+            $clean_segments[] = $segment;
+            continue;
+        }
+        
+        // Valid legacy untekked weapons (renderRewardString expects this, but parse_and_drop_items DOES NOT)
+        // Since we know parse_and_drop_items fails on these if they aren't in item_hex.txt, we consider them invalid.
+        
+        // Otherwise, it's invalid!
+        $is_valid = false;
+        break;
+    }
+    
+    if (!$is_valid) {
+        // Regenerate a generic safe reward using the new reward tables logic
+        // E.g., 2000-5000 Meseta and a common random material/grinder
+        $new_reward = get_common_reward_item(80, 'HUmar', 'Random') . ", " . (mt_rand(2, 5) * 1000) . " Meseta";
+        
+        $upd = $db->prepare("UPDATE missions SET reward_item_string = :ri WHERE id = :id");
+        $upd->bindValue(':ri', $new_reward, SQLITE3_TEXT);
+        $upd->bindValue(':id', $row['id'], SQLITE3_INTEGER);
+        $upd->execute();
+        $total_updated += $db->changes();
+    } elseif ($needs_clean) {
+        // Update the database with the cleaned string
+        $new_reward = implode(', ', $clean_segments);
+        $upd = $db->prepare("UPDATE missions SET reward_item_string = :ri WHERE id = :id");
+        $upd->bindValue(':ri', $new_reward, SQLITE3_TEXT);
+        $upd->bindValue(':id', $row['id'], SQLITE3_INTEGER);
+        $upd->execute();
+        $total_updated += $db->changes();
     }
 }
 

@@ -88,6 +88,6 @@ if ($json && isset($json['result']) && stripos($json['result'], 'updated') !== f
     echo json_encode(['success' => true]);
 } else {
     // Determine specific error
-    echo json_encode(['error' => 'Server failed to update password. Please contact an administrator.']);
+    echo json_encode(['error' => 'Server failed to update password. Check admin logs.', 'debug' => $res]);
 }
 ?>

@@ -9,7 +9,7 @@ The web application and game server ecosystem interact seamlessly, allowing real
 ### 1.1 Core Components
 * **Frontend Web App:** Standard HTML, CSS (featuring modern glassmorphism UI), and Vanilla JavaScript.
 * **Backend Layer:** Vanilla PHP endpoints located securely in the `/api/` directory.
-* **Database:** SQLite (`db/website.db`). Used for tracking user accounts, bounty mission data, daily task streaks, and Discord associations.
+* **Database:** SQLite (`db/psobb_system.db`). Used for tracking user accounts, bounty mission data, daily task streaks, and Discord associations.
 * **Game Server (`NewServ`):** A custom C++ based PSOBB Emulator running locally on the ecosystem server. The PHP backend interfaces directly with it using HTTP REST commands exposed by `NewServ`'s simulation engine.
 * **AI Engine:** Google Gemini, generating dynamic lore-friendly missions.
 
@@ -51,7 +51,7 @@ Every minute, a local Cron Job executes `cron_missions.php`.
 
 #### B. The Item Target Override Logic
 To maintain game economy balance, Gemini cannot unilaterally decide item rewards. When Gemini specifies the `ITEM` type, the PHP backend hijacks the `goal_target`:
-* **Level 40+ Players:** A chase-rare is randomly selected from the `reward_tables.php` loot tables based on the player's class and level tier.
+* **Level 40+ Players:** A robust chase-rare is randomly extracted directly from `/api/item_objective_pool.json`. (e.g., `340:Holy Ray`).
 * **Level < 40 Players:** The backend generates an intrinsically untekked common weapon based on player class utilizing the `get_common_reward_item()` function returning `? Special BaseWeapon` strings (e.g., `"? Charge Saber"`).
 
 #### C. In-Game Tracker Evaluation

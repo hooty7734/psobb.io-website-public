@@ -1,0 +1,515 @@
+/* psobb-website/css/lfg.css */
+/* Premium Neon Cyber Hunter Terminal Style Sheet */
+
+:root {
+    --lfg-blue: var(--pso-blue, #00ffff);
+    --lfg-orange: var(--pso-orange, #ffaa00);
+    --lfg-purple: var(--pso-purple, #9d4edd);
+    --lfg-dark-blue: var(--pso-panel, rgba(0, 20, 40, 0.95));
+    --lfg-border: rgba(0, 255, 255, 0.15);
+}
+
+/* Premium LFG terminal header matching the signature bounty board hero */
+.lfg-terminal-header {
+    background: radial-gradient(circle at top left, rgba(0, 255, 255, 0.08) 0%, rgba(157, 78, 221, 0.05) 50%, rgba(0, 0, 0, 0.4) 100%),
+                linear-gradient(180deg, rgba(8, 12, 16, 0.8) 0%, rgba(16, 24, 32, 0.95) 100%);
+    border: 1px solid rgba(0, 255, 255, 0.15);
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.terminal-grid {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.terminal-title {
+    font-family: 'Share Tech Mono', 'Courier New', monospace;
+    font-size: 1.8rem;
+    color: #fff;
+    margin: 0;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+    letter-spacing: 1px;
+}
+
+.terminal-status {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    color: #00ffc8;
+    margin: 5px 0 0 0;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #00ff00;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 8px #00ff00;
+    animation: terminal-pulse 1.5s infinite;
+}
+
+@keyframes terminal-pulse {
+    0% { transform: scale(0.9); opacity: 0.5; }
+    50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 12px #00ff00; }
+    100% { transform: scale(0.9); opacity: 0.5; }
+}
+
+.char-sync-glass {
+    background: rgba(0, 255, 255, 0.05);
+    border: 1px solid rgba(0, 255, 255, 0.25);
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-family: 'Share Tech Mono', monospace;
+    min-width: 250px;
+    color: #fff;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+}
+
+.terminal-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+@media (min-width: 1024px) {
+    .terminal-layout {
+        grid-template-columns: 350px 1fr;
+    }
+}
+
+.lfg-glass-panel {
+    background: var(--lfg-dark-blue);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--lfg-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    transition: border-color 0.3s;
+}
+
+.lfg-glass-panel:hover {
+    border-color: rgba(0, 255, 255, 0.3);
+}
+
+.panel-section-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.25rem;
+    color: #fff;
+    border-bottom: 1px dashed var(--lfg-blue);
+    padding-bottom: 0.75rem;
+    margin: 0;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.count-badge {
+    background: rgba(0, 255, 255, 0.15);
+    border: 1px solid var(--lfg-blue);
+    color: var(--lfg-blue);
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+/* Forms Styling */
+.terminal-form-group {
+    margin-bottom: 1.25rem;
+}
+
+.terminal-form-group label {
+    display: block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--lfg-blue);
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+}
+
+.badge-optional {
+    background: rgba(255, 255, 255, 0.1);
+    color: #888;
+    padding: 1px 5px;
+    font-size: 0.65rem;
+    border-radius: 4px;
+    margin-left: 5px;
+}
+
+.terminal-form-group textarea, 
+.terminal-form-group select {
+    width: 100%;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    color: #fff;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+}
+
+.terminal-form-group textarea {
+    height: 100px;
+    resize: none;
+}
+
+.terminal-form-group textarea:focus, 
+.terminal-form-group select:focus {
+    border-color: var(--lfg-blue);
+    outline: none;
+    box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+}
+
+.archetype-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(0,0,0,0.3);
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.archetype-check-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #ddd;
+}
+
+.archetype-check-label input {
+    margin-right: 10px;
+    display: none;
+}
+
+.check-custom {
+    display: inline-block;
+    width: 32px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    border-radius: 4px;
+    font-weight: 800;
+    font-size: 0.75rem;
+    font-family: 'Share Tech Mono', monospace;
+    border: 1px solid #444;
+    background: #222;
+    color: #666;
+    margin-right: 10px;
+    transition: all 0.2s;
+}
+
+.archetype-check-label input:checked + .check-custom.hu {
+    background: rgba(255, 70, 70, 0.2);
+    border-color: #ff4444;
+    color: #ff4444;
+    box-shadow: 0 0 5px rgba(255, 70, 70, 0.4);
+}
+
+.archetype-check-label input:checked + .check-custom.ra {
+    background: rgba(0, 170, 255, 0.2);
+    border-color: #00aaff;
+    color: #00aaff;
+    box-shadow: 0 0 5px rgba(0, 170, 255, 0.4);
+}
+
+.archetype-check-label input:checked + .check-custom.fo {
+    background: rgba(157, 78, 221, 0.2);
+    border-color: var(--lfg-purple);
+    color: var(--lfg-purple);
+    box-shadow: 0 0 5px rgba(157, 78, 221, 0.4);
+}
+
+/* Feeds & Cards Grids */
+.feeds-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+    .feeds-grid {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    }
+}
+
+/* Premium Glass Cards */
+.terminal-card {
+    background: rgba(0, 10, 20, 0.7);
+    border: 1px solid rgba(0, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 1.25rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+}
+
+.terminal-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--lfg-blue);
+}
+
+.terminal-card.active-game::before {
+    background: #00ffc8;
+}
+
+.terminal-card.hunter-post::before {
+    background: var(--lfg-orange);
+}
+
+.terminal-card.wanted-highlight {
+    border-color: #ffaa00;
+    box-shadow: 0 0 15px rgba(255, 170, 0, 0.15);
+}
+
+.terminal-card.wanted-highlight::before {
+    background: #ffaa00;
+}
+
+.terminal-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 255, 255, 0.1);
+    border-color: rgba(0, 255, 255, 0.25);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.card-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    font-size: 1.05rem;
+    text-shadow: 0 0 5px rgba(255,255,255,0.2);
+}
+
+.card-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.c-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    font-family: 'Share Tech Mono', monospace;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.c-badge.lobby-badge {
+    background: rgba(0, 255, 200, 0.1);
+    border-color: rgba(0, 255, 200, 0.3);
+    color: #00ffc8;
+}
+
+.c-badge.level-badge {
+    background: rgba(0, 255, 255, 0.1);
+    border-color: rgba(0, 255, 255, 0.3);
+    color: var(--lfg-blue);
+}
+
+.c-badge.secid-badge {
+    border-width: 1px;
+}
+
+.c-badge.private-badge {
+    background: rgba(255, 170, 0, 0.1);
+    border-color: rgba(255, 170, 0, 0.3);
+    color: #ffaa00;
+}
+
+/* Slot Badges for Active Games */
+.slot-badge-container {
+    display: flex;
+    gap: 6px;
+    margin: 10px 0;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.c-slot {
+    font-size: 0.65rem;
+    font-weight: bold;
+    font-family: 'Share Tech Mono', monospace;
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid #333;
+    background: #111;
+    color: #555;
+    flex: 1;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.c-slot.filled-hu {
+    background: rgba(255, 70, 70, 0.15);
+    border-color: rgba(255, 70, 70, 0.4);
+    color: #ff6666;
+}
+
+.c-slot.filled-ra {
+    background: rgba(0, 170, 255, 0.15);
+    border-color: rgba(0, 170, 255, 0.4);
+    color: #55ccff;
+}
+
+.c-slot.filled-fo {
+    background: rgba(157, 78, 221, 0.15);
+    border-color: rgba(157, 78, 221, 0.4);
+    color: #cc88ff;
+}
+
+/* Seek & Wanted Badges */
+.seek-container {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    margin: 10px 0;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+}
+
+.seek-label {
+    color: #888;
+}
+
+.seek-badge {
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-weight: bold;
+    font-size: 0.65rem;
+    border: 1px solid #444;
+}
+
+.seek-badge.hu { border-color: rgba(255,70,70,0.4); color: #ff6666; background: rgba(255,70,70,0.05); }
+.seek-badge.ra { border-color: rgba(0,170,255,0.4); color: #55ccff; background: rgba(0,170,255,0.05); }
+.seek-badge.fo { border-color: rgba(157, 78, 221, 0.4); color: #cc88ff; background: rgba(157, 78, 221, 0.05); }
+
+.wanted-banner {
+    background: linear-gradient(90deg, rgba(255, 170, 0, 0.3) 0%, transparent 100%);
+    border-left: 2px solid #ffaa00;
+    color: #ffaa00;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 8px;
+    margin-bottom: 10px;
+    border-radius: 0 4px 4px 0;
+    letter-spacing: 0.5px;
+    animation: highlight-pulse 2s infinite;
+}
+
+@keyframes highlight-pulse {
+    0% { opacity: 0.85; }
+    50% { opacity: 1; background-color: rgba(255, 170, 0, 0.25); }
+    100% { opacity: 0.85; }
+}
+
+.bounty-glass-badge {
+    display: block;
+    background: rgba(157, 78, 221, 0.1);
+    border: 1px solid rgba(157, 78, 221, 0.3);
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin: 8px 0;
+    font-size: 0.8rem;
+    color: #e0f0ff;
+}
+
+.bounty-badge-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: bold;
+    color: #e088ff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 3px;
+}
+
+.card-desc {
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 8px 0;
+    word-break: break-word;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    padding-top: 10px;
+}
+
+.card-time {
+    font-size: 0.75rem;
+    color: #666;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+/* Banner Alert styles */
+.terminal-banner {
+    background: rgba(0, 255, 255, 0.1);
+    border: 1px solid var(--lfg-blue);
+    color: #fff;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.9rem;
+    text-shadow: 0 0 5px rgba(0,255,255,0.3);
+}
+
+.terminal-banner.error {
+    background: rgba(255, 68, 68, 0.1);
+    border-color: #ff4444;
+    color: #ff8888;
+}
+
+.terminal-banner.success {
+    background: rgba(0, 200, 81, 0.1);
+    border-color: #00C851;
+    color: #88ff88;
+}

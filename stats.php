@@ -35,6 +35,19 @@ include 'includes/header.php';
                     <span><?= __('Server Name:') ?></span>
                     <span id="server-name">--</span>
                 </div>
+                <div class="widget-divider" style="margin: 0.75rem 0; border-top: 1px dashed rgba(0, 255, 255, 0.2);"></div>
+                <div class="status-row" style="color: #ff6666;">
+                    <span><i class="fas fa-shield-halved" style="width: 16px; margin-right: 5px;"></i> <?= __('Hunters (HU):') ?></span>
+                    <span id="class-hu-count" style="font-weight: bold; text-shadow: 0 0 5px rgba(255, 70, 70, 0.3);">0</span>
+                </div>
+                <div class="status-row" style="color: #55ccff;">
+                    <span><i class="fas fa-crosshairs" style="width: 16px; margin-right: 5px;"></i> <?= __('Rangers (RA):') ?></span>
+                    <span id="class-ra-count" style="font-weight: bold; text-shadow: 0 0 5px rgba(0, 170, 255, 0.3);">0</span>
+                </div>
+                <div class="status-row" style="color: #cc88ff;">
+                    <span><i class="fas fa-wand-sparkles" style="width: 16px; margin-right: 5px;"></i> <?= __('Forces (FO):') ?></span>
+                    <span id="class-fo-count" style="font-weight: bold; text-shadow: 0 0 5px rgba(157, 78, 221, 0.3);">0</span>
+                </div>
             </div>
 
             <h2><?= __('Online Players') ?></h2>
