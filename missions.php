@@ -805,7 +805,7 @@ if ($account_id) {
                                 </div>
                                 <?php if ($is_mine): ?>
                                     <div style="margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
-                                        <?php if ($is_team && !empty($_SESSION['user']['is_admin'])): ?>
+                                        <?php if ($is_team): ?>
                                             <a href="lfg.php?bounty_id=<?= $b['mission_id'] ?>" class="dl-btn" style="display: block; text-align: center; width: 100%; font-size: 0.95rem; font-weight: bold; padding: 10px; box-sizing: border-box; text-decoration: none; background: rgba(0, 255, 255, 0.15); border-color: #00ffff; color: #00ffff;"><i class="fas fa-bullhorn"></i> <?= __('Post to LFG') ?></a>
                                         <?php endif; ?>
                                         <button onclick="abandonBounty(<?= $b['pm_id'] ?>, this)" class="dl-btn danger-btn" style="width: 100%; font-size: 0.95rem; font-weight: bold; padding: 10px;"><?= __('Abandon Quest') ?></button>
