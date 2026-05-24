@@ -165,11 +165,8 @@ function get_boss_episode_by_context($title, $desc, $default_floor)
         return 4;
     }
 
-    // Sil Dragon (Ep4) vs Dragon (Ep1)
+    // Forest Dragon & Sil Dragon are both Episode 1 Forest
     if ($default_floor === 11) {
-        if (strpos($text, 'sil') !== false || strpos($text, 'シル') !== false || strpos($text, 'desert') !== false || strpos($text, 'crater') !== false || strpos($text, '砂漠') !== false || strpos($text, 'クレーター') !== false) {
-            return 4;
-        }
         return 1;
     }
 
@@ -337,7 +334,7 @@ function getClearObjective($type, $target, $title = '', $desc = '')
             
             $boss = "Boss at Floor $target_floor";
             if ($target_floor === 11) {
-                $boss = ($ep === '4') ? 'Sil Dragon (Crater)' : 'Dragon (Forest)';
+                $boss = (strpos($text, 'sil') !== false || strpos($text, 'シル') !== false) ? 'Sil Dragon (Forest)' : 'Dragon (Forest)';
             } elseif ($target_floor === 12) {
                 $boss = ($ep === '2') ? 'Gal Gryphon (CCA)' : 'De Rol Le (Caves)';
             } elseif ($target_floor === 13) {
@@ -373,7 +370,7 @@ function getClearObjective($type, $target, $title = '', $desc = '')
             
             $boss = "Boss at Floor $target_floor";
             if ($target_floor === 11) {
-                $boss = ($ep === '4') ? 'Sil Dragon (Crater)' : 'Dragon (Forest)';
+                $boss = (strpos($text, 'sil') !== false || strpos($text, 'シル') !== false) ? 'Sil Dragon (Forest)' : 'Dragon (Forest)';
             } elseif ($target_floor === 12) {
                 $boss = ($ep === '2') ? 'Gal Gryphon (CCA)' : 'De Rol Le (Caves)';
             } elseif ($target_floor === 13) {
@@ -397,7 +394,7 @@ function getClearObjective($type, $target, $title = '', $desc = '')
             
             $boss = "Boss at Floor $target_floor";
             if ($target_floor === 11) {
-                $boss = ($ep === '4') ? 'Sil Dragon (Crater)' : 'Dragon (Forest)';
+                $boss = (strpos($text, 'sil') !== false || strpos($text, 'シル') !== false) ? 'Sil Dragon (Forest)' : 'Dragon (Forest)';
             } elseif ($target_floor === 12) {
                 $boss = ($ep === '2') ? 'Gal Gryphon (CCA)' : 'De Rol Le (Caves)';
             } elseif ($target_floor === 13) {
@@ -421,7 +418,7 @@ function getClearObjective($type, $target, $title = '', $desc = '')
             
             $boss = "Boss at Floor $target_floor";
             if ($target_floor === 11) {
-                $boss = ($ep === '4') ? 'Sil Dragon (Crater)' : 'Dragon (Forest)';
+                $boss = (strpos($text, 'sil') !== false || strpos($text, 'シル') !== false) ? 'Sil Dragon (Forest)' : 'Dragon (Forest)';
             } elseif ($target_floor === 12) {
                 $boss = ($ep === '2') ? 'Gal Gryphon (CCA)' : 'De Rol Le (Caves)';
             } elseif ($target_floor === 13) {
@@ -453,7 +450,7 @@ function getClearObjective($type, $target, $title = '', $desc = '')
             
             $boss = "Boss at Floor $target_floor";
             if ($target_floor === 11) {
-                $boss = ($ep === '4') ? 'Sil Dragon (Crater)' : 'Dragon (Forest)';
+                $boss = (strpos($text, 'sil') !== false || strpos($text, 'シル') !== false) ? 'Sil Dragon (Forest)' : 'Dragon (Forest)';
             } elseif ($target_floor === 12) {
                 $boss = ($ep === '2') ? 'Gal Gryphon (CCA)' : 'De Rol Le (Caves)';
             } elseif ($target_floor === 13) {
