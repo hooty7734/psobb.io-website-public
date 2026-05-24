@@ -459,7 +459,7 @@ foreach ($clients as $client) {
                     }
                 }
             } elseif ($target_floor === 'ANY_DRAGON') {
-                $dragon_floors = [11, 15]; // 11 = Ep1 Dragon + Ep4 Sil Dragon, 15 = Ep2 Gol Dragon
+                $dragon_floors = [11, 15]; // 11 = Ep1 Dragon (Sil Dragon on Ultimate), 15 = Ep2 Gol Dragon
                 $recent_boss_fight = in_array($curr_f, $dragon_floors) || in_array($prev_f, $dragon_floors);
                 
                 // Fast-Kill Race Condition Fix:
