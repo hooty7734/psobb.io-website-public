@@ -480,28 +480,28 @@ foreach ($clients as $client) {
             } else {
                 $target_floor = (int)$target_floor;
                 
-                // Backwards compatibility / robust mapping of synthetic IDs to raw IDs + episode
+                // Legacy fallback: map unambiguous synthetic IDs (16-19) to real newserv floors.
+                // These IDs don't exist in newserv so they're safe to blindly convert.
+                // Floor 15 is NOT mapped here because it could be a real Gol Dragon (Ep2 0x0F).
+                // After running repair_floor_ids.php, none of these should ever appear.
                 $episode = null;
-                if ($target_floor === 15) {
-                    $mapped_floor = 12; // Gal Gryphon
-                    $episode = 2;
-                } elseif ($target_floor === 16) {
-                    $mapped_floor = 15; // Gol Dragon
+                if ($target_floor === 16) {
+                    $mapped_floor = 15; // Gol Dragon (old synthetic 16 → real 15)
                     $episode = 2;
                 } elseif ($target_floor === 17) {
-                    $mapped_floor = 14; // Barba Ray
+                    $mapped_floor = 14; // Barba Ray (old synthetic 17 → real 14)
                     $episode = 2;
                 } elseif ($target_floor === 18) {
-                    $mapped_floor = 13; // Olga Flow
+                    $mapped_floor = 13; // Olga Flow (old synthetic 18 → real 13)
                     $episode = 2;
                 } elseif ($target_floor === 19) {
-                    $mapped_floor = 9;  // Saint-Milion
+                    $mapped_floor = 9;  // Saint-Milion (old synthetic 19 → real 9)
                     $episode = 4;
                 } else {
                     $mapped_floor = $target_floor;
                 }
 
-                // If episode not determined by legacy synthetic ID, use the context parser!
+                // For real IDs (and floor 15 = Gol Dragon), determine episode from context
                 if ($episode === null) {
                     $episode = get_boss_episode_by_context($ce['title'], $ce['description'] ?? '', $mapped_floor);
                 }

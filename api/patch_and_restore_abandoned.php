@@ -147,15 +147,16 @@ foreach ($missions_to_check as $m) {
         }
     }
 
-    // E. Convert any existing synthetic targets to raw floor IDs
+    // E. Convert unambiguous legacy synthetic targets to real newserv floor IDs.
+    // Floor 15 is NOT mapped because it's a valid real ID (Gol Dragon, Ep2 0x0F).
+    // Old synthetic 15 (Gal Gryphon) requires context-aware disambiguation — see repair_floor_ids.php.
     if (in_array($goal_type, ['BOSS_ARENA', 'MENTOR_BOSS', 'HARDCORE_MENTOR', 'DIVERSE_PARTY_BOSS'])) {
         if (is_numeric($goal_target)) {
             $val = (int)$goal_target;
-            if ($val === 15) $repaired_target = '12';      // Gal Gryphon -> De Rol Le Floor
-            elseif ($val === 16) $repaired_target = '15';   // Gol Dragon -> VR Spaceship Final
-            elseif ($val === 17) $repaired_target = '14';   // Barba Ray -> Dark Falz Floor
-            elseif ($val === 18) $repaired_target = '13';   // Olga Flow -> Vol Opt Floor
-            elseif ($val === 19) $repaired_target = '9';    // Saint-Milion -> Meteor Impact Site
+            if ($val === 16) $repaired_target = '15';        // Gol Dragon (synthetic 16 → real 15)
+            elseif ($val === 17) $repaired_target = '14';    // Barba Ray (synthetic 17 → real 14)
+            elseif ($val === 18) $repaired_target = '13';    // Olga Flow (synthetic 18 → real 13)
+            elseif ($val === 19) $repaired_target = '9';     // Saint-Milion (synthetic 19 → real 9)
         }
     }
     elseif ($goal_type === 'SPEEDRUN_BOSS') {
@@ -164,8 +165,7 @@ foreach ($missions_to_check as $m) {
             $val = (int)$parts[0];
             $time_limit = (int)$parts[1];
             $mapped_floor = null;
-            if ($val === 15) $mapped_floor = 12;
-            elseif ($val === 16) $mapped_floor = 15;
+            if ($val === 16) $mapped_floor = 15;
             elseif ($val === 17) $mapped_floor = 14;
             elseif ($val === 18) $mapped_floor = 13;
             elseif ($val === 19) $mapped_floor = 9;
