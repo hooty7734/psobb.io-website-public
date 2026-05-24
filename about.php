@@ -451,7 +451,7 @@ include 'includes/header.php';
                     </div>
                 </div>
                 <p class="crew-bio">
-                    <?= __('Pixelated is our resident vibe-coding beast, creating all kinds of awesome features and integrations inside our Discord community. From interactive bots to custom alerts, Pixelated works magic to keep our players connected, engaged, and supported with excellent gaming utilities and cool tools.') ?>
+                    <?= __('Pixelated is our resident vibe-coding beast, dropping awesome client-side mods like custom HD texture packs and camera controls inside our Discord, alongside plenty of legendary memes. Pixelated keeps our community connected, entertained, and equipped with cool gaming utilities.') ?>
                 </p>
             </div>
 

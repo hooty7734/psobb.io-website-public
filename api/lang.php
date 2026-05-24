@@ -360,7 +360,7 @@ $I18N = [
         'Oman Computar (also known as Repflez) is an expert contributor to the open-source newserv server emulator and has worked extensively on several legacy Phantasy Star Online projects. His deep understanding of custom server logic and network packets has been vital to our server development and core engine refinement.' => 'Oman Computar（Repflezとしても知られる）は、オープンソース of newservエミュレータの熟練したコントリビューターであり、数多くのレガシーなファンタシースターオンラインプロジェクトに携わってきました。カスタムサーバーロジックとネットワークパケットに関する彼の深い知見は、私たちのサーバー開発とコアエンジンの改良において極めて重要な役割を果たしています。',
         'Community & Discord Developer' => 'コミュニティ ＆ Discord開発者',
         'Vibe Coding Beast' => 'バイブス・コーディング野獣',
-        'Pixelated is our resident vibe-coding beast, creating all kinds of awesome features and integrations inside our Discord community. From interactive bots to custom alerts, Pixelated works magic to keep our players connected, engaged, and supported with excellent gaming utilities and cool tools.' => 'Pixelatedは、私たちのDiscordコミュニティ内で様々な素晴らしい機能や統合を創り出す、専属の「バイブス・コーディング野獣」です。インタラクティブなボットからカスタム通知まで、Pixelatedは魔法のような手腕でプレイヤーを繋ぎ、盛り上げ、素晴らしいゲームユーティリティやクールなツールでサポートを提供しています。',
+        'Pixelated is our resident vibe-coding beast, dropping awesome client-side mods like custom HD texture packs and camera controls inside our Discord, alongside plenty of legendary memes. Pixelated keeps our community connected, entertained, and equipped with cool gaming utilities.' => 'Pixelatedは、Discord内でカスタムHDテクスチャパックやカメラコントロールなどの素晴らしいクライアント側MODを提供し、数々の伝説的なミームも投稿してくれる、専属の「バイブス・コーディング野獣」です。Pixelatedはプレイヤーを繋ぎ、楽しませ、素晴らしいゲームユーティリティでサポートを提供しています。',
 
         // Hooty7734
         'Discord Administrator & Moderator' => 'Discord管理者 ＆ モデレーター',
