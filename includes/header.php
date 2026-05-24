@@ -43,7 +43,7 @@ start_secure_session();
 
                 <li class="dropdown">
                     <a href="javascript:void(0)"
-                        class="dropbtn <?php echo in_array($current_page, ['drops', 'missions', 'lfg', 'top_hunters', 'stats']) ? 'active' : ''; ?>"><?= __('Game Info') ?>
+                        class="dropbtn <?php echo in_array($current_page, ['drops', 'missions', 'lfg', 'top_hunters', 'stats']) ? 'active' : ''; ?>"><?= __('Game Tools') ?>
                         <i class="fas fa-caret-down"></i></a>
                     <div class="dropdown-content">
                         <a href="/drops.php"
