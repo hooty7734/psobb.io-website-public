@@ -207,7 +207,7 @@ if ($account_id) {
                         <!-- Column 1: Event Details & Progress -->
                         <div class="pso-hud-card-wide-col">
                             <span class="bounty-player" style="color: #ffaa00; font-weight:bold; letter-spacing:1px; text-transform:uppercase; margin-bottom: 0.4rem; display: block;"><?= __('Community Event') ?></span>
-                            <h3 class="bounty-title" style="margin-bottom: 0.5rem;"><?= htmlspecialchars($ce['title']) ?></h3>
+                            <h3 class="bounty-title" style="margin-bottom: 0.5rem;"><?= htmlspecialchars(__($ce['title'])) ?></h3>
                             
                             <?php 
                                 if ($ce['goal_target'] === 'DIGITAL_BLASPHEMY') {
@@ -218,7 +218,7 @@ if ($account_id) {
                                         $display_desc
                                     );
                                 } else {
-                                    $bolded_desc = htmlspecialchars($ce['description']);
+                                    $bolded_desc = htmlspecialchars(__($ce['description']));
                                     $keywords = [
                                         'Vol Opt' => '<strong>Vol Opt</strong>',
                                         'Gol Dragon' => '<strong>Gol Dragon</strong>',
@@ -451,8 +451,8 @@ if ($account_id) {
                             <div class="reward-voucher accent-orange">
                                 <div class="voucher-left">
                                     <span class="voucher-tag"><?= __('Server Event Completed!') ?></span>
-                                    <h4 class="voucher-title"><?= htmlspecialchars($ce['title']) ?></h4>
-                                    <p class="voucher-desc"><?= htmlspecialchars($ce['description']) ?></p>
+                                    <h4 class="voucher-title"><?= htmlspecialchars(__($ce['title'])) ?></h4>
+                                    <p class="voucher-desc"><?= htmlspecialchars(__($ce['description'])) ?></p>
                                     
                                     <?php 
                                         if ($ce['is_top_3'] && !empty($ce['top_3_reward_item_string'])) {
