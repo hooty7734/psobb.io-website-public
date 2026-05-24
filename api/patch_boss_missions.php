@@ -3,16 +3,15 @@
 require_once 'db.php';
 $db = get_db();
 
+// Real newserv floor IDs (StaticGameData.cc floor_defs).
+// Ep2 bosses share the same floor numbers as Ep1 bosses; episode context disambiguates.
 $bosses = [
     'Dragon' => 11,
-    'De Rol Le' => 12,
-    'Vol Opt' => 13,
-    'Dark Falz' => 14,
-    'Barba Ray' => 17,
-    'Gol Dragon' => 16,
-    'Gal Gryphon' => 15,
-    'Olga Flow' => 18,
-    'Saint-Milion' => 19
+    'De Rol Le' => 12,      // Gal Gryphon also uses floor 12 (Ep2)
+    'Vol Opt' => 13,        // Olga Flow also uses floor 13 (Ep2)
+    'Dark Falz' => 14,      // Barba Ray also uses floor 14 (Ep2)
+    'Gol Dragon' => 15,     // Ep2-only floor
+    'Saint-Milion' => 9     // Ep4 (shares Ep1 Ruins 2 floor number)
 ];
 
 $total_updated = 0;

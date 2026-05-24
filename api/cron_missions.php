@@ -1013,71 +1013,59 @@ foreach ($clients as $client) {
             case 'MENTOR_BOSS':
             case 'HARDCORE_MENTOR':
             case 'DIVERSE_PARTY_BOSS':
-                $bosses = [11=>'Dragon', 12=>'De Rol Le', 13=>'Vol Opt', 14=>'Dark Falz', 17=>'Barba Ray', 16=>'Gol Dragon', 15=>'Gal Gryphon', 18=>'Olga Flow', 19=>'Saint-Milion'];
+                // Real newserv floor IDs (StaticGameData.cc). Ep2 bosses share Ep1 floor numbers;
+                // episode context disambiguates them. See floor_defs in StaticGameData.cc.
+                $bosses = [11=>'Dragon', 12=>'De Rol Le', 13=>'Vol Opt', 14=>'Dark Falz', 15=>'Gol Dragon', 9=>'Saint-Milion'];
+                // Ep2 bosses that share Ep1 floor IDs (disambiguated by episode):
+                // Gal Gryphon = 12 (same as De Rol Le)
+                // Olga Flow   = 13 (same as Vol Opt)
+                // Barba Ray   = 14 (same as Dark Falz)
                 $allowed_bosses = [];
-                if ($level >= 1) { $allowed_bosses[] = 11; $allowed_bosses[] = 17; }
-                if ($level >= 10) { $allowed_bosses[] = 12; $allowed_bosses[] = 16; }
+                if ($level >= 1) { $allowed_bosses[] = 11; }
+                if ($level >= 10) { $allowed_bosses[] = 12; }
                 if ($level >= 20) { $allowed_bosses[] = 13; }
                 if ($level >= 30) { $allowed_bosses[] = 14; $allowed_bosses[] = 15; }
-                if ($level >= 50) { $allowed_bosses[] = 18; $allowed_bosses[] = 19; }
+                if ($level >= 50) { $allowed_bosses[] = 9; }
                 
                 // Filter out current floor and mapped boss floors
+                // Filter out bosses whose floor the player is currently on
                 $allowed_bosses = array_filter($allowed_bosses, function($val) use ($curr_f) {
-                    $mapped = $val;
-                    if ($val === 15) $mapped = 12;
-                    elseif ($val === 16) $mapped = 15;
-                    elseif ($val === 17) $mapped = 14;
-                    elseif ($val === 18) $mapped = 13;
-                    elseif ($val === 19) $mapped = 9;
-                    return ($val !== $curr_f && $mapped !== $curr_f);
+                    return ($val !== $curr_f);
                 });
                 if (empty($allowed_bosses)) $allowed_bosses = [11]; // fallback
 
                 $selected_target_id = $allowed_bosses[array_rand($allowed_bosses)];
                 $selected_target_friendly = $bosses[$selected_target_id];
-                $mission_episode = ($selected_target_id >= 15 && $selected_target_id <= 18) ? 2 : ($selected_target_id == 19 ? 4 : 1);
-                
-                // Transition to raw floor targets for DB storage
-                if ($selected_target_id === 15) $selected_target_id = 12; // Gal Gryphon
-                elseif ($selected_target_id === 16) $selected_target_id = 15; // Gol Dragon
-                elseif ($selected_target_id === 17) $selected_target_id = 14; // Barba Ray
-                elseif ($selected_target_id === 18) $selected_target_id = 13; // Olga Flow
-                elseif ($selected_target_id === 19) $selected_target_id = 9;  // Saint-Milion
+                // Determine episode from real floor ID
+                if ($selected_target_id === 15) $mission_episode = 2;       // Gol Dragon
+                elseif ($selected_target_id === 9) $mission_episode = 4;     // Saint-Milion
+                else $mission_episode = 1;                                   // Ep1 bosses (11,12,13,14)
                 break;
             case 'SPEEDRUN_BOSS':
-                $bosses = [11=>'Dragon', 12=>'De Rol Le', 13=>'Vol Opt', 14=>'Dark Falz', 17=>'Barba Ray', 16=>'Gol Dragon', 15=>'Gal Gryphon', 18=>'Olga Flow', 19=>'Saint-Milion'];
+                // Real newserv floor IDs (same mapping as BOSS_ARENA above)
+                $bosses = [11=>'Dragon', 12=>'De Rol Le', 13=>'Vol Opt', 14=>'Dark Falz', 15=>'Gol Dragon', 9=>'Saint-Milion'];
                 $allowed_bosses = [];
-                if ($level >= 1) { $allowed_bosses[] = 11; $allowed_bosses[] = 17; }
-                if ($level >= 10) { $allowed_bosses[] = 12; $allowed_bosses[] = 16; }
+                if ($level >= 1) { $allowed_bosses[] = 11; }
+                if ($level >= 10) { $allowed_bosses[] = 12; }
                 if ($level >= 20) { $allowed_bosses[] = 13; }
                 if ($level >= 30) { $allowed_bosses[] = 14; $allowed_bosses[] = 15; }
-                if ($level >= 50) { $allowed_bosses[] = 18; $allowed_bosses[] = 19; }
+                if ($level >= 50) { $allowed_bosses[] = 9; }
                 
-                // Filter out current floor and mapped boss floors
+                // Filter out bosses whose floor the player is currently on
                 $allowed_bosses = array_filter($allowed_bosses, function($val) use ($curr_f) {
-                    $mapped = $val;
-                    if ($val === 15) $mapped = 12;
-                    elseif ($val === 16) $mapped = 15;
-                    elseif ($val === 17) $mapped = 14;
-                    elseif ($val === 18) $mapped = 13;
-                    elseif ($val === 19) $mapped = 9;
-                    return ($val !== $curr_f && $mapped !== $curr_f);
+                    return ($val !== $curr_f);
                 });
                 if (empty($allowed_bosses)) $allowed_bosses = [11]; // fallback
 
                 $rand_boss = $allowed_bosses[array_rand($allowed_bosses)];
                 $time_limit = mt_rand(600, 1200); // 10 to 20 minutes
-                $mission_episode = ($rand_boss >= 15 && $rand_boss <= 18) ? 2 : ($rand_boss == 19 ? 4 : 1);
+                // Determine episode from real floor ID
+                if ($rand_boss === 15) $mission_episode = 2;       // Gol Dragon
+                elseif ($rand_boss === 9) $mission_episode = 4;     // Saint-Milion
+                else $mission_episode = 1;                          // Ep1 bosses (11,12,13,14)
                 
-                // Transition to raw floor targets for DB storage
-                $mapped_boss = $rand_boss;
-                if ($rand_boss === 15) $mapped_boss = 12; // Gal Gryphon
-                elseif ($rand_boss === 16) $mapped_boss = 15; // Gol Dragon
-                elseif ($rand_boss === 17) $mapped_boss = 14; // Barba Ray
-                elseif ($rand_boss === 18) $mapped_boss = 13; // Olga Flow
-                elseif ($rand_boss === 19) $mapped_boss = 9;  // Saint-Milion
-                
-                $selected_target_id = $mapped_boss . '_' . $time_limit;
+                // Real floor IDs go directly into DB — no mapping needed
+                $selected_target_id = $rand_boss . '_' . $time_limit;
                 $selected_target_friendly = $bosses[$rand_boss] . " in under " . floor($time_limit/60) . " minutes and " . ($time_limit%60) . " seconds";
                 break;
             case 'SPEEDRUN_FLOOR':

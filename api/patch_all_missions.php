@@ -12,9 +12,11 @@ $floor_map = [
     'Mine 1' => 6, 'Mine 2' => 7, 'Ruins 1' => 8, 'Ruins 2' => 9, 'Ruins 3' => 10
 ];
 
+// Real newserv floor IDs (StaticGameData.cc floor_defs).
+// Ep2 bosses share the same floor numbers as Ep1 bosses; episode context disambiguates.
 $boss_map = [
     'Dragon' => 11, 'De Rol Le' => 12, 'Vol Opt' => 13, 'Dark Falz' => 14, 
-    'Barba Ray' => 17, 'Gol Dragon' => 16, 'Gal Gryphon' => 15, 'Olga Flow' => 18, 'Saint-Milion' => 19
+    'Barba Ray' => 14, 'Gol Dragon' => 15, 'Gal Gryphon' => 12, 'Olga Flow' => 13, 'Saint-Milion' => 9
 ];
 
 // 1. Fix EXPLORATION and PATROL
