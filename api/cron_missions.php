@@ -377,38 +377,24 @@ foreach ($clients as $client) {
                 }
             } else {
                 $target_floor = (int)$target_floor;
-                
-                // Backwards compatibility / robust mapping of synthetic IDs to raw IDs + episode
-                $episode = null;
-                if ($target_floor === 15) {
-                    $mapped_floor = 12; // Gal Gryphon
-                    $episode = 2;
-                } elseif ($target_floor === 16) {
-                    $mapped_floor = 15; // Gol Dragon
-                    $episode = 2;
-                } elseif ($target_floor === 17) {
-                    $mapped_floor = 14; // Barba Ray
-                    $episode = 2;
-                } elseif ($target_floor === 18) {
-                    $mapped_floor = 13; // Olga Flow
-                    $episode = 2;
-                } elseif ($target_floor === 19) {
-                    $mapped_floor = 9;  // Saint-Milion
-                    $episode = 4;
-                } else {
-                    $mapped_floor = $target_floor;
-                }
 
-                // If episode not determined by legacy synthetic ID, use the context parser!
-                if ($episode === null) {
-                    $episode = get_boss_episode_by_context($m['mission_title'], $m['mission_desc'] ?? '', $mapped_floor);
-                }
+                // Real floor IDs are now stored directly in goal_target.
+                // Ep2 bosses share the same floor number as Ep1 bosses:
+                //   12 = De Rol Le (Ep1) / Gal Gryphon (Ep2)
+                //   13 = Vol Opt (Ep1)   / Olga Flow (Ep2)
+                //   14 = Dark Falz (Ep1) / Barba Ray (Ep2)
+                //   15 = Gol Dragon (Ep2 only)
+                //    9 = Ruins 2 (Ep1)   / Saint-Milion (Ep4)
+                // Episode is determined by mission title/description context.
+                $mapped_floor = $target_floor;
+
+                // Determine episode from context (handles shared floor IDs)
+                $episode = get_boss_episode_by_context($m['mission_title'], $m['mission_desc'] ?? '', $mapped_floor);
 
                 $comp_key = "{$mapped_floor}_{$episode}";
 
                 $fast_kill_preceding = [
-                    '11_1' => [2],             // Dragon from Forest 2
-                    '11_4' => [8],             // Sil Dragon
+                    '11_1' => [2],             // Dragon / Sil Dragon from Forest 2
                     '12_1' => [5],             // De Rol Le from Cave 3
                     '12_2' => [5, 6, 7, 8, 9], // Gal Gryphon from CCA/Jungle/Mtn/Seaside
                     '13_1' => [7],             // Vol Opt from Mine 2
@@ -440,8 +426,7 @@ foreach ($clients as $client) {
                 // mission (also Floor 13 in Ep1), and vice versa.
                 // =====================================================================
                 $valid_preceding_floors = [
-                    '11_1' => [1, 2],           // Dragon: Forest 1-2
-                    '11_4' => [5, 6, 7, 8],     // Sil Dragon Crater/Desert
+                    '11_1' => [1, 2],           // Dragon / Sil Dragon: Forest 1-2
                     '12_1' => [3, 4, 5],        // De Rol Le: Cave 1-3
                     '12_2' => [5, 6, 7, 8, 9],  // Gal Gryphon: CCA, Jungle, Mountain, Seaside
                     '13_1' => [6, 7],           // Vol Opt: Mine 1-2
@@ -703,31 +688,10 @@ foreach ($clients as $client) {
             $target_floor = $speedrun_target_id;
             $time_limit = (int)$time_limit;
             
-            // Map Episode 2/4 Boss "Fake" Floor IDs back to actual PSO Client Floor IDs
+            // Real floor IDs are stored directly in goal_target.
+            // Episode is determined by mission title/description context.
             $mapped_floor = $target_floor;
-            $episode = null;
-            if ($target_floor === 15) {
-                $mapped_floor = 12; // Gal Gryphon -> De Rol Le Floor
-                $episode = 2;
-            } elseif ($target_floor === 16) {
-                $mapped_floor = 15; // Gol Dragon -> VR Spaceship Final
-                $episode = 2;
-            } elseif ($target_floor === 17) {
-                $mapped_floor = 14; // Barba Ray -> Dark Falz Floor
-                $episode = 2;
-            } elseif ($target_floor === 18) {
-                $mapped_floor = 13; // Olga Flow -> Vol Opt Floor
-                $episode = 2;
-            } elseif ($target_floor === 19) {
-                $mapped_floor = 9;  // Saint-Milion -> Meteor Impact Site
-                $episode = 4;
-            } else {
-                $mapped_floor = $target_floor;
-            }
-            
-            if ($episode === null) {
-                $episode = get_boss_episode_by_context($m['mission_title'], $m['mission_desc'] ?? '', $mapped_floor);
-            }
+            $episode = get_boss_episode_by_context($m['mission_title'], $m['mission_desc'] ?? '', $mapped_floor);
             
             $target_floor = $mapped_floor;
             $prev_f = (int)($prev_state['floor'] ?? -1);
@@ -735,8 +699,7 @@ foreach ($clients as $client) {
             $comp_key = "{$target_floor}_{$episode}";
             
             $fast_kill_preceding = [
-                '11_1' => [2],             // Dragon from Forest 2
-                '11_4' => [8],             // Sil Dragon
+                '11_1' => [2],             // Dragon / Sil Dragon from Forest 2
                 '12_1' => [5],             // De Rol Le from Cave 3
                 '12_2' => [5, 6, 7, 8, 9], // Gal Gryphon from CCA/Jungle/Mtn/Seaside
                 '13_1' => [7],             // Vol Opt from Mine 2
@@ -768,8 +731,7 @@ foreach ($clients as $client) {
             
             // Episode validation: same as BOSS_ARENA — prevent cross-episode collisions
             $valid_preceding_floors_speedrun = [
-                '11_1' => [1, 2],           // Dragon: Forest 1-2
-                '11_4' => [5, 6, 7, 8],     // Sil Dragon Crater/Desert
+                '11_1' => [1, 2],           // Dragon / Sil Dragon: Forest 1-2
                 '12_1' => [3, 4, 5],        // De Rol Le: Cave 1-3
                 '12_2' => [5, 6, 7, 8, 9],  // Gal Gryphon: CCA, Jungle, Mountain, Seaside
                 '13_1' => [6, 7],           // Vol Opt: Mine 1-2

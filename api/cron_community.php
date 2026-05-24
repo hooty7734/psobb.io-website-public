@@ -510,8 +510,7 @@ foreach ($clients as $client) {
                 $comp_key = "{$target_floor}_{$episode}";
 
                 $fast_kill_preceding = [
-                    '11_1' => [2],             // Dragon from Forest 2
-                    '11_4' => [8],             // Sil Dragon
+                    '11_1' => [2],             // Dragon / Sil Dragon from Forest 2
                     '12_1' => [5],             // De Rol Le from Cave 3
                     '12_2' => [5, 6, 7, 8, 9], // Gal Gryphon from CCA/Jungle/Mtn/Seaside
                     '13_1' => [7],             // Vol Opt from Mine 2
@@ -536,8 +535,7 @@ foreach ($clients as $client) {
 
                 // Preceding floor validation for community events to prevent cross-episode collision false positives!
                 $valid_preceding_floors = [
-                    '11_1' => [1, 2],           // Dragon: Forest 1-2
-                    '11_4' => [5, 6, 7, 8],     // Sil Dragon Crater/Desert
+                    '11_1' => [1, 2],           // Dragon / Sil Dragon: Forest 1-2
                     '12_1' => [3, 4, 5],        // De Rol Le: Cave 1-3
                     '12_2' => [5, 6, 7, 8, 9],  // Gal Gryphon: CCA, Jungle, Mountain, Seaside
                     '13_1' => [6, 7],           // Vol Opt: Mine 1-2

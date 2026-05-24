@@ -275,16 +275,16 @@ while ($ce = $tele_res->fetchArray(SQLITE3_ASSOC)) {
         </div>
 
         <script>
+        // Real newserv floor IDs from StaticGameData.cc floor_defs.
+        // Ep2 bosses share floor numbers with Ep1 bosses; episode is disambiguated by context.
         const bossOptions = [
-            {val: 'ANY_DRAGON', text: 'Any Dragon Boss (Forest, Sil, Gol)'},
-            {val: '11', text: 'Dragon (Forest)'},
-            {val: '12', text: 'De Rol Le (Caves)'},
-            {val: '13', text: 'Vol Opt (Mines)'},
-            {val: '14', text: 'Dark Falz (Ruins)'},
-            {val: '17', text: 'Barba Ray (Temple)'},
-            {val: '16', text: 'Gol Dragon (Spaceship)'},
-            {val: '15', text: 'Gal Gryphon (CCA)'},
-            {val: '18', text: 'Olga Flow (Seabed)'}
+            {val: 'ANY_DRAGON', text: 'Any Dragon Boss (Dragon, Gol Dragon)'},
+            {val: '11', text: 'Dragon (Ep1 Forest — Floor 11)'},
+            {val: '12', text: 'De Rol Le (Ep1 Caves — Floor 12) / Gal Gryphon (Ep2 CCA — Floor 12)'},
+            {val: '13', text: 'Vol Opt (Ep1 Mines — Floor 13) / Olga Flow (Ep2 Seabed — Floor 13)'},
+            {val: '14', text: 'Dark Falz (Ep1 Ruins — Floor 14) / Barba Ray (Ep2 Temple — Floor 14)'},
+            {val: '15', text: 'Gol Dragon (Ep2 Spaceship — Floor 15)'},
+            {val: '9', text: 'Saint-Milion (Ep4 Desert — Floor 9)'}
         ];
         
         const floorOptions = [

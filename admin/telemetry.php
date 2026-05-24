@@ -24,14 +24,26 @@ $state_cache_file = __DIR__ . '/../db/.cron_player_state.json';
 $player_states = file_exists($state_cache_file) ? json_decode(file_get_contents($state_cache_file), true) : [];
 if (!is_array($player_states)) $player_states = [];
 
-// Compact Floor Map for UI
+// Real newserv floor IDs (StaticGameData.cc floor_defs).
+// Floor IDs are episode-local: Ep1 & Ep2 share the same numbering.
+// We show Ep1 names by default; Ep2/Ep4 disambiguation requires LobbyEpisode.
 $floor_names = [
-    0 => 'Pioneer 2', 1 => 'Forest 1', 2 => 'Forest 2', 11 => 'Dragon', 
-    3 => 'Cave 1', 4 => 'Cave 2', 5 => 'Cave 3', 12 => 'De Rol Le', 
-    6 => 'Mine 1', 7 => 'Mine 2', 13 => 'Vol Opt', 
-    8 => 'Ruins 1', 9 => 'Ruins 2', 10 => 'Ruins 3', 14 => 'Dark Falz',
-    15 => 'Spaceship', 16 => 'Temple', 17 => 'Barba Ray',
-    18 => 'Olga Flow', 19 => 'Crater'
+    0  => 'Pioneer 2 / Lab',
+    1  => 'Forest 1 / VR Temple α',
+    2  => 'Forest 2 / VR Temple β',
+    3  => 'Cave 1 / VR Ship α',
+    4  => 'Cave 2 / VR Ship β',
+    5  => 'Cave 3 / CCA',
+    6  => 'Mine 1 / Jungle N',
+    7  => 'Mine 2 / Jungle E',
+    8  => 'Ruins 1 / Mountain',
+    9  => 'Ruins 2 / Seaside / Saint-Milion',
+    10 => 'Ruins 3 / Seabed Upper',
+    11 => 'Dragon / Seabed Lower',
+    12 => 'De Rol Le / Gal Gryphon',
+    13 => 'Vol Opt / Olga Flow',
+    14 => 'Dark Falz / Barba Ray',
+    15 => 'Lobby / Gol Dragon',
 ];
 
 // Fetch Telemetry Log
@@ -128,8 +140,10 @@ $telemetry_logs = file_exists($debug_log_file) ? json_decode(file_get_contents($
                                     $prevExp = $state['exp'] ?? $currExp;
                                     $expDelta = $currExp - $prevExp;
                                     
-                                    // Note: floor 15 (0x0F) is the lobby, NOT Gol Dragon
-                                    $inBossRoom = in_array($currFloorId, [11, 12, 13, 14, 9, 16, 17, 18]);
+                                    // Real newserv boss floor IDs (episode-local).
+                                    // 9=Saint-Milion(Ep4), 11=Dragon(Ep1), 12=DeRolLe/GalGryphon,
+                                    // 13=VolOpt/OlgaFlow, 14=DarkFalz/BarbaRay, 15=GolDragon(Ep2)
+                                    $inBossRoom = in_array($currFloorId, [9, 11, 12, 13, 14, 15]);
                                     
                                     // Visual indicator for significant EXP spike (e.g., boss kill)
                                     $spikeStyle = ($expDelta >= 10) ? 'color:#00C851; font-weight:bold;' : '';
