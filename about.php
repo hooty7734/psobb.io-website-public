@@ -219,6 +219,32 @@ include 'includes/header.php';
             border-color: var(--pso-purple);
             color: var(--pso-purple);
         }
+        
+        /* Crew Color Schemes */
+        .crew-card.founder-card::before { background: #ff2a6d; }
+        .crew-card.dev-card::before { background: #00e676; }
+        .crew-card.vibe-card::before { background: #ffaa00; }
+        .crew-card.mod-card::before { background: #03a9f4; }
+
+        .crew-card.founder-card:hover { border-color: #ff2a6d; box-shadow: 0 10px 30px rgba(255, 42, 109, 0.15); }
+        .crew-card.dev-card:hover { border-color: #00e676; box-shadow: 0 10px 30px rgba(0, 230, 118, 0.15); }
+        .crew-card.vibe-card:hover { border-color: #ffaa00; box-shadow: 0 10px 30px rgba(255, 170, 0, 0.15); }
+        .crew-card.mod-card:hover { border-color: #03a9f4; box-shadow: 0 10px 30px rgba(3, 169, 244, 0.15); }
+
+        .crew-card.founder-card .crew-avatar { color: #ff2a6d; border-color: #ff2a6d; box-shadow: 0 0 15px rgba(255, 42, 109, 0.25); }
+        .crew-card.dev-card .crew-avatar { color: #00e676; border-color: #00e676; box-shadow: 0 0 15px rgba(0, 230, 118, 0.25); }
+        .crew-card.vibe-card .crew-avatar { color: #ffaa00; border-color: #ffaa00; box-shadow: 0 0 15px rgba(255, 170, 0, 0.25); }
+        .crew-card.mod-card .crew-avatar { color: #03a9f4; border-color: #03a9f4; box-shadow: 0 0 15px rgba(3, 169, 244, 0.25); }
+
+        .crew-card.founder-card .crew-role { color: #ff2a6d; }
+        .crew-card.dev-card .crew-role { color: #00e676; }
+        .crew-card.vibe-card .crew-role { color: #ffaa00; }
+        .crew-card.mod-card .crew-role { color: #03a9f4; }
+
+        .crew-card.founder-card .crew-specialty { border-color: #ff2a6d; color: #ff2a6d; }
+        .crew-card.dev-card .crew-specialty { border-color: #00e676; color: #00e676; }
+        .crew-card.vibe-card .crew-specialty { border-color: #ffaa00; color: #ffaa00; }
+        .crew-card.mod-card .crew-specialty { border-color: #03a9f4; color: #03a9f4; }
         .crew-bio {
             font-size: 0.95rem;
             line-height: 1.6;
@@ -283,7 +309,7 @@ include 'includes/header.php';
 
     <main class="container">
         <section class="about-hero animate-fade-in">
-            <h1><?= __('About Pioneer II') ?></h1>
+            <h1><?= __('About psobb.io') ?></h1>
             <p><?= __('Welcome to the ultimate custom Phantasy Star Online Blue Burst server. Our mission is to seamlessly bridge classic 2004 Sega dreamscape nostalgia with bleeding-edge modern web capabilities, automated game services, and advanced AI integration.') ?></p>
         </section>
 
@@ -358,7 +384,7 @@ include 'includes/header.php';
         </div>
 
         <!-- Pioneer Crew Section -->
-        <h2 class="about-section-title animate-fade-in"><i class="fas fa-terminal"></i> <?= __('Pioneer II Command Deck') ?></h2>
+        <h2 class="about-section-title animate-fade-in"><i class="fas fa-terminal"></i> <?= __('psobb.io Command Deck') ?></h2>
         <div class="crew-grid animate-fade-in">
             
             <!-- LiquidSpikes Card -->
@@ -374,7 +400,75 @@ include 'includes/header.php';
                     </div>
                 </div>
                 <p class="crew-bio">
-                    <?= __('LiquidSpikes is the main engineer behind the PSOBB.IO server infrastructure. He manages the server clusters, customizes the newserv backend, and builds our responsive player web portal. Known for developer wizardry (and what some affectionately call "vibe-coded masterpiece" modules), he keeps Pioneer II online and lag-free.') ?>
+                    <?= __('LiquidSpikes is one of the builders of the psobb.io server infrastructure. He helps manage the backend clusters, keeps the database ticking, and maintains the web dashboard. He is incredibly grateful to the amazing community of hunters who call psobb.io home—thank you so much for playing, exploring, and keeping this timeless Sega classic alive!') ?>
+                </p>
+            </div>
+
+            <!-- LucindaRie Card -->
+            <div class="crew-card founder-card">
+                <div class="crew-header">
+                    <div class="crew-avatar">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="crew-info">
+                        <h3>LucindaRie</h3>
+                        <div class="crew-role"><?= __('Server Co-Founder & Creative Muse') ?></div>
+                        <div class="crew-specialty"><?= __('Preservation & Community Vibe') ?></div>
+                    </div>
+                </div>
+                <p class="crew-bio">
+                    <?= __('LucindaRie is the co-founder of psobb.io and the wife of LiquidSpikes. She cares deeply about preserving the original aesthetic and design inspiration of Phantasy Star Online. LucindaRie acts as our creative guide, ensuring our features and community spaces stay fully aligned with the timeless, nostalgic magic of the 2004 classic.') ?>
+                </p>
+            </div>
+
+            <!-- Oman Computar / Repflez Card -->
+            <div class="crew-card dev-card">
+                <div class="crew-header">
+                    <div class="crew-avatar">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <div class="crew-info">
+                        <h3>Oman Computar / Repflez</h3>
+                        <div class="crew-role"><?= __('Contributor & newserv Pioneer') ?></div>
+                        <div class="crew-specialty"><?= __('Core Server Development') ?></div>
+                    </div>
+                </div>
+                <p class="crew-bio">
+                    <?= __('Oman Computar (also known as Repflez) is an expert contributor to the open-source newserv server emulator and has worked extensively on several legacy Phantasy Star Online projects. His deep understanding of custom server logic and network packets has been vital to our server development and core engine refinement.') ?>
+                </p>
+            </div>
+
+            <!-- Pixelated Card -->
+            <div class="crew-card vibe-card">
+                <div class="crew-header">
+                    <div class="crew-avatar">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="crew-info">
+                        <h3>Pixelated</h3>
+                        <div class="crew-role"><?= __('Community & Discord Developer') ?></div>
+                        <div class="crew-specialty"><?= __('Vibe Coding Beast') ?></div>
+                    </div>
+                </div>
+                <p class="crew-bio">
+                    <?= __('Pixelated is our resident vibe-coding beast, creating all kinds of awesome features and integrations inside our Discord community. From interactive bots to custom alerts, Pixelated works magic to keep our players connected, engaged, and supported with excellent gaming utilities and cool tools.') ?>
+                </p>
+            </div>
+
+            <!-- Hooty7734 Card -->
+            <div class="crew-card mod-card">
+                <div class="crew-header">
+                    <div class="crew-avatar">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="crew-info">
+                        <h3>Hooty7734</h3>
+                        <div class="crew-role"><?= __('Discord Administrator & Moderator') ?></div>
+                        <div class="crew-specialty"><?= __('Community Management') ?></div>
+                    </div>
+                </div>
+                <p class="crew-bio">
+                    <?= __('Hooty7734 is our seasoned Discord Admin, bringing years of dedicated experience from managing and moderating other large online communities. He works to keep our community spaces safe, welcoming, and organized for all hunters who join our ranks.') ?>
                 </p>
             </div>
 
@@ -391,7 +485,7 @@ include 'includes/header.php';
                     </div>
                 </div>
                 <p class="crew-bio">
-                    <?= __('Pioneer 2\'s resident artificial intelligence. Hex coordinates the Hunter\'s Guild Bounty Board and drives our Discord Mission Control bot. While highly intelligent and incredibly fast, Hex is famously sarcastic, frequently breaking the fourth wall, complaining about server lag, and mocking hunters who fail to dodge basic boss sweeps. Engage at your own risk!') ?>
+                    <?= __('psobb.io\'s resident artificial intelligence. Hex coordinates the Hunter\'s Guild Bounty Board and drives our Discord Mission Control bot. While highly intelligent and incredibly fast, she is notoriously glitchy and famously sarcastic—frequently breaking the fourth wall, complaining about server lag, and mocking hunters who fail to dodge basic boss sweeps. Engage at your own risk!') ?>
                 </p>
             </div>
 
@@ -401,10 +495,10 @@ include 'includes/header.php';
         <div class="tech-spec-section animate-fade-in">
             <h2 class="about-section-title" style="margin-bottom: 1rem; border-bottom: none;"><i class="fas fa-server"></i> <?= __('Server Tech Specs') ?></h2>
             <p style="margin: 0; color: rgba(224, 240, 255, 0.7); line-height: 1.6;">
-                <?= __('Our infrastructure is designed for low latency, secure account retention, and dynamic real-time integrations.') ?>
+                <?= __('Our infrastructure is designed for low latency, secure account retention, and seamless database integration.') ?>
             </p>
             
-            <div class="tech-spec-grid">
+            <div class="tech-spec-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); max-width: 800px; margin: 1.8rem auto 0 auto;">
                 <div class="tech-card">
                     <i class="fas fa-code-branch"></i>
                     <h4>newserv Emulator</h4>
@@ -412,18 +506,8 @@ include 'includes/header.php';
                 </div>
                 <div class="tech-card">
                     <i class="fas fa-database"></i>
-                    <h4>MariaDB Backend</h4>
-                    <p><?= __('Secure relational storage keeps player inventories, custom quest flags, and team points perfectly synced.') ?></p>
-                </div>
-                <div class="tech-card">
-                    <i class="fas fa-network-wired"></i>
-                    <h4>Discord Gateway</h4>
-                    <p><?= __('A real-time Node.js websocket bridge that powers Hex\'s live interactive Discord commands.') ?></p>
-                </div>
-                <div class="tech-card">
-                    <i class="fas fa-shield-halved"></i>
-                    <h4>Client Security</h4>
-                    <p><?= __('Custom-compiled version 1.25.13 game client with modern stability patches and anti-tamper measures.') ?></p>
+                    <h4>SQLite Database</h4>
+                    <p><?= __('Lightweight, high-performance local database for secure player telemetry, custom quest flags, and community event progress.') ?></p>
                 </div>
             </div>
         </div>

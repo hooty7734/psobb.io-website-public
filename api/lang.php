@@ -335,7 +335,37 @@ $I18N = [
         'Select Your Bonus Reward' => 'ボーナス報酬を選択してください',
         'Top 3 Bonus Selection' => 'トップ3ボーナス選択',
         'Top 3 Bonus:' => 'トップ3ボーナス：',
-        'Please select your Top 3 Bonus Reward first!' => 'まずトップ3のボーナス報酬を選択してください！'
+        'Please select your Top 3 Bonus Reward first!' => 'まずトップ3のボーナス報酬を選択してください！',
+
+        // about.php (psobb.io)
+        'About psobb.io' => 'psobb.ioについて',
+        'Welcome to the ultimate custom Phantasy Star Online Blue Burst server. Our mission is to seamlessly bridge classic 2004 Sega dreamscape nostalgia with bleeding-edge modern web capabilities, automated game services, and advanced AI integration.' => '究極のカスタムファンタシースターオンラインブルーバーストサーバーへようこそ。私たちの使命は、2004年のセガのタイムレスな懐かしさと、最先端のモダンなウェブ機能、自動化されたゲームサービス、および高度なAI統合をシームレスに架橋することです。',
+        'psobb.io Command Deck' => 'psobb.io司令デック',
+        'Root Administrator & System Architect' => 'ルート管理者 ＆ システム設計者',
+        'Core Backend & Web Integration' => 'コアバックエンド ＆ ウェブ統合',
+        'LiquidSpikes is one of the builders of the psobb.io server infrastructure. He helps manage the backend clusters, keeps the database ticking, and maintains the web dashboard. He is incredibly grateful to the amazing community of hunters who call psobb.io home—thank you so much for playing, exploring, and keeping this timeless Sega classic alive!' => 'LiquidSpikesは、psobb.ioサーバーインフラの共同構築者のひとりです。バックエンドクラスターの管理、データベースの維持、ウェブダッシュボードの保守をサポートしています。彼はpsobb.ioをホームグラウンドとして活動する素晴らしいハンターコミュニティに対し、深く感謝しています。このタイムレスなセガの名作をプレイし、探索し、そして愛し続けてくれて本当にありがとうございます！',
+        'AI Mission Coordinator & Guild Assistant' => 'AIミッションコーディネーター ＆ ギルド補佐',
+        'Automated Bounties & Discord AI' => '自動バウンティ ＆ Discord AI',
+        'psobb.io\'s resident artificial intelligence. Hex coordinates the Hunter\'s Guild Bounty Board and drives our Discord Mission Control bot. While highly intelligent and incredibly fast, she is notoriously glitchy and famously sarcastic—frequently breaking the fourth wall, complaining about server lag, and mocking hunters who fail to dodge basic boss sweeps. Engage at your own risk!' => 'psobb.io専属の人工知能。Hexはハンターズギルドのバウンティボードを統括し、インタラクティブなDiscord Mission Controlボットを駆動しています。非常に知的で信じられないほど高速な処理能力を持つ一方、バグ（グリッチ）が多く極めて毒舌な性格で知られ、頻繁にメタ発言を行い、サーバーのラグに文句を言い、基本的なボスのなぎ払い攻撃を避けられなかったハンターを嘲笑します。関わる際は自己責任で！',
+        'Our infrastructure is designed for low latency, secure account retention, and seamless database integration.' => '当サーバーのインフラストラクチャは、低遅延、安全なアカウントデータ保持、およびシームレスなデータベース統合を実現するように設計されています。',
+        'SQLite Database' => 'SQLite データベース',
+        'Lightweight, high-performance local database for secure player telemetry, custom quest flags, and community event progress.' => 'セキュアなプレイヤーテレメトリ、カスタムクエストフラグ、およびコミュニティイベントの進行状況を処理する、軽量で高性能なローカルデータベースです。',
+
+        // New Crew Members (LucindaRie, Oman Computar/Repflez, Pixelated)
+        'Server Co-Founder & Creative Muse' => 'サーバー共同創設者 ＆ クリエイティブ・ミューズ',
+        'Preservation & Community Vibe' => '原作再現 ＆ コミュニティの雰囲気作り',
+        'LucindaRie is the co-founder of psobb.io and the wife of LiquidSpikes. She cares deeply about preserving the original aesthetic and design inspiration of Phantasy Star Online. LucindaRie acts as our creative guide, ensuring our features and community spaces stay fully aligned with the timeless, nostalgic magic of the 2004 classic.' => 'LucindaRieは、psobb.ioの共同創設者であり、LiquidSpikesの妻です。ファンタシースターオンラインの原作の美学とデザインインスピレーションを保存することに深い愛情を注いでいます。彼女は私たちのクリエイティブガイドとして、ゲームの機能やコミュニティスペースが、2004年の名作が持つタイムレスでノスタルジックな魔法と完璧に調和し続けるように見守っています。',
+        'Contributor & newserv Pioneer' => 'コントリビューター ＆ newserv開拓者',
+        'Core Server Development' => 'コアサーバー開発',
+        'Oman Computar (also known as Repflez) is an expert contributor to the open-source newserv server emulator and has worked extensively on several legacy Phantasy Star Online projects. His deep understanding of custom server logic and network packets has been vital to our server development and core engine refinement.' => 'Oman Computar（Repflezとしても知られる）は、オープンソース of newservエミュレータの熟練したコントリビューターであり、数多くのレガシーなファンタシースターオンラインプロジェクトに携わってきました。カスタムサーバーロジックとネットワークパケットに関する彼の深い知見は、私たちのサーバー開発とコアエンジンの改良において極めて重要な役割を果たしています。',
+        'Community & Discord Developer' => 'コミュニティ ＆ Discord開発者',
+        'Vibe Coding Beast' => 'バイブス・コーディング野獣',
+        'Pixelated is our resident vibe-coding beast, creating all kinds of awesome features and integrations inside our Discord community. From interactive bots to custom alerts, Pixelated works magic to keep our players connected, engaged, and supported with excellent gaming utilities and cool tools.' => 'Pixelatedは、私たちのDiscordコミュニティ内で様々な素晴らしい機能や統合を創り出す、専属の「バイブス・コーディング野獣」です。インタラクティブなボットからカスタム通知まで、Pixelatedは魔法のような手腕でプレイヤーを繋ぎ、盛り上げ、素晴らしいゲームユーティリティやクールなツールでサポートを提供しています。',
+
+        // Hooty7734
+        'Discord Administrator & Moderator' => 'Discord管理者 ＆ モデレーター',
+        'Community Management' => 'コミュニティ管理',
+        'Hooty7734 is our seasoned Discord Admin, bringing years of dedicated experience from managing and moderating other large online communities. He works to keep our community spaces safe, welcoming, and organized for all hunters who join our ranks.' => 'Hooty7734は、他の大規模なオンラインコミュニティの管理およびモデレーションにおいて長年の豊富な経験を持つ、頼れるDiscord管理者です。仲間に加わるすべてのハンターのために、コミュニティスペースが安全で、歓迎され、そしてよく整理された場所であるように努めています。'
     ]
 ];
 
