@@ -219,7 +219,9 @@ try {
             $isHunter = in_array($charClass, ['HUmar', 'HUnewearl', 'HUcast', 'HUcaseal']);
             $isRanger = in_array($charClass, ['RAmar', 'RAmarl', 'RAcast', 'RAcaseal']);
             $isForce = !$isHunter && !$isRanger;
+            
             $isCast = in_array($charClass, ['HUcast', 'HUcaseal', 'RAcast', 'RAcaseal']);
+            $isCastMindLocked = ($isCast && rand(1, 10) === 1); // 10% rare chance for CAST 0 MIND lock
             
             // 25% chance to roll a highly optimized class-archetype biased stat roll ("god-roll").
             // 75% chance to roll a standard well-balanced random stat roll.
@@ -242,17 +244,19 @@ try {
                 }
             }
             
-            // Casts / Androids cannot use magic and have exactly 0 MIND in PSO
-            if ($isCast) {
+            // (Biased/God-Roll checks done above)
+            
+            // 10% rare chance override for CASTs to get exactly 0 MIND
+            if ($isCastMindLocked) {
                 $mind = 0;
             }
             
-            // Target level is player's level +/- 5 capped between 20 and 200.
-            // If the player's level is less than 10, the Mag starts at exactly level 20.
+            // Target level is player's level * 2 +/- 5 (reaching Level 200 Mag at player level 100).
+            // If the player's level is less than 10, the Mag starts at exactly level 25.
             if ($level < 10) {
-                $targetLevel = 20;
+                $targetLevel = 25;
             } else {
-                $targetLevel = min(200, max(20, $level + rand(-5, 5)));
+                $targetLevel = min(200, max(25, ($level * 2) + rand(-5, 5)));
             }
             
             // In PSO, a Mag's DEF must always be at least 5.00 (the base starting DEF of a Level 0 Mag).
@@ -292,7 +296,7 @@ try {
                         'pow'  => $pow,
                         'dex'  => $dex
                     ];
-                    if (!$isCast) {
+                    if (!$isCastMindLocked) {
                         $stats['mind'] = $mind;
                     }
                     arsort($stats);
