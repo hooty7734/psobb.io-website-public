@@ -99,6 +99,11 @@ include 'includes/header.php';
 
                     <!-- Right Column: Actions and Integrations -->
                     <div class="dashboard-col-right" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <!-- Player Guide Button -->
+                        <button id="player-guide-btn" onclick="openPlayerGuideModal()" class="dl-btn" style="display:block; text-align:center; width: 100%; box-sizing: border-box; border-color: #00ffff; background: rgba(0, 255, 255, 0.15); color: #00ffff; margin-bottom: 0.5rem; font-family: 'Share Tech Mono', monospace; font-weight: bold;">
+                            <i class="fas fa-book-open"></i> <?= __('📖 Player Guide & Commands') ?>
+                        </button>
+
                         <!-- Rewards Button -->
                         <a id="rewards-panel-btn" href="unlocks" class="dl-btn" style="display:none; text-align:center; width: 100%; box-sizing: border-box;"><?= __('🎁 Claim Level Rewards') ?></a>
         
@@ -175,6 +180,170 @@ include 'includes/header.php';
                         <div style="display: flex; gap: 10px; justify-content: center;">
                             <button onclick="closeDeleteModal()" class="dl-btn" style="background: rgba(255,255,255,0.1); border-color: #555;"><?= __('Cancel') ?></button>
                             <button onclick="confirmDelete()" id="btn-confirm-delete" class="dl-btn" style="background: rgba(255,0,0,0.1); border-color: #ff4444; color: #ff4444;"><?= __('Confirm Delete') ?></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Player Guide Modal -->
+                <div id="player-guide-modal">
+                    <div class="guide-modal-dialog">
+                        <!-- Close Button -->
+                        <button onclick="closePlayerGuideModal()" style="position: absolute; top: 15px; right: 20px; background: transparent; border: none; color: #00ffff; font-size: 1.5rem; cursor: pointer; transition: all 0.2s; z-index: 10;"><i class="fas fa-times"></i></button>
+
+                        <!-- Modal Header -->
+                        <h2 style="color: #00ffff; margin-top:0; font-family: 'Share Tech Mono', monospace; display: flex; align-items: center; gap: 10px; border-bottom: 2px solid rgba(0, 255, 255, 0.2); padding-bottom: 10px; margin-bottom: 1rem;">
+                            <i class="fas fa-terminal animate-pulse"></i> <?= __('PSOBB HUNTER\'S DATABASE & PORTAL GUIDE') ?>
+                        </h2>
+
+                        <!-- Tab Controls -->
+                        <div style="display: flex; gap: 5px; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <button class="guide-tab-btn active" onclick="switchGuideTab('tab-portal')" data-tab="tab-portal"><?= __('PORTAL MANAGEMENT') ?></button>
+                            <button class="guide-tab-btn" onclick="switchGuideTab('tab-lfg')" data-tab="tab-lfg"><?= __('LFG COORDINATION') ?></button>
+                            <button class="guide-tab-btn" onclick="switchGuideTab('tab-drops')" data-tab="tab-drops"><?= __('DYNAMIC DROP CHARTS') ?></button>
+                            <button class="guide-tab-btn" onclick="switchGuideTab('tab-commands')" data-tab="tab-commands"><?= __('IN-GAME COMMANDS') ?></button>
+                        </div>
+
+                        <!-- Tab Contents (Scrollable) -->
+                        <div id="guide-modal-content" style="flex: 1; overflow-y: auto; padding-right: 10px;">
+                            
+                            <!-- Tab: Portal Management -->
+                            <div id="tab-portal" class="guide-tab-pane">
+                                <div class="guide-section-grid">
+                                    <div class="guide-card-glass">
+                                        <h3><i class="fas fa-university"></i> <?= __('Character & Bank Swapping') ?></h3>
+                                        <p><strong><?= __('Bank Management:') ?></strong> <?= __('Swap your inventory bank container on the fly using the pre-selector dropdown. Switch to the Shared Bank or any character bank (Character 1-20).') ?></p>
+                                        <p style="color: #ffaa00; font-size: 0.85em; margin-top: 5px;"><i class="fas fa-exclamation-triangle"></i> <?= __('Note: Your character must be online in-game but NOT currently standing at the bank counter, and not in Battle or Challenge mode, to successfully swap banks.') ?></p>
+                                        <p style="margin-top: 10px;"><strong><?= __('Section ID Pre-selector:') ?></strong> <?= __('Change your drop Section ID pre-selector before launching games. Only characters level 50 and below are permitted to modify their Section ID.') ?></p>
+                                    </div>
+                                    <div class="guide-card-glass">
+                                        <h3><i class="fas fa-users-cog"></i> <?= __('Profile & Account Actions') ?></h3>
+                                        <p><strong><?= __('Leaderboard Display Name:') ?></strong> <?= __('Set a customized alias (2-20 characters) in your profile actions. This alias will represent your hunter on the public leaderboards instead of your account ID.') ?></p>
+                                        <p style="margin-top: 10px;"><strong><?= __('Discord Integration:') ?></strong> <?= __('Link your Discord account under Integrations to enable secure instant login, community telemetry sync, and guild notification broadcasts.') ?></p>
+                                        <p style="margin-top: 10px;"><strong><?= __('Level Milestones:') ?></strong> <?= __('Check the Level Rewards panel to claim exclusive gifts as your characters reach crucial level milestones on the server!') ?></p>
+                                    </div>
+                                </div>
+                                
+                                <div class="guide-card-glass" style="margin-bottom: 0;">
+                                    <h3><i class="fas fa-crosshairs"></i> <?= __('Hunter\'s Guild Bounty Board & Events') ?></h3>
+                                    <p><strong><?= __('Bounty Board & Personal Quests:') ?></strong> <?= __('Accept custom-tailored personal bounties from the Hunters Guild Bounty Board. Complete target goals in-game to unlock rare items and meseta. Completed bounties will appear in your Guild Claim Center on the website to claim!') ?></p>
+                                    <p style="margin-top: 10px;"><strong><?= __('Cooperative Server Events:') ?></strong> <?= __('Collaborate server-wide during active community events to pool points. Event rewards feature high-end rare drops tailored to your character\'s class and level at the moment of claiming.') ?></p>
+                                    <div style="background: rgba(255, 170, 0, 0.08); border: 1px solid rgba(255, 170, 0, 0.2); padding: 12px; border-radius: 6px; margin-top: 10px;">
+                                        <strong style="color: #ffaa00; display: block; margin-bottom: 6px;"><i class="fas fa-gift"></i> <?= __('Dynamic Reward Scaling Tiers:') ?></strong>
+                                        <ul style="margin: 0; padding-left: 20px; font-size: 0.85em; line-height: 1.5; color: rgba(255,255,255,0.95);">
+                                            <li><strong><?= __('Base Tier:') ?></strong> <?= __('1x Class-Fit Rare Drop + 5,000 Meseta (0+ points).') ?></li>
+                                            <li><strong><?= __('Escalation:') ?></strong> <?= __('+1 Rare Drop & +5,000 Meseta for every 50 contribution points.') ?></li>
+                                            <li><strong><?= __('Ultimate Cap:') ?></strong> <?= __('Up to a massive 10x Rare Drops + 50,000 Meseta (at 450+ points).') ?></li>
+                                            <li><strong><?= __('Top 3 Champions:') ?></strong> <?= __('The top 3 event contributors receive a grand 100,000 Meseta prize and a prestigious choice of bonus rare items!') ?></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab: LFG Coordination -->
+                            <div id="tab-lfg" class="guide-tab-pane" style="display:none;">
+                                <div class="guide-section-grid">
+                                    <div class="guide-card-glass">
+                                        <h3><i class="fas fa-satellite-dish"></i> <?= __('LFG Creation & Syncing') ?></h3>
+                                        <p><strong><?= __('Live Character Syncing:') ?></strong> <?= __('The LFG Terminal synchronizes with the server in real-time, displaying your current online status, active character class, level, and active game lobby ID.') ?></p>
+                                        <p style="margin-top: 10px;"><strong><?= __('Creating LFG Posts:') ?></strong> <?= __('Define the mission or objectives you are pursuing. Select which class archetypes you seek (Hunters HU, Rangers RA, Forces FO), and link one of your active Bounty Board quests so others know what you are hunting!') ?></p>
+                                    </div>
+                                    <div class="guide-card-glass">
+                                        <h3><i class="fas fa-space-shuttle"></i> <?= __('Teleportation & Group Controls') ?></h3>
+                                        <p><strong><?= __('Warp Direct Teleportation:') ?></strong> <?= __('Find a group seeking your character class? If your level meets the room requirement, click the glowing cyan') ?> <strong style="color: var(--pso-blue);"><i class="fas fa-rocket"></i> <?= __('Warp Direct') ?></strong> <?= __('button on the LFG dashboard. The game server will instantly transition your active character directly into their room in-game!') ?></p>
+                                        <p style="margin-top: 10px;"><strong><?= __('Leaving a Group:') ?></strong> <?= __('Need to return to public lobbies? Simply click the') ?> <strong style="color: #ff4444;"><i class="fas fa-sign-out-alt"></i> <?= __('Leave Group') ?></strong> <?= __('button to warp your active character back to public Pioneer 2 lobbies gracefully.') ?></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab: Dynamic Drop Charts -->
+                            <div id="tab-drops" class="guide-tab-pane" style="display:none;">
+                                <div class="guide-section-grid">
+                                    <div class="guide-card-glass">
+                                        <h3><i class="fas fa-search"></i> <?= __('Search, Filter & Sort') ?></h3>
+                                        <p><strong><?= __('Live Server Synchronization:') ?></strong> <?= __('Our drop database fetches rates directly from active server game data files. If multipliers change or drops are updated, rates in the chart adjust instantly and are 100% accurate.') ?></p>
+                                        <p style="margin-top: 10px;"><strong><?= __('Dynamic Filters:') ?></strong> <?= __('Filter drops by Episode (EP1, EP2, EP4) and Difficulty (Normal, Hard, Very Hard, Ultimate).') ?></p>
+                                        <p style="margin-top: 10px;"><strong><?= __('Target Search:') ?></strong> <?= __('Search by item names (e.g., Heavenly/Battle) or monster names (e.g., Tollaw) to find exact drop rates.') ?></p>
+                                    </div>
+                                    <div class="guide-card-glass">
+                                        <h3><i class="fas fa-shapes"></i> <?= __('Class Compatibility & Section IDs') ?></h3>
+                                        <p><strong><?= __('Class Specific Filtering:') ?></strong> <?= __('Toggle class tags (HUmar, FOnewearl, RAcast, etc.) to view only items usable by your class.') ?></p>
+                                        <p style="margin-top: 10px;"><strong><?= __('Section ID Mechanics:') ?></strong> <?= __('In PSOBB, rare drops are determined solely by the Section ID of the') ?> <strong><?= __('Room Creator') ?></strong> <?= __('(game leader). Coordinate your party\'s Section ID before generating the game to ensure the monsters drop the items you seek!') ?></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab: In-Game Commands -->
+                            <div id="tab-commands" class="guide-tab-pane" style="display:none;">
+                                <div class="guide-card-glass" style="margin-bottom: 1.5rem;">
+                                    <h3><i class="fas fa-terminal"></i> <?= __('General & Utility Commands') ?></h3>
+                                    <p style="margin-bottom: 10px; font-size: 0.9em; opacity: 0.8;"><?= __('Type these commands in the in-game chat to retrieve server telemetry, details, and adjustments:') ?></p>
+                                    
+                                    <div class="command-row">
+                                        <span class="command-name">$ping</span>
+                                        <span class="command-desc"><?= __('Check your latency to the server.') ?></span>
+                                    </div>
+                                    <div class="command-row">
+                                        <span class="command-name">$li</span>
+                                        <span class="command-desc"><?= __('Display current lobby information and active room details.') ?></span>
+                                    </div>
+                                    <div class="command-row">
+                                        <span class="command-name">$si</span>
+                                        <span class="command-desc"><?= __('Get global server telemetry and active player counts.') ?></span>
+                                    </div>
+                                    <div class="command-row">
+                                        <span class="command-name">$where</span>
+                                        <span class="command-desc"><?= __('Print the exact coordinates of all players on your current floor.') ?></span>
+                                    </div>
+                                    <div class="command-row">
+                                        <span class="command-name">$what</span>
+                                        <span class="command-desc"><?= __('Identify the exact specs and attributes of an item on the floor near you.') ?></span>
+                                    </div>
+                                    <div class="command-row">
+                                        <span class="command-name">$arrow [color]</span>
+                                        <span class="command-desc"><?= __('Change lobby arrow indicator (red, blue, green, yellow, purple, cyan, white, black, etc.).') ?></span>
+                                    </div>
+                                    <div class="command-row">
+                                        <span class="command-name">$song [id]</span>
+                                        <span class="command-desc"><?= __('Change the lobby background jukebox song (lobby only).') ?></span>
+                                    </div>
+                                    <div class="command-row">
+                                        <span class="command-name">$announcerares</span>
+                                        <span class="command-desc"><?= __('Toggles global broadcast announcements when you find rare items.') ?></span>
+                                    </div>
+                                </div>
+
+                                <div class="guide-card-glass">
+                                    <h3><i class="fas fa-user-shield"></i> <?= __('Character Statistics & CAP Checks') ?></h3>
+                                    <p style="margin-bottom: 10px; font-size: 0.9em; opacity: 0.8;"><?= __('Track materials consumed, force save, swap banks, or count rare weapon kills:') ?></p>
+                                    
+                                    <div class="command-row">
+                                        <span class="command-name">$bank [index]</span>
+                                        <span class="command-desc"><?= __('Swap inventory bank on the fly! $bank 0 for Shared Bank, $bank 1-127 for Character Banks.') ?></span>
+                                    </div>
+                                    <div class="command-row">
+                                        <span class="command-name">$save</span>
+                                        <span class="command-desc"><?= __('Force save your character state to the server database.') ?></span>
+                                    </div>
+                                    <div class="command-row">
+                                        <span class="command-name">$checkchar</span>
+                                        <span class="command-desc"><?= __('List character slots on your account, indicating which are used or free.') ?></span>
+                                    </div>
+                                    <div class="command-row">
+                                        <span class="command-name">$matcount</span>
+                                        <span class="command-desc"><?= __('Tally all consumed Stat Materials (Power, Mind, HP, TP, Evade, Def, Luck) and progress toward caps.') ?></span>
+                                    </div>
+                                    <div class="command-row">
+                                        <span class="command-name">$killcount</span>
+                                        <span class="command-desc"><?= __('View exact monster kill progress for equipped sealed rare weapons (e.g. Sealed J-Sword).') ?></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal Footer -->
+                        <div style="margin-top: 1rem; border-top: 1px solid rgba(0, 255, 255, 0.2); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 0.8em; opacity: 0.7; font-family: 'Share Tech Mono', monospace;">
+                            <span><?= __('STATUS: ONLINE // DATABASE SECURE // THANK YOU FOR PLAYING!') ?></span>
+                            <button type="button" onclick="closePlayerGuideModal()" class="dl-btn" style="padding: 4px 12px; font-size: 0.75rem; border-color: rgba(0, 255, 255, 0.5); font-weight: bold; background: rgba(0,255,255,0.05); color: #00ffff;"><?= __('CLOSE GUIDE') ?></button>
                         </div>
                     </div>
                 </div>

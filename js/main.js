@@ -906,3 +906,71 @@ async function updateUIRates(data) {
     if (expEl && data.EXP) expEl.textContent = parseFloat(data.EXP) + 'x';
     if (dropEl && data.Drop) dropEl.textContent = parseFloat(data.Drop) + 'x';
 }
+
+// ==========================================================================
+// Player Guide Modal Actions & Tab Toggling
+// ==========================================================================
+window.openPlayerGuideModal = function () {
+    const modal = document.getElementById('player-guide-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        // Reset scroll position to top
+        const scrollBox = document.getElementById('guide-modal-content');
+        if (scrollBox) scrollBox.scrollTop = 0;
+        // Default to the first tab
+        window.switchGuideTab('tab-portal');
+        
+        // Add keyboard ESC listener
+        window.addEventListener('keydown', handleGuideEscKey);
+        
+        // Add click listener on the modal overlay itself to close it
+        modal.addEventListener('click', handleGuideOverlayClick);
+    }
+};
+
+window.closePlayerGuideModal = function () {
+    const modal = document.getElementById('player-guide-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        // Cleanup listeners
+        window.removeEventListener('keydown', handleGuideEscKey);
+        modal.removeEventListener('click', handleGuideOverlayClick);
+    }
+};
+
+window.switchGuideTab = function (tabId) {
+    // Hide all tab panes
+    const panes = document.querySelectorAll('.guide-tab-pane');
+    panes.forEach(pane => {
+        pane.style.display = 'none';
+    });
+
+    // Show the requested pane
+    const targetPane = document.getElementById(tabId);
+    if (targetPane) {
+        targetPane.style.display = 'block';
+    }
+
+    // Update active tab buttons
+    const buttons = document.querySelectorAll('.guide-tab-btn');
+    buttons.forEach(btn => {
+        if (btn.getAttribute('data-tab') === tabId) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+};
+
+function handleGuideEscKey(e) {
+    if (e.key === 'Escape') {
+        window.closePlayerGuideModal();
+    }
+}
+
+function handleGuideOverlayClick(e) {
+    // If the click happened on the outer container (#player-guide-modal) and not inside the inner dialog
+    if (e.target.id === 'player-guide-modal') {
+        window.closePlayerGuideModal();
+    }
+}
