@@ -211,9 +211,11 @@ foreach ($clients as $client) {
     }
 
     // Track the last non-boss floor the player was on.
+    // We strictly check $curr_f > 0 so that town/lobby (floor 0) is ignored, preserving 
+    // the actual preceding dungeon floor if they go back to Pioneer 2/Lab to restock.
     $boss_floors_list = [9, 11, 12, 13, 14, 15];
     $pre_boss_floor = $prev_state['pre_boss_floor'] ?? -1;
-    if (!in_array($curr_f, $boss_floors_list) && $curr_f >= 0) {
+    if (!in_array($curr_f, $boss_floors_list) && $curr_f > 0) {
         $pre_boss_floor = $curr_f;
     }
 
