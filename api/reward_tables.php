@@ -131,7 +131,7 @@ function filter_rare_pool_by_level($pool, $level) {
 
 function get_reward_item($level_milestone, $charClass, $category, $options = []) {
     // Determine tier (1-10)
-    $tier = max(1, min(10, floor($level_milestone / 20) + 1));
+    $tier = max(1, min(10, floor($level_milestone / 15) + 1));
 
     $pool = [];
     
@@ -720,7 +720,7 @@ function get_reward_item($level_milestone, $charClass, $category, $options = [])
 
 function get_common_reward_item($level_milestone, $charClass, $category, $options = []) {
     // Determine the tier based on milestone (10 tiers up to max level)
-    $tier = max(1, min(10, floor($level_milestone / 20) + 1));
+    $tier = max(1, min(10, floor($level_milestone / 15) + 1));
     
     // For PSO items, common item types max out at tier 6.
     $item_tier = min(6, $tier);
@@ -804,10 +804,8 @@ function get_common_reward_item($level_milestone, $charClass, $category, $option
             case 6: $frames = ['010111' /* Valiant Frame */, '010116' /* Ultimate Frame */]; $armors = ['010115' /* Divinity Armor */, '010117' /* Celestial Armor */]; break;
         }
         
-        $isNewman = in_array($charClass, ['HUnewearl', 'FOnewm', 'FOnewearl']);
-        
-        // Newmans can only equip frames. Everyone else can equip both frames and armors.
-        $validArmors = $isNewman ? $frames : array_merge($frames, $armors);
+        // Forces can only equip frames in PSOBB. Hunters and Rangers can equip both.
+        $validArmors = $isForce ? $frames : array_merge($frames, $armors);
         
         $chosenArmor = $validArmors[array_rand($validArmors)];
         
