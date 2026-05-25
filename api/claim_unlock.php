@@ -216,8 +216,44 @@ try {
             $dex = rand(0, 100);
             $mind = rand(0, 100);
             
-            // Scale Mag level to the player's actual level exactly
-            $targetLevel = min(200, max(50, $level));
+            $isHunter = in_array($charClass, ['HUmar', 'HUnewearl', 'HUcast', 'HUcaseal']);
+            $isRanger = in_array($charClass, ['RAmar', 'RAmarl', 'RAcast', 'RAcaseal']);
+            $isForce = !$isHunter && !$isRanger;
+            $isCast = in_array($charClass, ['HUcast', 'HUcaseal', 'RAcast', 'RAcaseal']);
+            
+            // 25% chance to roll a highly optimized class-archetype biased stat roll ("god-roll").
+            // 75% chance to roll a standard well-balanced random stat roll.
+            $isBiasedRoll = (rand(1, 100) <= 25);
+            
+            if ($isBiasedRoll) {
+                // Highly optimized "God-Rolls" must have EXACTLY the base 5 DEF
+                $def = 5;
+                
+                // Bias rolls according to class archetypes to ensure useful stat focus:
+                // - Hunters bias heavily toward POW (Physical Power)
+                // - Rangers bias heavily toward DEX (Accuracy)
+                // - Forces bias heavily toward MIND (Tech Power) — except CASTs, who stay at 0 MIND
+                if ($isHunter) {
+                    $pow = rand(50, 120);
+                } elseif ($isRanger) {
+                    $dex = rand(50, 120);
+                } elseif ($isForce) {
+                    $mind = rand(50, 120);
+                }
+            }
+            
+            // Casts / Androids cannot use magic and have exactly 0 MIND in PSO
+            if ($isCast) {
+                $mind = 0;
+            }
+            
+            // Target level is player's level +/- 5 capped between 20 and 200.
+            // If the player's level is less than 10, the Mag starts at exactly level 20.
+            if ($level < 10) {
+                $targetLevel = 20;
+            } else {
+                $targetLevel = min(200, max(20, $level + rand(-5, 5)));
+            }
             
             // In PSO, a Mag's DEF must always be at least 5.00 (the base starting DEF of a Level 0 Mag).
             // We allocate 5 level points to DEF first to ensure legal stats and avoid client crashes.
@@ -254,9 +290,11 @@ try {
                 if ($deficit > 0) {
                     $stats = [
                         'pow'  => $pow,
-                        'dex'  => $dex,
-                        'mind' => $mind
+                        'dex'  => $dex
                     ];
+                    if (!$isCast) {
+                        $stats['mind'] = $mind;
+                    }
                     arsort($stats);
                     $highestStatName = array_key_first($stats);
                     
@@ -277,7 +315,21 @@ try {
             // PB bits: 0=Farlla, 1=Estlla, 2=Golla, 3=Pilla, 4=Leilla, 5=Mylla&Youlla
             $pbBits = [0, 1, 2, 3, 4, 5];
             shuffle($pbBits);
-            $numPbs = rand(1, 3);
+            
+            // Match official Mag evolution level limits for Photon Blast counts:
+            // - Level < 10: 0 PBs (baby stage)
+            // - Level 10-34: 1 PB (first evolution stage)
+            // - Level 35-49: 2 PBs (second evolution stage)
+            // - Level 50+: 3 PBs (third evolution/rare stage)
+            if ($targetLevel < 10) {
+                $numPbs = 0;
+            } elseif ($targetLevel < 35) {
+                $numPbs = 1;
+            } elseif ($targetLevel < 50) {
+                $numPbs = 2;
+            } else {
+                $numPbs = 3;
+            }
             
             $flags = 0;
             $pb_nums = 0;
