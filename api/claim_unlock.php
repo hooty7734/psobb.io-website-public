@@ -216,8 +216,8 @@ try {
             $dex = rand(0, 100);
             $mind = rand(0, 100);
             
-            // Scale Mag level to the player's actual milestone
-            $targetLevel = min(200, max(50, $milestone));
+            // Scale Mag level to the player's actual level exactly
+            $targetLevel = min(200, max(50, $level));
             
             // In PSO, a Mag's DEF must always be at least 5.00 (the base starting DEF of a Level 0 Mag).
             // We allocate 5 level points to DEF first to ensure legal stats and avoid client crashes.
