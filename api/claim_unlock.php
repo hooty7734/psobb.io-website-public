@@ -217,14 +217,58 @@ try {
             $mind = rand(0, 100);
             
             // Scale Mag level to the player's actual milestone
-            $totalStats = $def + $pow + $dex + $mind;
             $targetLevel = min(200, max(50, $milestone));
             
-            $scale = $targetLevel / $totalStats;
-            $def = floor($def * $scale);
-            $pow = floor($pow * $scale);
-            $dex = floor($dex * $scale);
-            $mind = floor($mind * $scale);
+            // In PSO, a Mag's DEF must always be at least 5.00 (the base starting DEF of a Level 0 Mag).
+            // We allocate 5 level points to DEF first to ensure legal stats and avoid client crashes.
+            $allocatedDef = 5;
+            $remainingLevels = $targetLevel - $allocatedDef;
+            
+            $defSurplus = max(0, $def - 5);
+            $totalRollSurplus = $defSurplus + $pow + $dex + $mind;
+            
+            if ($totalRollSurplus <= 0) {
+                // Fallback in case of extreme zero rolls
+                $def = 5;
+                $pow = $remainingLevels;
+                $dex = 0;
+                $mind = 0;
+            } else {
+                $scale = $remainingLevels / $totalRollSurplus;
+                
+                $defExtra = floor($defSurplus * $scale);
+                $powScaled = floor($pow * $scale);
+                $dexScaled = floor($dex * $scale);
+                $mindScaled = floor($mind * $scale);
+                
+                $def = 5 + $defExtra;
+                $pow = $powScaled;
+                $dex = $dexScaled;
+                $mind = $mindScaled;
+                
+                // Distribute any rounding remainder (from floor operations) to the highest-scaled stat
+                // to make sure the Mag's final Level (DEF + POW + DEX + MIND) matches the milestone exactly.
+                $currentSum = $def + $pow + $dex + $mind;
+                $deficit = $targetLevel - $currentSum;
+                
+                if ($deficit > 0) {
+                    $stats = [
+                        'pow'  => $pow,
+                        'dex'  => $dex,
+                        'mind' => $mind
+                    ];
+                    arsort($stats);
+                    $highestStatName = array_key_first($stats);
+                    
+                    if ($highestStatName === 'pow') {
+                        $pow += $deficit;
+                    } elseif ($highestStatName === 'dex') {
+                        $dex += $deficit;
+                    } else {
+                        $mind += $deficit;
+                    }
+                }
+            }
             
             $sync = rand(0, 120);
             $iq = rand(0, 200);
