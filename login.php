@@ -104,6 +104,11 @@ include 'includes/header.php';
                             <i class="fas fa-book-open"></i> <?= __('📖 Player Guide & Commands') ?>
                         </button>
 
+                        <!-- Character & Bank Viewer Button -->
+                        <a id="character-viewer-btn" href="character_viewer.php" class="dl-btn" style="display:block; text-align:center; width: 100%; box-sizing: border-box; border-color: #00ffff; background: rgba(0, 255, 255, 0.15); color: #00ffff; margin-bottom: 0.5rem; font-family: 'Share Tech Mono', monospace; font-weight: bold; text-decoration: none;">
+                            <i class="fas fa-database"></i> <?= __('🔍 Character & Bank Viewer') ?>
+                        </a>
+
                         <!-- Rewards Button -->
                         <a id="rewards-panel-btn" href="unlocks" class="dl-btn" style="display:none; text-align:center; width: 100%; box-sizing: border-box;"><?= __('🎁 Claim Level Rewards') ?></a>
         

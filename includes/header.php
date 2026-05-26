@@ -43,11 +43,13 @@ start_secure_session();
 
                 <li class="dropdown">
                     <a href="javascript:void(0)"
-                        class="dropbtn <?php echo in_array($current_page, ['drops', 'missions', 'lfg', 'top_hunters', 'stats']) ? 'active' : ''; ?>"><?= __('Game Tools') ?>
+                        class="dropbtn <?php echo in_array($current_page, ['drops', 'missions', 'lfg', 'top_hunters', 'stats', 'character_viewer']) ? 'active' : ''; ?>"><?= __('Game Tools') ?>
                         <i class="fas fa-caret-down"></i></a>
                     <div class="dropdown-content">
                         <a href="/drops.php"
                             class="<?php echo ($current_page == 'drops') ? 'active' : ''; ?>"><?= __('Drop Chart') ?></a>
+                        <a href="/character_viewer.php"
+                            class="<?php echo ($current_page == 'character_viewer') ? 'active' : ''; ?>"><?= __('Character & Bank') ?></a>
                         <a href="/missions.php" class="<?php echo ($current_page == 'missions') ? 'active' : ''; ?>"
                             style="color: var(--pso-orange);"><?= __('Bounty Board') ?></a>
                         <a href="/lfg.php" class="<?php echo ($current_page == 'lfg') ? 'active' : ''; ?>"

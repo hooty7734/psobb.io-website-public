@@ -19,6 +19,21 @@ include 'includes/header.php';
             <section class="main-content">
                 <div id="unlocks-status" class="alert-box" style="display: none; margin-bottom: 2rem;"></div>
 
+                <!-- Daily Reward Section -->
+                <div id="daily-reward-section" style="display: none; margin-bottom: 2rem;">
+                    <h2 style="margin-bottom: 1rem;">🎁 Daily Reward</h2>
+                    <div class="streak-container" style="border-color: rgba(0, 200, 200, 0.4);">
+                        <p style="color: rgba(255,255,255,0.85); margin-bottom: 0.5rem;">Claim a free random item every day just for playing!</p>
+                        <p style="color: #ffaa00; margin-bottom: 1.2rem; font-size: 0.9rem; font-family: 'Share Tech Mono', monospace; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-exclamation-triangle animate-pulse"></i> <span>Log into the game first</span>
+                        </p>
+                        <button id="daily-claim-btn" class="streak-claim-btn" style="width: 100%; padding: 0.8rem; font-size: 1rem;">
+                            🎲 Claim Daily Reward
+                        </button>
+                        <div id="daily-result" style="margin-top: 1rem; display: none; text-align: center; color: #00ff88; font-family: 'Share Tech Mono', monospace;"></div>
+                    </div>
+                </div>
+
                 <div id="character-info" class="server-status-widget" style="display: none; margin-bottom: 2rem;">
                     <h3>Active Character</h3>
                     <div class="status-row">
@@ -84,17 +99,6 @@ include 'includes/header.php';
                     </div>
                 </div>
 
-                <!-- Daily Reward Section -->
-                <div id="daily-reward-section" style="display: none; margin-bottom: 2rem;">
-                    <h2 style="margin-bottom: 1rem;">🎁 Daily Reward</h2>
-                    <div class="streak-container" style="border-color: rgba(0, 200, 200, 0.4);">
-                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 1rem;">Claim a free random item every day just for playing!</p>
-                        <button id="daily-claim-btn" class="streak-claim-btn" style="width: 100%; padding: 0.8rem; font-size: 1rem;">
-                            🎲 Claim Daily Reward
-                        </button>
-                        <div id="daily-result" style="margin-top: 1rem; display: none; text-align: center; color: #00ff88; font-family: 'Share Tech Mono', monospace;"></div>
-                    </div>
-                </div>
 
                 <h2>Available Milestones</h2>
                 <div id="milestones-container" class="milestones-grid">
