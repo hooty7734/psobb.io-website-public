@@ -9,7 +9,7 @@ $cache_dir = __DIR__ . '/../scratch';
 if (!is_dir($cache_dir)) {
     @mkdir($cache_dir, 0777, true);
 }
-$cache_file = $cache_dir . '/rare_table_cache_v2.json';
+$cache_file = $cache_dir . '/rare_table_cache_v3.json';
 $cache_ttl = 86400; // 24 hours
 
 $data_json = false;
@@ -91,7 +91,8 @@ if ($data_json === false) {
                             foreach ($monsters as $monster => $drops) {
                                 foreach ($drops as $drop) {
                                     $rate_str = $drop[0]; // e.g. "7/8192" or large int
-                                    $item_hex_raw = $drop[1]; // e.g. "0x00A600"
+                                    $item_hex_raw = $drop[1]; // e.g. integer 43520 or "0x00A600"
+                                    $newserv_item_name = $drop[2] ?? null; // Item name from newserv ItemNameIndex
                                     
                                     // Calculate percentage
                                     $rate_pct = 0;
@@ -113,7 +114,12 @@ if ($data_json === false) {
                                     }
                                     $clean_hex = str_pad($clean_hex, 6, '0', STR_PAD_LEFT);
                                     
-                                    $item_name = $hex_to_name[$clean_hex] ?? "Unknown Item ($item_hex_raw)";
+                                    // Prefer newserv-provided item name, fall back to local hex map
+                                    if (!empty($newserv_item_name) && is_string($newserv_item_name)) {
+                                        $item_name = ucwords($newserv_item_name);
+                                    } else {
+                                        $item_name = $hex_to_name[$clean_hex] ?? "Unknown Item ($clean_hex)";
+                                    }
                                     
                                     // Determine Item Type
                                     $type_byte = substr($clean_hex, 0, 2);
