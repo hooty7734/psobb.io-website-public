@@ -234,6 +234,11 @@ function showDashboard(user) {
 
         document.getElementById('dash-team').textContent = user.BBTeamID ? 'Team #' + user.BBTeamID : 'None';
 
+        const playtimeEl = document.getElementById('dash-playtime');
+        if (playtimeEl) {
+            playtimeEl.textContent = user.total_play_time_hours ? `${user.total_play_time_hours} hrs` : '--';
+        }
+
         // PWA Install check
         const installCard = document.getElementById('pwa-install-card');
         if (installCard && window.deferredPrompt) {

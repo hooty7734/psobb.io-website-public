@@ -124,6 +124,48 @@ try {
         $streak_stmt->bindValue(':date', date('Y-m-d'), SQLITE3_TEXT);
         $streak_stmt->execute();
 
+        // Calculate total account playtime across all 4 character files
+        $playersDir = '/opt/newserv/system/players/';
+        if (!is_dir($playersDir)) {
+            $playersDir = __DIR__ . '/../../newserv/system/players/';
+        }
+        
+        $total_play_time = 0;
+        $usernames = [$username];
+        if (empty($username) && isset($user_account['BBLicenses']) && is_array($user_account['BBLicenses']) && count($user_account['BBLicenses']) > 0) {
+            $usernames[] = strtolower(trim($user_account['BBLicenses'][0]['UserName'] ?? ''));
+        }
+        
+        foreach ($usernames as $u) {
+            $u = strtolower(trim($u));
+            if (empty($u)) continue;
+            
+            for ($slot = 0; $slot < 4; $slot++) {
+                $charFilename = "player_{$u}_{$slot}.psochar";
+                $charPath = $playersDir . $charFilename;
+                if (!file_exists($charPath)) {
+                    if (is_dir($playersDir)) {
+                        $files = scandir($playersDir);
+                        foreach ($files as $f) {
+                            if (strcasecmp($f, $charFilename) === 0) {
+                                $charPath = $playersDir . $f;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (file_exists($charPath)) {
+                    $charData = @file_get_contents($charPath);
+                    if ($charData !== false && strlen($charData) >= (8 + 0x04E8 + 4)) {
+                        $playTime = unpack('V', substr($charData, 8 + 0x04E8, 4))[1];
+                        $total_play_time += $playTime;
+                    }
+                }
+            }
+        }
+        
+        $user_account['total_play_time_hours'] = round($total_play_time / 3600, 1);
+
         // Transmit sanitized account blob back to the frontend
         echo json_encode($user_account);
     } else {

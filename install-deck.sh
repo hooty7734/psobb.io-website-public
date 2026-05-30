@@ -1,6 +1,318 @@
 #!/bin/bash
 
-# PSOBB.IO Steam Deck Installer
+# PSOBB.IO Steam Deck Installer & Uninstaller
+
+INSTALL_DIR="$HOME/Games/PSOBBIO"
+
+# Check if uninstall argument is passed
+if [ "$1" == "-uninstall" ] || [ "$1" == "--uninstall" ]; then
+    echo "============================================"
+    echo "  PSOBB.IO Steam Deck Uninstaller"
+    echo "============================================"
+    echo ""
+    
+    # 1. Clean up Steam shortcuts, artwork, and Proton compatibility mappings
+    if command -v python3 &> /dev/null; then
+        echo "Removing Steam integration..."
+        
+        PY_UNINSTALL="/tmp/psobbio_uninstall.py"
+        cat > "$PY_UNINSTALL" << 'PYTHON_EOF'
+import os
+import struct
+import shutil
+
+TYPE_MAP    = 0x00
+TYPE_STRING = 0x01
+TYPE_INT32  = 0x02
+TYPE_END    = 0x08
+
+class BinaryVDF:
+    """Minimal binary VDF parser/serializer using only Python stdlib."""
+    
+    @staticmethod
+    def loads(data):
+        """Parse binary VDF bytes into an OrderedDict-like structure."""
+        result, _ = BinaryVDF._parse_map(data, 0, root=True)
+        return result
+    
+    @staticmethod
+    def dumps(obj):
+        """Serialize a dict structure to binary VDF bytes."""
+        out = bytearray()
+        for key, value in obj.items():
+            BinaryVDF._write_entry(out, key, value)
+        out.append(TYPE_END)
+        return bytes(out)
+    
+    @staticmethod
+    def _read_string(data, pos):
+        """Read a null-terminated string starting at pos."""
+        end = data.index(b'\x00', pos)
+        return data[pos:end].decode('utf-8', errors='replace'), end + 1
+    
+    @staticmethod
+    def _parse_map(data, pos, root=False):
+        """Parse a map (dict) from binary VDF data."""
+        result = {}
+        if root:
+            # Root level: read the first map entry header
+            if pos < len(data) and data[pos] == TYPE_MAP:
+                pos += 1
+                name, pos = BinaryVDF._read_string(data, pos)
+                inner, pos = BinaryVDF._parse_map(data, pos)
+                result[name] = inner
+                return result, pos
+            return result, pos
+        
+        while pos < len(data):
+            type_byte = data[pos]
+            pos += 1
+            
+            if type_byte == TYPE_END:
+                break
+            elif type_byte == TYPE_MAP:
+                name, pos = BinaryVDF._read_string(data, pos)
+                value, pos = BinaryVDF._parse_map(data, pos)
+                # Handle duplicate keys by appending suffix
+                orig_name = name
+                counter = 1
+                while name in result:
+                    name = f"{orig_name}_{counter}"
+                    counter += 1
+                result[name] = value
+            elif type_byte == TYPE_STRING:
+                name, pos = BinaryVDF._read_string(data, pos)
+                value, pos = BinaryVDF._read_string(data, pos)
+                result[name] = value
+            elif type_byte == TYPE_INT32:
+                name, pos = BinaryVDF._read_string(data, pos)
+                value = struct.unpack_from('<i', data, pos)[0]
+                pos += 4
+                result[name] = value
+            else:
+                # Unknown type, try to skip
+                break
+        
+        return result, pos
+    
+    @staticmethod
+    def _write_entry(out, key, value):
+        """Write a single key-value entry to the output buffer."""
+        key_bytes = key.encode('utf-8') + b'\x00'
+        
+        if isinstance(value, dict):
+            out.append(TYPE_MAP)
+            out.extend(key_bytes)
+            for k, v in value.items():
+                BinaryVDF._write_entry(out, k, v)
+            out.append(TYPE_END)
+        elif isinstance(value, int):
+            out.append(TYPE_INT32)
+            out.extend(key_bytes)
+            out.extend(struct.pack('<i', value))
+        elif isinstance(value, str):
+            out.append(TYPE_STRING)
+            out.extend(key_bytes)
+            out.extend(value.encode('utf-8') + b'\x00')
+        else:
+            # Fallback: treat as string
+            out.append(TYPE_STRING)
+            out.extend(key_bytes)
+            out.extend(str(value).encode('utf-8') + b'\x00')
+
+def remove_shortcuts(shortcuts_path, app_names):
+    if not os.path.exists(shortcuts_path):
+        return []
+    
+    try:
+        with open(shortcuts_path, 'rb') as f:
+            raw = f.read()
+        if len(raw) == 0:
+            return []
+        shortcuts_data = BinaryVDF.loads(raw)
+    except Exception as e:
+        print(f"Error parsing shortcuts.vdf: {e}")
+        return []
+    
+    shortcuts_map = shortcuts_data.get('shortcuts', {})
+    updated_map = {}
+    removed_appids = []
+    
+    for key, entry in shortcuts_map.items():
+        if isinstance(entry, dict):
+            existing_name = entry.get('AppName', entry.get('appname', ''))
+            if existing_name in app_names:
+                print(f"Removing shortcut: {existing_name}")
+                appid = entry.get('appid', 0)
+                if appid:
+                    unsigned_id = struct.unpack('<I', struct.pack('<i', appid))[0]
+                    removed_appids.append(unsigned_id)
+                continue
+        updated_map[key] = entry
+        
+    # Re-index
+    new_shortcuts_map = {}
+    for i, (k, v) in enumerate(updated_map.items()):
+        new_shortcuts_map[str(i)] = v
+        
+    shortcuts_data['shortcuts'] = new_shortcuts_map
+    
+    try:
+        with open(shortcuts_path, 'wb') as f:
+            f.write(BinaryVDF.dumps(shortcuts_data))
+    except Exception as e:
+        print(f"Error writing shortcuts.vdf: {e}")
+        
+    return removed_appids
+
+def remove_proton_mapping(config_path, app_ids):
+    if not os.path.exists(config_path):
+        return
+    
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+            
+        modified = False
+        new_lines = []
+        skip_lines = 0
+        
+        for i, line in enumerate(lines):
+            if skip_lines > 0:
+                skip_lines -= 1
+                continue
+                
+            app_id_found = False
+            for app_id in app_ids:
+                if f'"{app_id}"' in line:
+                    if i + 1 < len(lines) and '{' in lines[i+1]:
+                        app_id_found = True
+                        break
+            
+            if app_id_found:
+                print(f"Removing CompatToolMapping for AppID {app_id}")
+                modified = True
+                brace_count = 0
+                skip_idx = i
+                while skip_idx < len(lines):
+                    if '{' in lines[skip_idx]:
+                        brace_count += 1
+                    if '}' in lines[skip_idx]:
+                        brace_count -= 1
+                    skip_idx += 1
+                    if brace_count == 0 and skip_idx > i + 1:
+                        break
+                skip_lines = skip_idx - i - 1
+                continue
+                
+            new_lines.append(line)
+            
+        if modified:
+            with open(config_path, 'w', encoding='utf-8') as f:
+                f.writelines(new_lines)
+            print("CompatToolMappings updated.")
+            
+    except Exception as e:
+        print(f"Error updating config.vdf during uninstall: {e}")
+
+def remove_artwork(config_dir, app_ids):
+    grid_dir = os.path.join(config_dir, 'grid')
+    if not os.path.exists(grid_dir):
+        return
+        
+    for app_id in app_ids:
+        for suffix in ['_logo.png', '_hero.png', 'p.png', '_icon.png', '.png']:
+            art_file = os.path.join(grid_dir, f'{app_id}{suffix}')
+            if os.path.exists(art_file):
+                try:
+                    os.remove(art_file)
+                    print(f"Removed artwork: {art_file}")
+                except Exception as e:
+                    print(f"Error removing artwork {art_file}: {e}")
+
+def main():
+    home = os.environ.get('HOME')
+    steam_userdata = os.path.join(home, '.steam', 'steam', 'userdata')
+    if not os.path.exists(steam_userdata):
+        steam_userdata = os.path.join(home, '.local', 'share', 'Steam', 'userdata')
+        
+    if not os.path.exists(steam_userdata):
+        print("Could not find Steam userdata. Skipping Steam shortcuts cleanup.")
+        return
+
+    app_names = ["PSOBB IO", "PSOBB Settings"]
+    steam_root = os.path.expanduser("~/.steam/steam")
+    if not os.path.exists(steam_root):
+         steam_root = os.path.expanduser("~/.local/share/Steam")
+         
+    global_config_vdf = os.path.join(steam_root, "config", "config.vdf")
+    
+    all_removed_appids = []
+    
+    for user_id in os.listdir(steam_userdata):
+        config_dir = os.path.join(steam_userdata, user_id, 'config')
+        shortcuts_path = os.path.join(config_dir, 'shortcuts.vdf')
+        
+        if not os.path.isdir(config_dir):
+            continue
+            
+        print(f"Processing user {user_id} for cleanup...")
+        
+        # Remove shortcuts
+        removed_ids = remove_shortcuts(shortcuts_path, app_names)
+        all_removed_appids.extend(removed_ids)
+        
+        if removed_ids:
+            # Clean up artwork
+            remove_artwork(config_dir, removed_ids)
+            
+    if all_removed_appids:
+        unique_ids = list(set(all_removed_appids))
+        remove_proton_mapping(global_config_vdf, unique_ids)
+
+if __name__ == '__main__':
+    main()
+PYTHON_EOF
+        python3 "$PY_UNINSTALL"
+        rm -f "$PY_UNINSTALL"
+    else
+        echo "Warning: python3 is not available. Skipping automated Steam shortcut removal."
+        echo "You can manually remove 'PSOBB IO' and 'PSOBB Settings' from Steam."
+    fi
+    
+    # 2. Remove desktop shortcut
+    DESKTOP_SHORTCUT="$HOME/Desktop/PSOBB IO.desktop"
+    if [ -f "$DESKTOP_SHORTCUT" ]; then
+        rm -f "$DESKTOP_SHORTCUT"
+        echo "Removed desktop shortcut."
+    fi
+    
+    # 3. Remove custom controller layout template
+    STEAM_DIR="$HOME/.steam/steam"
+    if [ ! -d "$STEAM_DIR" ]; then
+        STEAM_DIR="$HOME/.local/share/Steam"
+    fi
+    TEMPLATE_FILE="$STEAM_DIR/controller_base/templates/psobb_io_controller.vdf"
+    if [ -f "$TEMPLATE_FILE" ]; then
+        rm -f "$TEMPLATE_FILE"
+        echo "Removed Steam controller template layout."
+    fi
+    
+    # 4. Remove game installation directory
+    if [ -d "$INSTALL_DIR" ]; then
+        rm -rf "$INSTALL_DIR"
+        echo "Removed installation directory: $INSTALL_DIR"
+    fi
+    
+    echo ""
+    echo "============================================"
+    echo "  Uninstall Complete!"
+    echo "============================================"
+    echo "PSOBB.IO has been completely removed."
+    echo "Please restart Steam to apply shortcut changes."
+    echo "============================================"
+    exit 0
+fi
 
 # Check dependencies
 for cmd in unzip python3 curl; do
@@ -430,11 +742,11 @@ def update_config_vdf_proton(config_path, app_id, proton_name):
 # ============================================================================
 # Artwork
 # ============================================================================
-def apply_artwork(config_dir, app_id, logo_src, hero_src, portrait_src):
+def apply_artwork(config_dir, app_id, logo_src, hero_src, portrait_src, grid_src):
     grid_dir = os.path.join(config_dir, 'grid')
     os.makedirs(grid_dir, exist_ok=True)
     
-    for src, suffix in [(logo_src, '_logo.png'), (hero_src, '_hero.png'), (portrait_src, 'p.png')]:
+    for src, suffix in [(logo_src, '_logo.png'), (hero_src, '_hero.png'), (portrait_src, 'p.png'), (grid_src, '.png')]:
         if src and os.path.exists(src):
             dest = os.path.join(grid_dir, f'{app_id}{suffix}')
             shutil.copy2(src, dest)
@@ -566,7 +878,7 @@ def main():
             app_id = add_shortcut(shortcuts_path, app_name, exe_path, start_dir, icon_path, launch_options)
             
             # Apply Artwork
-            apply_artwork(config_dir, app_id, logo_path, hero_path, portrait_path)
+            apply_artwork(config_dir, app_id, logo_path, hero_path, portrait_path, icon_path)
 
             # Apply Proton Config (Main Game) - Targets Global Config
             update_config_vdf_proton(global_config_vdf, str(app_id), proton_name)
@@ -639,4 +951,7 @@ echo "     (Settings are shared with the main game)"
 echo ""
 echo "The custom launch options for widescreen and"
 echo "frame generation are already configured."
+echo ""
+echo "  9. (Optional) To uninstall in the future:"
+echo "     curl -sL https://psobb.io/install-deck.sh | bash -s -- -uninstall"
 echo "============================================"

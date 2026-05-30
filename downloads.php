@@ -49,7 +49,7 @@ include 'includes/header.php';
         <div class="dl-card dl-linux">
             <div class="dl-icon"><i class="fab fa-linux"></i></div>
             <h3><?= __('Linux & Steam Deck') ?></h3>
-            <p><?= __('Native support via Wine/Proton.') ?></p>
+            <p><?= __('Support via Wine/Proton.') ?></p>
             <div class="dl-meta">
                 <span><i class="fas fa-hdd"></i> 1.08 GB</span>
                 <span><i class="fas fa-code-branch"></i> v1.25.13</span>
@@ -62,12 +62,21 @@ include 'includes/header.php';
                     onclick="navigator.clipboard.writeText(this.innerText); alert('Copied to clipboard!');">curl -sL https://psobb.io/install-deck.sh | bash</code>
                 <small style="display:block; margin-top:5px; color:#aaa;"><?= __('(Click command to copy)') ?></small>
             </div>
-            <div style="margin-top: 10px;">
-                <strong style="color:#aaa;"><?= __('Other Linux:') ?></strong>
-                <a href="/downloads/PSOBBIO-Linux_1.25.13.zip" class="dl-btn" download style="margin-top: 5px;"><i
-                        class="fas fa-download"></i> <?= __('Download Zip') ?></a>
-            </div>
             <small><?= __('Ubuntu 20.04+ or SteamOS') ?></small>
+        </div>
+    </div>
+
+    <div class="raw-files-section" style="margin-top: 3rem; text-align: center; background: rgba(10, 20, 30, 0.4); border: 1px dashed rgba(0, 255, 255, 0.2); padding: 2rem; border-radius: 12px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
+        <h3 style="color: var(--pso-blue); margin-bottom: 0.5rem;"><i class="fas fa-file-archive" style="margin-right: 8px;"></i><?= __('Raw Client Files (Manual Setup)') ?></h3>
+        <p style="max-width: 600px; margin: 0 auto 1.5rem auto; font-size: 0.95rem; color: rgba(255,255,255,0.8);">
+            <?= __('Need the raw game client files for custom wine prefixes, Lutris, Bottles, or other systems? Download the zip archive containing all raw patched files.') ?>
+        </p>
+        <div class="dl-meta" style="display: inline-flex; margin-bottom: 1.5rem;">
+            <span><i class="fas fa-hdd"></i> 1.08 GB</span>
+            <span><i class="fas fa-code-branch"></i> v1.25.13</span>
+        </div>
+        <div>
+            <a href="/downloads/PSOBBIO-Linux_1.25.13.zip" class="dl-btn warning-btn" download><i class="fas fa-file-download"></i> <?= __('Download Raw Client Files') ?></a>
         </div>
     </div>
 

@@ -88,6 +88,10 @@ include 'includes/header.php';
                                         <span class="hl-label"><?= __('TEAM') ?></span>
                                         <span class="hl-value" id="dash-team">--</span>
                                     </div>
+                                    <div class="hl-row" style="border-top: 1px dashed rgba(0, 255, 255, 0.3); padding-top: 10px;">
+                                        <span class="hl-label"><?= __('TIME PLAYED') ?></span>
+                                        <span class="hl-value" id="dash-playtime">--</span>
+                                    </div>
                                 </div>
                                 <div class="hl-footer">
                                     <span class="hl-status"><?= __('STATUS: ACTIVE') ?></span>
