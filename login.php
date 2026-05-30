@@ -98,14 +98,8 @@ include 'includes/header.php';
                             <!-- PWA Installation Card -->
                             <div id="pwa-install-card" class="pwa-install-card" style="display: none;">
                                 <h3 style="color:#00ffff; font-family:'Share Tech Mono',monospace; margin-top:0; margin-bottom:10px;"><i class="fas fa-mobile-alt animate-pulse"></i> <?= __('Companion App Available') ?></h3>
-                                <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom:12px;"><?= __('Install the PSOBB.io Companion App directly on your mobile screen or Steam Deck desktop for instant access!') ?></p>
-                                <button onclick="installPortalApp()" class="dl-btn pwa-install-btn" style="margin-bottom: 12px;"><i class="fas fa-download"></i> <?= __('Install PSOBB.io Companion App') ?></button>
-                                
-                                <!-- Steam Deck Guide reference -->
-                                <div class="steamdeck-qol-note" style="border-top: 1px dashed rgba(0, 255, 255, 0.2); padding-top: 10px; margin-top: 8px; text-align: left; font-size: 0.8rem; line-height: 1.4; color: rgba(255, 255, 255, 0.85); background: rgba(0, 0, 0, 0.2); padding: 8px; border-radius: 4px;">
-                                    <strong style="color: #ffaa00; display: block; margin-bottom: 3px;"><i class="fab fa-steam"></i> <?= __('Steam Deck Gaming Mode QoL:') ?></strong>
-                                    <?= __('Switch to Desktop Mode, open Chrome/Edge, visit this site, and click Install. Once installed, add the Companion App as a "Non-Steam Game" in Steam to launch it directly in Gaming Mode with steam overlay support!') ?>
-                                </div>
+                                <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom:15px;"><?= __('Install the PSOBB.io Companion App directly on your mobile screen or desktop for instant access!') ?></p>
+                                <button onclick="installPortalApp()" class="dl-btn pwa-install-btn"><i class="fas fa-download"></i> <?= __('Install PSOBB.io Companion App') ?></button>
                             </div>
                         </div>
 
