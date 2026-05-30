@@ -474,10 +474,15 @@ include 'includes/header.php';
                 <div id="tab-chat" class="dashboard-tab-pane">
                     <div style="border: 1px solid rgba(0, 255, 255, 0.2); background: rgba(0, 10, 20, 0.5); padding: 1.5rem; border-radius: 8px;">
                         <h3 style="color:#00ffff; font-family:'Share Tech Mono', monospace; margin-top:0; border-bottom:1px solid rgba(0,255,255,0.2); padding-bottom:8px; margin-bottom:12px;"><i class="fas fa-terminal animate-pulse" style="color:#00ffff; margin-right:8px;"></i><?= __('Web-to-Game Chat Console') ?></h3>
-                        <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom:15px;"><?= __('Send chat messages directly to your active in-game character\'s lobby or game block! Highly recommended QoL upgrade for players on Steam Deck or mobile devices.') ?></p>
+                        <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom:15px;"><?= __('Send chat messages directly to your active in-game character\'s lobby or game block! Live lobby feed shows player joins, leaves, and room changes.') ?></p>
                         
+                        <!-- Live Lobby Status Header -->
+                        <div id="chat-lobby-header" style="padding:10px 14px; margin-bottom:10px; background:rgba(0,20,40,0.6); border:1px solid rgba(0,255,255,0.15); border-radius:6px; font-family:'Share Tech Mono',monospace; font-size:0.85rem; color:rgba(255,255,255,0.6); min-height:30px;">
+                            <span style="color:#888;"><i class="fas fa-satellite-dish"></i> <?= __('Connecting to lobby feed...') ?></span>
+                        </div>
+
                         <div class="chat-messages-log" id="chat-messages-log" style="margin-bottom:15px;">
-                            <div class="chat-message-bubble system"><?= __('SYSTEM: Real-time texting console loaded. Log in-game first to broadcast messages.') ?></div>
+                            <div class="chat-message-bubble system"><?= __('SYSTEM: Live lobby console active. Your messages appear in-game, and you\'ll see player joins/leaves here.') ?></div>
                         </div>
                         
                         <div class="chat-input-row" style="flex-direction:column; gap:10px;">

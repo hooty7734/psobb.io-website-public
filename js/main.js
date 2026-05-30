@@ -1075,6 +1075,13 @@ window.switchDashboardTab = function(tabId, clickedEl) {
         if (window.portalDropsInit) window.portalDropsInit();
     }
 
+    // Start/stop lobby feed polling based on chat tab visibility
+    if (tabId === 'tab-chat') {
+        if (window.startLobbyFeed) window.startLobbyFeed();
+    } else {
+        if (window.stopLobbyFeed) window.stopLobbyFeed();
+    }
+
     // Scroll to top on tab switch (mobile)
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
@@ -1651,11 +1658,7 @@ window.sendWebToGameMessage = async function() {
             statusMsg.style.display = 'block';
             input.value = '';
 
-            const bubble = document.createElement('div');
-            bubble.className = 'chat-message-bubble sent';
-            bubble.textContent = `[${charName}]: ${msg}`;
-            log.appendChild(bubble);
-            log.scrollTop = log.scrollHeight;
+            appendChatBubble('sent', `[${charName}]: ${msg}`);
         } else {
             throw new Error(data.error || 'Failed to send message.');
         }
@@ -1665,7 +1668,124 @@ window.sendWebToGameMessage = async function() {
         statusMsg.style.display = 'block';
     } finally {
         btn.disabled = false;
-        btn.textContent = 'Send';
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send';
+    }
+};
+
+// ---- Live Lobby Feed for Chat Console ----
+window._lobbyFeedInterval = null;
+window._lobbyFeedPlayers = new Set();
+window._lobbyFeedLastState = null;
+
+function appendChatBubble(type, text) {
+    const log = document.getElementById('chat-messages-log');
+    if (!log) return;
+    const bubble = document.createElement('div');
+    bubble.className = `chat-message-bubble ${type}`;
+    bubble.textContent = text;
+    log.appendChild(bubble);
+    // Keep only last 200 messages in DOM
+    while (log.children.length > 200) {
+        log.removeChild(log.firstChild);
+    }
+    log.scrollTop = log.scrollHeight;
+}
+
+function updateLobbyHeader(data) {
+    const header = document.getElementById('chat-lobby-header');
+    if (!header) return;
+
+    if (!data.online) {
+        header.innerHTML = '<span style="color:#ff4444;"><i class="fas fa-times-circle"></i> Offline — Log into the game to use chat</span>';
+        return;
+    }
+    if (!data.in_lobby) {
+        header.innerHTML = '<span style="color:#ffaa00;"><i class="fas fa-hourglass-half"></i> Connected as ' + data.character + ' — Joining lobby...</span>';
+        return;
+    }
+
+    const lobby = data.lobby || {};
+    let lobbyDesc = '';
+    if (lobby.is_game) {
+        lobbyDesc = `<span style="color:#00ff88;"><i class="fas fa-gamepad"></i> ${lobby.name || 'Game'}`;
+        if (lobby.difficulty) lobbyDesc += ` — ${lobby.difficulty}`;
+        if (lobby.episode) lobbyDesc += ` ${lobby.episode}`;
+        lobbyDesc += `</span>`;
+        if (lobby.quest) {
+            lobbyDesc += ` <span style="color:#ffaa00; font-size:0.8rem;"><i class="fas fa-scroll"></i> ${lobby.quest}</span>`;
+        }
+    } else {
+        lobbyDesc = `<span style="color:#00ffff;"><i class="fas fa-users"></i> Lobby</span>`;
+    }
+
+    const playerList = (data.players || []).map(p => {
+        const youTag = p.is_you ? ' (You)' : '';
+        return `<span style="color:${p.is_you ? '#00ff88' : '#ccc'}; font-size:0.75rem;">${p.name} Lv${p.level}${youTag}</span>`;
+    }).join(' · ');
+
+    header.innerHTML = lobbyDesc + '<div style="margin-top:4px;">' + playerList + '</div>';
+}
+
+async function pollLobbyFeed() {
+    try {
+        const res = await fetch('/api/get_lobby_feed.php', { credentials: 'same-origin' });
+        const data = await res.json();
+
+        updateLobbyHeader(data);
+
+        if (!data.online || !data.in_lobby) {
+            window._lobbyFeedPlayers.clear();
+            return;
+        }
+
+        const currentPlayers = new Set((data.players || []).map(p => p.name));
+
+        // Detect state changes (lobby switch)
+        const currentLobbyId = data.lobby?.id;
+        if (window._lobbyFeedLastState !== null && window._lobbyFeedLastState !== currentLobbyId) {
+            window._lobbyFeedPlayers.clear();
+            const lobbyName = data.lobby?.is_game ? (data.lobby.name || 'Game') : 'Lobby';
+            appendChatBubble('system', `SYSTEM: Moved to ${lobbyName}`);
+        }
+        window._lobbyFeedLastState = currentLobbyId;
+
+        // Detect joins
+        if (window._lobbyFeedPlayers.size > 0) {
+            for (const name of currentPlayers) {
+                if (!window._lobbyFeedPlayers.has(name)) {
+                    const player = (data.players || []).find(p => p.name === name);
+                    const cls = player ? ` (${player.class} Lv${player.level})` : '';
+                    appendChatBubble('system', `▶ ${name}${cls} joined`);
+                }
+            }
+            // Detect leaves
+            for (const name of window._lobbyFeedPlayers) {
+                if (!currentPlayers.has(name)) {
+                    appendChatBubble('system', `◀ ${name} left`);
+                }
+            }
+        } else if (currentPlayers.size > 0) {
+            // First load — show current lobby members
+            const names = (data.players || []).map(p => `${p.name} (Lv${p.level})`).join(', ');
+            appendChatBubble('system', `LOBBY: ${names}`);
+        }
+
+        window._lobbyFeedPlayers = currentPlayers;
+    } catch (e) {
+        // Silent fail — don't spam errors
+    }
+}
+
+window.startLobbyFeed = function() {
+    if (window._lobbyFeedInterval) return;
+    pollLobbyFeed(); // immediate first poll
+    window._lobbyFeedInterval = setInterval(pollLobbyFeed, 5000);
+};
+
+window.stopLobbyFeed = function() {
+    if (window._lobbyFeedInterval) {
+        clearInterval(window._lobbyFeedInterval);
+        window._lobbyFeedInterval = null;
     }
 };
 
