@@ -1,0 +1,24 @@
+{
+  "name": "PSOBB.io Companion App",
+  "short_name": "PSOBB Companion",
+  "description": "Premium Companion App & Hunters Guild hub for Phantasy Star Online Blue Burst.",
+  "start_url": "/login.php",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a0c10",
+  "theme_color": "#00ffff",
+  "icons": [
+    {
+      "src": "/img/steam_icon.png",
+      "sizes": "184x184",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/img/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -216,7 +216,7 @@ function showDashboard(user) {
             }
         }
 
-        // Populate dashboard
+        // Populate dashboard header
         const lastPlayer = (user.BBLicenses && user.BBLicenses.length > 0) ? user.BBLicenses[0].UserName : (user.LastPlayerName || 'Hunter');
 
         document.getElementById('dash-username-header').textContent = lastPlayer;
@@ -225,37 +225,40 @@ function showDashboard(user) {
 
         document.getElementById('dash-team').textContent = user.BBTeamID ? 'Team #' + user.BBTeamID : 'None';
 
-        const adminBtn = document.getElementById('admin-panel-btn');
-        const bountyBtn = document.getElementById('bounty-board-btn');
-        const lfgBtn = document.getElementById('lfg-panel-btn');
-        
-        if (user.isAdmin) {
-            if (adminBtn) adminBtn.style.display = 'block';
-            if (lfgBtn) lfgBtn.style.display = 'block';
-        } else {
-            if (adminBtn) adminBtn.style.display = 'none';
-            if (lfgBtn) lfgBtn.style.display = 'none';
-        }
-        
-        // Rewards Panel Button (all players)
-        const rewardsBtn = document.getElementById('rewards-panel-btn');
-        if (rewardsBtn) {
-            rewardsBtn.style.display = 'block';
+        // PWA Install check
+        const installCard = document.getElementById('pwa-install-card');
+        if (installCard && window.deferredPrompt) {
+            installCard.style.display = 'block';
         }
 
-        // Bounty Board Button (all players)
-        if (bountyBtn) {
-            bountyBtn.style.display = 'block';
-        }
-
-        // Section ID Change Logic
-        loadActiveCharacterSectionId(user.AccountID);
-
-        // Bank Swap Logic
-        loadCharacterBankSwitcher(user.AccountID);
-
-        // Load existing display name into the alias input
+        // Initialize display name alias
         loadDisplayName();
+
+        // Initialize system mail checkbox preference
+        loadSystemMailPref();
+
+        // Initialize milestone categories claim triggers inside portal
+        initClaimModalCategoryButtons();
+
+        // Initialize Backpack & Bank pre-selector dropdown and search bar listeners
+        const bankSelect = document.getElementById('viewer-bank-select');
+        if (bankSelect) {
+            bankSelect.onchange = (e) => {
+                window.activeBankIndex = parseInt(e.target.value);
+                renderActiveBank();
+            };
+        }
+
+        const searchInput = document.getElementById('viewer-bank-search');
+        if (searchInput) {
+            searchInput.oninput = (e) => {
+                filterBankGrid(e.target.value.toLowerCase());
+            };
+        }
+
+        // Load active character slot 0 dynamically
+        window.activeSlot = 0;
+        switchCharSlot(0);
     }
 }
 
@@ -974,3 +977,1250 @@ function handleGuideOverlayClick(e) {
         window.closePlayerGuideModal();
     }
 }
+
+// ==========================================================================
+// Progressive Web App (PWA) & Single-Page Application (SPA) Portal Controller
+// ==========================================================================
+
+window.deferredPrompt = null;
+window.activeSlot = 0;
+window.activeCharData = null;
+window.activeBankIndex = 0; // 0 = character, -1 = shared
+window.bankCache = {};
+window.currentClaimLevel = 0;
+
+// Intercept PWA Install Prompts
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    window.deferredPrompt = e;
+    // Show install card in Home/Hub if authenticated
+    const installCard = document.getElementById('pwa-install-card');
+    if (installCard && sessionStorage.getItem('psobb_user')) {
+        installCard.style.display = 'block';
+    }
+});
+
+// Trigger App Installation
+window.installPortalApp = async function() {
+    if (!window.deferredPrompt) {
+        alert('The installation prompt is not ready. If you are using an iOS device, please use "Add to Home Screen" from Safari\'s share menu.');
+        return;
+    }
+    window.deferredPrompt.prompt();
+    const { outcome } = await window.deferredPrompt.userChoice;
+    console.log(`[PWA] Install prompt outcome: ${outcome}`);
+    window.deferredPrompt = null;
+    const installCard = document.getElementById('pwa-install-card');
+    if (installCard) {
+        installCard.style.display = 'none';
+    }
+};
+
+// Switch Dashboard Tab Panes
+window.switchDashboardTab = function(tabId) {
+    document.querySelectorAll('.dashboard-tab-pane').forEach(pane => {
+        pane.classList.remove('active');
+    });
+    const target = document.getElementById(tabId);
+    if (target) target.classList.add('active');
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-tab') === tabId) {
+            btn.classList.add('active');
+        }
+    });
+
+    // Lazy load tab data
+    if (tabId === 'tab-banks') {
+        window.loadCharSlot(window.activeSlot || 0);
+    } else if (tabId === 'tab-guild') {
+        window.loadUnlocks();
+        window.loadStreak();
+    }
+};
+
+// Switch Character Slot
+window.switchCharSlot = function(slotIndex) {
+    window.activeSlot = slotIndex;
+    document.querySelectorAll('.slot-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (parseInt(btn.getAttribute('data-slot')) === slotIndex) {
+            btn.classList.add('active');
+        }
+    });
+    window.loadCharSlot(slotIndex);
+};
+
+// Load Character Data via API
+window.loadCharSlot = async function(slotIndex) {
+    const pane = document.getElementById('viewer-content-pane');
+    const loader = document.getElementById('viewer-loader');
+    if (pane) pane.style.opacity = '0.4';
+    if (loader) loader.style.display = 'block';
+
+    try {
+        const res = await fetch(`/api/character_viewer.php?slot=${slotIndex}`, { credentials: 'same-origin' });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            window.activeCharData = data.character;
+            window.bankCache[slotIndex] = data.character.bank.items;
+            window.bankCache['shared'] = data.character.shared_bank.items;
+
+            renderCharacterProfile();
+            renderInventory();
+            renderActiveBank();
+            populateChatCharacterSelect();
+            renderActiveCharacterSectionId(data.character);
+        } else {
+            throw new Error(data.error || 'Failed to sync character metadata.');
+        }
+    } catch (e) {
+        console.error(e);
+        const contentPane = document.getElementById('viewer-content-pane');
+        if (contentPane) {
+            contentPane.innerHTML = `<div style="text-align:center; padding:3rem; color:#ff4444; font-family:'Share Tech Mono',monospace;">⚠️ ${e.message}</div>`;
+        }
+    } finally {
+        if (pane) pane.style.opacity = '1';
+        if (loader) loader.style.display = 'none';
+    }
+};
+
+// Render Character Stats & Material SVGs
+function renderCharacterProfile() {
+    const c = window.activeCharData;
+    if (!c) return;
+
+    document.getElementById('char-profile-name').textContent = c.name;
+    document.getElementById('char-profile-level').textContent = `Lvl ${c.level}`;
+    document.getElementById('char-profile-playtime').textContent = `${c.play_time_hours} hrs`;
+
+    const onlineBadge = document.getElementById('char-profile-online');
+    if (onlineBadge) {
+        if (c.online) {
+            onlineBadge.innerHTML = '<span style="color: #00ffc8; text-shadow: 0 0 5px rgba(0,255,200,0.5);"><i class="fas fa-circle animate-pulse"></i> ONLINE</span>';
+        } else {
+            onlineBadge.innerHTML = '<span style="color: #666;"><i class="far fa-circle"></i> OFFLINE</span>';
+        }
+    }
+
+    const classBadge = document.getElementById('char-profile-class');
+    if (classBadge) classBadge.textContent = c.class;
+
+    const fallbackImg = document.getElementById('char-profile-avatar-fallback');
+    if (fallbackImg) {
+        fallbackImg.src = `/img/classes/${c.class.toLowerCase()}.png`;
+        fallbackImg.style.display = 'block';
+        fallbackImg.onerror = () => { fallbackImg.src = '/img/favicon.svg'; };
+    }
+
+    const secIdBadge = document.getElementById('char-profile-secid');
+    if (secIdBadge) {
+        secIdBadge.innerHTML = `
+            <img src="/img/section_ids/${c.section_id}.png" alt="${c.section_id}" style="width:20px; height:20px;">
+            <span class="section-id id-${c.section_id.toLowerCase()}" style="font-size:0.75rem; font-weight:bold; font-family:'Share Tech Mono',monospace;">${c.section_id}</span>
+        `;
+    }
+
+    // Populate stat rows
+    const stats = ['ATP', 'MST', 'EVP', 'HP', 'DFP', 'ATA', 'LCK'];
+    stats.forEach(s => {
+        const el = document.getElementById(`stat-val-${s.toLowerCase()}`);
+        if (el) el.textContent = c.stats[s];
+    });
+
+    // Material Gauges
+    const maxMats = (c.class.startsWith('HU') || c.class.startsWith('RA')) ? 250 : 150;
+    const hpMax = 125;
+    const tpMax = 125;
+
+    const setGaugeVal = (id, val, max) => {
+        const fill = document.getElementById(`gauge-fill-${id}`);
+        const text = document.getElementById(`gauge-val-${id}`);
+        if (fill) {
+            const pct = Math.min(100, (val / max) * 100);
+            const offset = 251.2 - (pct / 100) * 251.2;
+            fill.style.strokeDashoffset = offset;
+        }
+        if (text) text.textContent = val;
+    };
+
+    setGaugeVal('hp', c.mats.HP, hpMax);
+    setGaugeVal('tp', c.mats.TP, tpMax);
+
+    const consumedStats = parseInt(c.mats.Power) + parseInt(c.mats.Mind) + parseInt(c.mats.Evade) + parseInt(c.mats.Def) + parseInt(c.mats.Luck);
+    setGaugeVal('stats', consumedStats, maxMats);
+
+    document.getElementById('mat-val-hp').textContent = `${c.mats.HP} / ${hpMax}`;
+    document.getElementById('mat-val-tp').textContent = `${c.mats.TP} / ${tpMax}`;
+    document.getElementById('mat-val-stats').textContent = `${consumedStats} / ${maxMats}`;
+
+    document.getElementById('mat-val-power').textContent = c.mats.Power;
+    document.getElementById('mat-val-mind').textContent = c.mats.Mind;
+    document.getElementById('mat-val-evade').textContent = c.mats.Evade;
+    document.getElementById('mat-val-def').textContent = c.mats.Def;
+    document.getElementById('mat-val-luck').textContent = `${c.mats.Luck} / 45`;
+}
+
+// Render Backpack Inventory
+function renderInventory() {
+    const c = window.activeCharData;
+    if (!c || !c.inventory) return;
+
+    const gearSlots = {
+        'weapon': null, 'armor': null, 'shield': null, 
+        'unit1': null, 'unit2': null, 'unit3': null, 'unit4': null, 'mag': null
+    };
+    let unitCount = 1;
+
+    c.inventory.forEach(item => {
+        if (item.equipped) {
+            if (item.group === 0x00) {
+                gearSlots['weapon'] = item;
+            } else if (item.group === 0x01) {
+                if (item.name === 'Armor') gearSlots['armor'] = item;
+                else if (item.name === 'Shield') gearSlots['shield'] = item;
+                else if (item.name === 'Unit' && unitCount <= 4) {
+                    gearSlots[`unit${unitCount}`] = item;
+                    unitCount++;
+                }
+            } else if (item.group === 0x02) {
+                gearSlots['mag'] = item;
+            }
+        }
+    });
+
+    const equippedBox = document.getElementById('viewer-equipped-grid');
+    if (equippedBox) {
+        equippedBox.innerHTML = '';
+        Object.keys(gearSlots).forEach(key => {
+            equippedBox.appendChild(createItemSlotElement(gearSlots[key], key));
+        });
+    }
+
+    const backpackGrid = document.getElementById('viewer-backpack-grid');
+    if (backpackGrid) {
+        backpackGrid.innerHTML = '';
+        let count = 0;
+        for (let i = 0; i < 30; i++) {
+            const item = c.inventory[i] || null;
+            if (item) count++;
+            backpackGrid.appendChild(createItemSlotElement(item));
+        }
+        document.getElementById('viewer-backpack-count').textContent = `${count} / 30`;
+    }
+
+    setupTooltipTriggers();
+}
+
+// Render Bank Grid
+function renderActiveBank() {
+    const grid = document.getElementById('viewer-bank-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    const c = window.activeCharData;
+    if (!c) return;
+
+    const currentBank = window.activeBankIndex === -1 ? c.shared_bank : c.bank;
+    document.getElementById('viewer-bank-meseta').textContent = parseInt(currentBank.meseta).toLocaleString() + ' Meseta';
+
+    for (let i = 0; i < 200; i++) {
+        const item = currentBank.items[i] || null;
+        grid.appendChild(createItemSlotElement(item));
+    }
+
+    setupTooltipTriggers();
+
+    const searchInput = document.getElementById('viewer-bank-search');
+    if (searchInput && searchInput.value) {
+        filterBankGrid(searchInput.value.toLowerCase());
+    }
+}
+
+// Trigger Bank Swap
+window.triggerBankSwap = async function() {
+    const c = window.activeCharData;
+    const targetSelect = document.getElementById('viewer-bank-select');
+    const swapResult = document.getElementById('bank-swap-result-msg');
+    const swapBtn = document.getElementById('viewer-btn-swap-bank');
+    if (!c || !targetSelect || !swapResult || !swapBtn) return;
+
+    const targetBankIdx = parseInt(targetSelect.value);
+
+    swapBtn.disabled = true;
+    swapBtn.textContent = 'SWAPPING...';
+    swapResult.style.display = 'none';
+
+    try {
+        const response = await fetch('/api/bank_swap.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': window.getCSRFToken()
+            },
+            body: JSON.stringify({
+                character_name: c.name,
+                target_bank_index: targetBankIdx
+            })
+        });
+
+        const data = await response.json();
+        if (response.ok && data.success) {
+            swapResult.style.color = '#00ff88';
+            swapResult.textContent = `✓ ${data.message}`;
+            swapResult.style.display = 'block';
+            setTimeout(() => window.loadCharSlot(window.activeSlot), 2000);
+        } else {
+            throw new Error(data.error || 'Failed to swap bank.');
+        }
+    } catch (e) {
+        swapResult.style.color = '#ff4444';
+        swapResult.textContent = `⚠️ ${e.message}`;
+        swapResult.style.display = 'block';
+    } finally {
+        swapBtn.disabled = false;
+        swapBtn.textContent = 'Swap Bank in Game';
+    }
+};
+
+// Section ID change render
+function renderActiveCharacterSectionId(character) {
+    const secIdContainer = document.getElementById('section-id-change-container');
+    if (!secIdContainer) return;
+
+    let html = '';
+    if (character) {
+        html += `<p style="font-size:0.85rem; margin-bottom:8px; font-family:'Share Tech Mono',monospace;">Current Section ID: <strong class="section-id id-${character.section_id.toLowerCase()}">${character.section_id}</strong></p>`;
+        if (character.level > 50) {
+            html += `<p style="color: #ff4444; font-size:0.8rem; margin: 4px 0 0 0; font-weight:bold;">Only characters level 50 and below can change their Section ID.</p>`;
+            secIdContainer.innerHTML = html;
+            return;
+        }
+    }
+
+    const secIdInfo = {
+        'Viridia': 'Partisans, Shots',
+        'Greenill': 'Daggers, Rifles',
+        'Skyly': 'Swords, Sealed J-Sword',
+        'Bluefull': 'Partisans, Spread',
+        'Purplenum': 'Mechguns, Units',
+        'Pinkal': 'Wands, Force Weapons',
+        'Redria': 'Slicers, Armors, Balanced',
+        'Oran': 'Daggers, Handguns',
+        'Yellowboze': 'All Weapons, Meseta',
+        'Whitill': 'Slicers, High-end Rares'
+    };
+    const secIds = Object.keys(secIdInfo);
+
+    html += `
+        <div style="border: 1px solid rgba(0,255,255,0.2); background: rgba(0,0,0,0.5); padding: 12px; border-radius: 6px;">
+            <h4 style="margin-top: 0; margin-bottom:10px; color: #00ffff; font-family:'Share Tech Mono',monospace; font-size:0.95rem;"><i class="fas fa-arrows-spin"></i> Select New Section ID</h4>
+            <div class="section-id-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 12px;">
+                ${secIds.map((id) => `
+                    <label class="secid-option-lbl" style="cursor: pointer; text-align: center; display: flex; flex-direction: column; align-items: center; border: 1px solid ${id === character.section_id ? '#00ffff' : 'rgba(0,255,255,0.1)'}; padding: 4px 2px; border-radius: 4px; background: ${id === character.section_id ? 'rgba(0,255,255,0.1)' : 'transparent'}; transition: all 0.2s;" onclick="document.querySelectorAll('.secid-option-lbl').forEach(el=>{el.style.background='transparent';el.style.borderColor='rgba(0,255,255,0.1)'});this.style.background='rgba(0,255,255,0.1)';this.style.borderColor='#00ffff';">
+                        <input type="radio" name="new-section-id" value="${id}" style="display: none;" ${id === character.section_id ? 'checked' : ''}>
+                        <img src="/img/section_ids/${id}.png" alt="${id}" style="width: 20px; height: 20px; margin-bottom: 2px;">
+                        <span style="font-size: 0.65rem; font-weight: bold; color: #eee; font-family:'Share Tech Mono',monospace;">${id.substring(0,6)}</span>
+                    </label>
+                `).join('')}
+            </div>
+            <button id="btn-change-secid" onclick="triggerSectionIdChange()" class="dl-btn" style="width: 100%; border-color: #00ffff; background: rgba(0, 255, 255, 0.15); color: #00ffff; padding: 8px; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size:0.85rem;">Change Section ID</button>
+            <div id="secid-message" style="margin-top: 8px; display: none; font-weight: bold; font-size:0.8rem;"></div>
+        </div>
+    `;
+    secIdContainer.innerHTML = html;
+}
+
+window.triggerSectionIdChange = async function() {
+    const checked = document.querySelector('input[name="new-section-id"]:checked');
+    const c = window.activeCharData;
+    const msgEl = document.getElementById('secid-message');
+    const btn = document.getElementById('btn-change-secid');
+    if (!checked || !c || !msgEl || !btn) return;
+
+    const newSecId = checked.value;
+    btn.disabled = true;
+    btn.textContent = "Processing...";
+    msgEl.style.display = 'none';
+
+    try {
+        const response = await fetch('/api/change_section_id.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': window.getCSRFToken()
+            },
+            body: JSON.stringify({ character_name: c.name, new_section_id: newSecId })
+        });
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            msgEl.textContent = `✓ ${data.message}`;
+            msgEl.style.color = '#00C851';
+            msgEl.style.display = 'block';
+            btn.textContent = "Success";
+            setTimeout(() => window.loadCharSlot(window.activeSlot), 2000);
+        } else {
+            throw new Error(data.error || "Failed to change Section ID.");
+        }
+    } catch (e) {
+        msgEl.textContent = `⚠️ ${e.message}`;
+        msgEl.style.color = '#ff4444';
+        msgEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = "Change Section ID";
+    }
+};
+
+// Material Reset
+window.triggerMaterialReset = async function() {
+    const c = window.activeCharData;
+    const msgEl = document.getElementById('reset-mat-message');
+    if (!c || !msgEl) return;
+
+    const confirmed = confirm(`CAUTION: Are you sure you want to reset all consumed materials back to 0 for Character Slot ${window.activeSlot + 1} (${c.name})?\nThis will recalibrate ATP/MST/EVP/DFP/LCK stats and CANNOT be undone!`);
+    if (!confirmed) return;
+
+    msgEl.textContent = "Recalibrating stats...";
+    msgEl.style.color = "#ffaa00";
+    msgEl.style.display = "block";
+
+    try {
+        const res = await fetch('/api/reset_materials.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': window.getCSRFToken()
+            },
+            body: JSON.stringify({ slot: window.activeSlot })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            msgEl.style.color = "#00ff88";
+            msgEl.textContent = `✓ ${data.message}`;
+            setTimeout(() => window.loadCharSlot(window.activeSlot), 2000);
+        } else {
+            throw new Error(data.error || 'Failed to reset materials.');
+        }
+    } catch(e) {
+        msgEl.style.color = "#ff4444";
+        msgEl.textContent = `⚠️ ${e.message}`;
+    }
+};
+
+// Helper: item slot element creation
+function createItemSlotElement(item, label = '') {
+    const slotEl = document.createElement('div');
+    slotEl.className = 'item-slot';
+
+    if (item) {
+        slotEl.setAttribute('data-hex', item.hex);
+        
+        const nameLower = item.name.toLowerCase();
+        if (nameLower.includes('psycho wand') || nameLower.includes('sealed j-sword') || nameLower.includes('sato')) {
+            slotEl.classList.add('rare-red');
+        } else if (nameLower.includes('spread needle') || nameLower.includes('heaven punisher') || nameLower.includes('diwari')) {
+            slotEl.classList.add('rare-orange');
+        } else if (nameLower.includes('luminous field') || nameLower.includes('stand still') || nameLower.includes('photon')) {
+            slotEl.classList.add('rare-purple');
+        }
+
+        const imgEl = document.createElement('img');
+        imgEl.className = 'item-slot-icon';
+
+        let iconCat = 'tool';
+        if (item.group === 0x00) iconCat = 'weapon';
+        else if (item.group === 0x01) {
+            if (item.name === 'Armor') iconCat = 'armor';
+            else if (item.name === 'Shield') iconCat = 'shield';
+            else iconCat = 'unit';
+        } else if (item.group === 0x02) iconCat = 'mag';
+
+        imgEl.src = `/img/items/${iconCat}.png`;
+        imgEl.onerror = () => { imgEl.src = '/img/favicon.svg'; };
+        slotEl.appendChild(imgEl);
+
+        if (item.equipped) {
+            const eqBadge = document.createElement('span');
+            eqBadge.style = 'position:absolute; top:2px; right:2px; background:#00ff88; color:#000; font-size:0.5rem; font-weight:bold; padding:1px 3px; border-radius:2px;';
+            eqBadge.textContent = 'E';
+            slotEl.appendChild(eqBadge);
+        }
+    }
+
+    if (label) {
+        const lbl = document.createElement('span');
+        lbl.className = 'item-slot-label';
+        lbl.textContent = label;
+        slotEl.appendChild(lbl);
+    }
+
+    return slotEl;
+}
+
+// Tooltip mechanisms
+function setupTooltipTriggers() {
+    let tooltip = document.getElementById('viewer-tooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'viewer-tooltip';
+        tooltip.className = 'item-tooltip';
+        document.body.appendChild(tooltip);
+    }
+
+    document.querySelectorAll('.item-slot').forEach(slot => {
+        const hex = slot.getAttribute('data-hex');
+        if (!hex) return;
+
+        slot.onmouseenter = (e) => {
+            const item = findItemByHex(hex);
+            if (!item) return;
+
+            let statsHtml = '';
+            if (item.stats) {
+                Object.keys(item.stats).forEach(s => {
+                    statsHtml += `<div class="tooltip-stat-row"><span>${s}:</span><span class="tooltip-stat-val">${item.stats[s]}</span></div>`;
+                });
+            }
+
+            tooltip.innerHTML = `
+                <div class="tooltip-title">${item.name}</div>
+                ${statsHtml}
+                <div style="font-size:0.65rem; color:#666; margin-top:6px; font-family:monospace;">HEX: ${item.hex}</div>
+            `;
+            tooltip.style.display = 'block';
+        };
+
+        slot.onmousemove = (e) => {
+            tooltip.style.left = (e.pageX + 15) + 'px';
+            tooltip.style.top = (e.pageY + 15) + 'px';
+        };
+
+        slot.onmouseleave = () => {
+            tooltip.style.display = 'none';
+        };
+    });
+}
+
+function findItemByHex(hex) {
+    if (!window.activeCharData) return null;
+    
+    let found = window.activeCharData.inventory.find(i => i.hex === hex);
+    if (found) return found;
+
+    const currentBank = window.activeBankIndex === -1 ? window.activeCharData.shared_bank : window.activeCharData.bank;
+    found = currentBank.items.find(i => i && i.hex === hex);
+    return found;
+}
+
+function filterBankGrid(query) {
+    document.querySelectorAll('#viewer-bank-grid .item-slot').forEach(slot => {
+        const hex = slot.getAttribute('data-hex');
+        if (!hex) {
+            slot.style.opacity = '0.1';
+            return;
+        }
+        const item = findItemByHex(hex);
+        if (item && item.name.toLowerCase().includes(query)) {
+            slot.style.opacity = '1';
+        } else {
+            slot.style.opacity = '0.1';
+        }
+    });
+}
+
+// Chat select population
+function populateChatCharacterSelect() {
+    const select = document.getElementById('chat-character-select');
+    if (!select || !window.activeCharData) return;
+    
+    const charName = window.activeCharData.name;
+    let exists = false;
+    for (let i = 0; i < select.options.length; i++) {
+        if (select.options[i].value === charName) {
+            exists = true;
+            break;
+        }
+    }
+    if (!exists) {
+        const opt = document.createElement('option');
+        opt.value = charName;
+        opt.textContent = `${charName} (Lvl ${window.activeCharData.level})`;
+        select.appendChild(opt);
+    }
+    select.value = charName;
+}
+
+// Web-to-Game chat sender
+window.sendWebToGameMessage = async function() {
+    const select = document.getElementById('chat-character-select');
+    const input = document.getElementById('chat-message-input');
+    const statusMsg = document.getElementById('chat-status-message');
+    const log = document.getElementById('chat-messages-log');
+    const btn = document.getElementById('chat-send-btn');
+    if (!select || !input || !statusMsg || !log || !btn) return;
+
+    const charName = select.value;
+    const msg = input.value.trim();
+
+    if (!charName) {
+        statusMsg.style.color = '#ff4444';
+        statusMsg.textContent = '⚠️ Please select a character.';
+        statusMsg.style.display = 'block';
+        return;
+    }
+    if (!msg) {
+        statusMsg.style.color = '#ff4444';
+        statusMsg.textContent = '⚠️ Message cannot be empty.';
+        statusMsg.style.display = 'block';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    statusMsg.style.display = 'none';
+
+    try {
+        const response = await fetch('/api/send_chat_message.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': window.getCSRFToken()
+            },
+            body: JSON.stringify({
+                character_name: charName,
+                message: msg
+            })
+        });
+
+        const data = await response.json();
+        if (response.ok && data.success) {
+            statusMsg.style.color = '#00ff88';
+            statusMsg.textContent = `✓ Message sent to game!`;
+            statusMsg.style.display = 'block';
+            input.value = '';
+
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-message-bubble sent';
+            bubble.textContent = `[${charName}]: ${msg}`;
+            log.appendChild(bubble);
+            log.scrollTop = log.scrollHeight;
+        } else {
+            throw new Error(data.error || 'Failed to send message.');
+        }
+    } catch (e) {
+        statusMsg.style.color = '#ff4444';
+        statusMsg.textContent = `⚠️ ${e.message}`;
+        statusMsg.style.display = 'block';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send';
+    }
+};
+
+// System mail configurations pref
+window.loadSystemMailPref = function() {
+    const userStr = sessionStorage.getItem('psobb_user');
+    if (!userStr) return;
+    const user = JSON.parse(userStr);
+    const checkbox = document.getElementById('system-mail-toggle');
+    if (checkbox) {
+        checkbox.checked = (user.receive_system_mail !== 0);
+    }
+};
+
+window.toggleSystemMailPref = async function() {
+    const checkbox = document.getElementById('system-mail-toggle');
+    const userStr = sessionStorage.getItem('psobb_user');
+    if (!checkbox || !userStr) return;
+
+    const user = JSON.parse(userStr);
+    const enabled = checkbox.checked;
+
+    try {
+        const response = await fetch('/api/toggle_system_mail.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': window.getCSRFToken()
+            },
+            body: JSON.stringify({
+                receive_system_mail: enabled ? 1 : 0
+            })
+        });
+        const data = await response.json();
+        if (response.ok && data.success) {
+            user.receive_system_mail = enabled ? 1 : 0;
+            sessionStorage.setItem('psobb_user', JSON.stringify(user));
+            console.log(`[Preferences] System mail toggled successfully: ${enabled}`);
+        } else {
+            throw new Error(data.error);
+        }
+    } catch (e) {
+        console.error('System mail preferences update failed:', e);
+        checkbox.checked = !enabled;
+    }
+};
+
+// Milestone reward loading
+window.loadUnlocks = function() {
+    const container = document.getElementById('milestones-container');
+    const statusBox = document.getElementById('unlocks-status');
+    const charInfo = document.getElementById('character-info');
+    if (!container) return;
+
+    fetch('/api/get_unlocks.php', { credentials: 'same-origin' })
+        .then(res => {
+            if (res.status === 401) {
+                sessionStorage.removeItem('psobb_user');
+                window.location.reload();
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (data.error) throw new Error(data.error);
+
+            if (!data.is_online) {
+                if (statusBox) {
+                    statusBox.style.display = 'block';
+                    statusBox.className = 'alert-box';
+                    statusBox.innerHTML = `⚠️ ${data.message || "You must be online in-game to view and claim rewards on your character."}`;
+                }
+                container.innerHTML = '';
+                if (charInfo) charInfo.style.display = 'none';
+                return;
+            }
+
+            if (charInfo) {
+                charInfo.style.display = 'block';
+                document.getElementById('char-name').textContent = data.character.name;
+                document.getElementById('char-class').textContent = data.character.class;
+                document.getElementById('char-level').textContent = data.character.level;
+            }
+
+            if (!data.in_game) {
+                if (statusBox) {
+                    statusBox.style.display = 'block';
+                    statusBox.className = 'alert-box';
+                    statusBox.innerHTML = "⚠️ Character found in Lobby. <b>You must join or create a Game in-game to claim milestone rewards!</b>";
+                }
+            } else {
+                if (statusBox) statusBox.style.display = 'none';
+            }
+
+            renderMilestones(data.milestones, data.in_game);
+        })
+        .catch(err => {
+            if (statusBox) {
+                statusBox.style.display = 'block';
+                statusBox.className = 'alert-box';
+                statusBox.innerHTML = err.message;
+            }
+            container.innerHTML = '';
+        });
+};
+
+function renderMilestones(milestones, inGame) {
+    const container = document.getElementById('milestones-container');
+    if (!container) return;
+
+    if (!milestones || milestones.length === 0) {
+        container.innerHTML = '<p style="color: rgba(255,255,255,0.4); font-family:\'Share Tech Mono\',monospace;">You have not reached Level 5 yet. Keep hunting!</p>';
+        return;
+    }
+
+    container.innerHTML = '';
+    milestones.forEach(m => {
+        const card = document.createElement('div');
+        card.className = `milestone-card ${m.claimed ? 'claimed' : ''}`;
+
+        let btnHtml = '';
+        if (m.claimed) {
+            btnHtml = `<p style="color: #aa66cc; margin-top: 1.5rem; font-family: 'Share Tech Mono', monospace; text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);">CLAIMED:<br>${m.claimed_category}</p>`;
+        } else {
+            const disabledStr = !inGame ? 'disabled' : '';
+            btnHtml = `<button class="open-claim-btn" data-level="${m.level}" ${disabledStr}>Claim Reward</button>`;
+        }
+
+        card.innerHTML = `
+            <div class="milestone-level">Level ${m.level}</div>
+            ${btnHtml}
+        `;
+        container.appendChild(card);
+    });
+
+    document.querySelectorAll('.open-claim-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            if (!inGame) return;
+            window.currentClaimLevel = parseInt(e.target.getAttribute('data-level'));
+            const modal = document.getElementById('claim-modal');
+            const levelSpan = document.getElementById('modal-level');
+            const modalError = document.getElementById('modal-error');
+            if (modal && levelSpan && modalError) {
+                levelSpan.textContent = window.currentClaimLevel;
+                modalError.style.display = 'none';
+                modal.style.display = 'flex';
+            }
+        });
+    });
+}
+
+function initClaimModalCategoryButtons() {
+    const claimBtns = document.querySelectorAll('.claim-category-btn');
+    if (claimBtns.length === 0) return;
+
+    // Attach listeners once
+    claimBtns.forEach(btn => {
+        // Remove existing listener if any by cloning
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+
+        newBtn.addEventListener('click', (e) => {
+            const category = e.target.getAttribute('data-category');
+            const modal = document.getElementById('claim-modal');
+            const modalError = document.getElementById('modal-error');
+            if (modal) modal.style.display = 'none';
+
+            const overlay = document.getElementById('drop-animation-overlay');
+            const box = document.getElementById('drop-item-box');
+            const countdownEl = document.getElementById('countdown-text');
+            const thankYouText = document.getElementById('thank-you-text');
+
+            if (category === 'Random') {
+                box.className = 'drop-item-box green-box';
+            } else if (category === 'Armor' || category === 'Shield') {
+                box.className = 'drop-item-box blue-box';
+            } else if (category === 'Mag') {
+                box.className = 'drop-item-box teal-box';
+            } else if (category === 'Weapon') {
+                if (window.currentClaimLevel % 25 === 0) {
+                    box.className = 'drop-item-box';
+                } else {
+                    box.className = 'drop-item-box orange-box';
+                }
+            } else {
+                box.className = 'drop-item-box';
+            }
+
+            thankYouText.style.animation = 'none';
+            thankYouText.style.opacity = '0';
+
+            const newBox = box.cloneNode(true);
+            box.parentNode.replaceChild(newBox, box);
+
+            overlay.style.display = 'flex';
+
+            let count = 3;
+            countdownEl.style.display = 'block';
+            countdownEl.textContent = count;
+
+            const countdownInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownEl.textContent = count;
+                    countdownEl.style.transform = 'scale(1.5)';
+                    setTimeout(() => countdownEl.style.transform = 'scale(1)', 100);
+                } else if (count === 0) {
+                    countdownEl.style.transform = 'scale(1.5)';
+                    countdownEl.textContent = "DROPPING!";
+
+                    fetch('/api/claim_unlock.php', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: { 
+                            'Content-Type': 'application/json', 
+                            'X-CSRF-Token': window.getCSRFToken() 
+                        },
+                        body: JSON.stringify({ level: window.currentClaimLevel, category: category })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.error) {
+                            clearInterval(countdownInterval);
+                            overlay.style.display = 'none';
+                            if (modalError) {
+                                modalError.textContent = data.error;
+                                modalError.style.display = 'block';
+                            }
+                            if (modal) modal.style.display = 'flex';
+                        } else {
+                            countdownEl.style.display = 'none';
+                            thankYouText.style.animation = 'textDrop 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+                            createFireworks();
+
+                            setTimeout(() => {
+                                overlay.style.display = 'none';
+                                const statusBox = document.getElementById('unlocks-status');
+                                if (statusBox) {
+                                    statusBox.style.display = 'block';
+                                    statusBox.className = 'alert-box success';
+                                    statusBox.innerHTML = `🎉 <b>Success!</b> ${category} reward dropped inside your game room. Enjoy!`;
+                                }
+                                loadUnlocks();
+                            }, 3500);
+                        }
+                    })
+                    .catch(err => {
+                        clearInterval(countdownInterval);
+                        overlay.style.display = 'none';
+                        if (modalError) {
+                            modalError.textContent = "A connection error occurred.";
+                            modalError.style.display = 'block';
+                        }
+                        if (modal) modal.style.display = 'flex';
+                    });
+
+                    clearInterval(countdownInterval);
+                }
+            }, 1000);
+        });
+    });
+}
+
+function createFireworks() {
+    const overlay = document.getElementById('drop-animation-overlay');
+    const colors = ['#ff4444', '#33b5e5', '#00C851', '#ffaa00', '#aa66cc', '#ffffff'];
+
+    for (let b = 0; b < 6; b++) {
+        setTimeout(() => {
+            const centerX = window.innerWidth / 2 + (Math.random() - 0.5) * 600;
+            const centerY = window.innerHeight / 2 + (Math.random() - 0.5) * 500 - 150;
+
+            for (let i = 0; i < 80; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'absolute';
+                particle.style.left = centerX + 'px';
+                particle.style.top = centerY + 'px';
+                particle.style.width = (Math.random() * 8 + 4) + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.borderRadius = '50%';
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '9998';
+                particle.style.boxShadow = `0 0 15px ${particle.style.backgroundColor}, 0 0 30px ${particle.style.backgroundColor}`;
+
+                overlay.appendChild(particle);
+
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = 100 + Math.random() * 300;
+                const tx = Math.cos(angle) * velocity;
+                const ty = Math.sin(angle) * velocity;
+
+                particle.animate([
+                    { transform: 'translate(0,0) scale(1)', opacity: 1 },
+                    { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+                ], {
+                    duration: 1000 + Math.random() * 800,
+                    easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+                    fill: 'forwards'
+                });
+
+                setTimeout(() => { if (particle.parentNode) particle.remove(); }, 2000);
+            }
+        }, b * 300);
+    }
+}
+
+// Daily Streak Calendar claims
+window.loadStreak = function() {
+    fetch('/api/get_streak.php', { credentials: 'same-origin' })
+        .then(res => {
+            if (res.status === 401) {
+                sessionStorage.removeItem('psobb_user');
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (data.error) return;
+
+            document.getElementById('streak-count').textContent = data.streak;
+
+            const node365 = document.querySelector('.streak-node[data-day="365"] .streak-node-reward');
+            if (node365) {
+                node365.textContent = data.has_claimed_yahoo ? 'Rare Drop' : 'Yahoo! Mag';
+            }
+
+            const fillPct = Math.min((data.streak / 365) * 100, 100);
+            document.getElementById('streak-fill').style.width = fillPct + '%';
+
+            const nodes = document.querySelectorAll('.streak-node');
+            nodes.forEach(node => {
+                const day = parseInt(node.dataset.day);
+                node.classList.remove('reached', 'claimable', 'claimed');
+
+                if (data.claimed.includes(day)) {
+                    node.classList.add('claimed');
+                } else if (data.claimable.includes(day)) {
+                    node.classList.add('claimable');
+                } else if (data.streak >= day) {
+                    node.classList.add('reached');
+                }
+            });
+
+            // Streak Calendar
+            const claimsDiv = document.getElementById('streak-claims');
+            if (claimsDiv) {
+                claimsDiv.innerHTML = '';
+                const daysArray = Array.from({ length: 365 }, (_, i) => i + 1);
+                daysArray.forEach(m => {
+                    let rewardName = 'Monogrinder';
+                    let tierClass = 'tier-mono';
+                    
+                    if (m === 365) {
+                        rewardName = data.has_claimed_yahoo ? 'Rare Drop' : 'Yahoo! Mag';
+                        tierClass = 'tier-yahoo';
+                    } else if (m === 7 || m === 30 || m === 90 || m === 180 || m === 270) {
+                        rewardName = 'Random Mat';
+                        tierClass = 'tier-stat';
+                    } else if (m <= 30) {
+                        if (m % 5 === 0) {
+                            rewardName = 'Random Mat';
+                            tierClass = 'tier-stat';
+                        } else if (m % 3 === 0) {
+                            rewardName = 'Digrinder';
+                            tierClass = 'tier-dig';
+                        } else {
+                            rewardName = 'Monogrinder';
+                            tierClass = 'tier-mono';
+                        }
+                    } else if (m <= 90) {
+                        if (m % 5 === 0) {
+                            rewardName = 'Random Mat';
+                            tierClass = 'tier-stat';
+                        } else if (m % 3 === 0) {
+                            rewardName = 'Trigrinder';
+                            tierClass = 'tier-tri';
+                        } else {
+                            rewardName = 'Digrinder';
+                            tierClass = 'tier-dig';
+                        }
+                    } else if (m <= 180) {
+                        if (m % 4 === 0) {
+                            rewardName = 'Random Mat';
+                            tierClass = 'tier-stat';
+                        } else {
+                            rewardName = 'Trigrinder';
+                            tierClass = 'tier-tri';
+                        }
+                    } else {
+                        rewardName = 'Random Mat';
+                        tierClass = 'tier-stat';
+                    }
+
+                    const day = document.createElement('div');
+                    day.className = `streak-day ${tierClass}`;
+
+                    let stateHtml = '';
+                    if (data.claimed.includes(m)) {
+                        day.classList.add('day-claimed');
+                        stateHtml = '<span class="day-check">✓</span>';
+                    } else if (data.claimable.includes(m)) {
+                        day.classList.add('day-claimable');
+                        stateHtml = '<span class="claim-label">Claim</span>';
+                        day.addEventListener('click', () => claimStreak(m));
+                    } else if (data.streak >= m) {
+                        day.classList.add('day-reached');
+                    }
+
+                    day.innerHTML = `
+                        ${stateHtml}
+                        <div class="day-num">Day ${m}</div>
+                        <div class="day-reward">${rewardName}</div>
+                    `;
+                    claimsDiv.appendChild(day);
+                });
+            }
+
+            const dailyBtn = document.getElementById('daily-claim-btn');
+            const dailyResult = document.getElementById('daily-result');
+            if (dailyBtn) {
+                if (data.daily_claimed) {
+                    startDailyCountdown(dailyBtn, data.next_daily_reset, data.server_time);
+                } else if (!data.is_online) {
+                    dailyBtn.textContent = 'Log into the game first';
+                    dailyBtn.disabled = true;
+                } else {
+                    dailyBtn.disabled = false;
+                    dailyBtn.onclick = () => claimDaily();
+                }
+            }
+        })
+        .catch(err => console.error('Streak fetch error:', err));
+};
+
+function claimStreak(milestone) {
+    const overlay = document.getElementById('drop-animation-overlay');
+    const box = document.getElementById('drop-item-box');
+    const thankYouText = document.getElementById('thank-you-text');
+    const countdown = document.getElementById('countdown-text');
+    if (!overlay || !box || !thankYouText || !countdown) return;
+
+    box.className = 'drop-item-box green-box';
+    thankYouText.style.animation = 'none';
+    thankYouText.style.opacity = '0';
+
+    const newBox = box.cloneNode(true);
+    box.parentNode.replaceChild(newBox, box);
+    overlay.style.display = 'flex';
+
+    let count = 3;
+    countdown.textContent = count;
+    countdown.style.display = 'block';
+
+    const countInterval = setInterval(() => {
+        count--;
+        if (count > 0) {
+            countdown.textContent = count;
+            countdown.style.transform = 'scale(1.5)';
+            setTimeout(() => countdown.style.transform = 'scale(1)', 100);
+        } else {
+            clearInterval(countInterval);
+            countdown.style.transform = 'scale(1.5)';
+            countdown.textContent = 'DROPPING!';
+            setTimeout(() => { countdown.style.display = 'none'; }, 600);
+
+            fetch('/api/claim_streak.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.getCSRFToken() },
+                body: JSON.stringify({ milestone })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    overlay.style.display = 'none';
+                    alert(data.error);
+                } else {
+                    thankYouText.style.animation = 'textDrop 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+                    createFireworks();
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        window.loadStreak();
+                    }, 4000);
+                }
+            })
+            .catch(() => {
+                overlay.style.display = 'none';
+                alert('Connection error. Please try again.');
+            });
+        }
+    }, 1000);
+}
+
+function claimDaily() {
+    const dailyBtn = document.getElementById('daily-claim-btn');
+    const dailyResult = document.getElementById('daily-result');
+    if (!dailyBtn || !dailyResult) return;
+
+    dailyBtn.disabled = true;
+    dailyBtn.textContent = 'Preparing...';
+
+    const overlay = document.getElementById('drop-animation-overlay');
+    const box = document.getElementById('drop-item-box');
+    const thankYouText = document.getElementById('thank-you-text');
+    const countdown = document.getElementById('countdown-text');
+
+    box.className = 'drop-item-box teal-box';
+    thankYouText.style.animation = 'none';
+    thankYouText.style.opacity = '0';
+
+    const newBox = box.cloneNode(true);
+    box.parentNode.replaceChild(newBox, box);
+    overlay.style.display = 'flex';
+
+    let count = 3;
+    countdown.textContent = count;
+    countdown.style.display = 'block';
+
+    const countInterval = setInterval(() => {
+        count--;
+        if (count > 0) {
+            countdown.textContent = count;
+            countdown.style.transform = 'scale(1.5)';
+            setTimeout(() => countdown.style.transform = 'scale(1)', 100);
+        } else {
+            clearInterval(countInterval);
+            countdown.style.transform = 'scale(1.5)';
+            countdown.textContent = 'DROPPING!';
+            setTimeout(() => { countdown.style.display = 'none'; }, 600);
+
+            fetch('/api/claim_daily.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.getCSRFToken() },
+                body: JSON.stringify({})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    overlay.style.display = 'none';
+                    dailyBtn.disabled = false;
+                    dailyBtn.textContent = '🎲 Claim Daily Reward';
+                    dailyResult.style.display = 'block';
+                    dailyResult.style.color = '#ff4444';
+                    dailyResult.textContent = data.error;
+                } else {
+                    thankYouText.style.animation = 'textDrop 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+                    createFireworks();
+
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        dailyResult.style.display = 'block';
+                        dailyResult.style.color = '#00ff88';
+                        dailyResult.textContent = '🎉 ' + data.item + ' dropped in-game!';
+
+                        const nowUnix = Math.floor(Date.now() / 1000);
+                        const midnightEstimate = nowUnix + (86400 - (nowUnix % 86400));
+                        startDailyCountdown(dailyBtn, midnightEstimate, nowUnix);
+                    }, 4000);
+                }
+            })
+            .catch(() => {
+                overlay.style.display = 'none';
+                dailyBtn.disabled = false;
+                dailyBtn.textContent = '🎲 Claim Daily Reward';
+                dailyResult.style.display = 'block';
+                dailyResult.style.color = '#ff4444';
+                dailyResult.textContent = 'Connection error.';
+            });
+        }
+    }, 1000);
+}
+
+let dailyCountdownInterval = null;
+function startDailyCountdown(btn, resetTimestamp, serverTime) {
+    btn.disabled = true;
+    btn.style.borderColor = 'rgba(255,255,255,0.15)';
+    const offset = serverTime - Math.floor(Date.now() / 1000);
+
+    function updateCountdown() {
+        const nowServer = Math.floor(Date.now() / 1000) + offset;
+        const remaining = resetTimestamp - nowServer;
+
+        if (remaining <= 0) {
+            btn.textContent = '🎲 Claim Daily Reward';
+            btn.disabled = false;
+            btn.style.borderColor = '#00ff88';
+            if (dailyCountdownInterval) clearInterval(dailyCountdownInterval);
+            window.loadStreak();
+            return;
+        }
+
+        const hours = Math.floor(remaining / 3600);
+        const mins = Math.floor((remaining % 3600) / 60);
+        const secs = remaining % 60;
+        btn.textContent = `✓ Claimed — Next in ${hours}h ${mins}m ${secs}s`;
+    }
+
+    updateCountdown();
+    if (dailyCountdownInterval) clearInterval(dailyCountdownInterval);
+    dailyCountdownInterval = setInterval(updateCountdown, 1000);
+}
+

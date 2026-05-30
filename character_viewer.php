@@ -19,6 +19,8 @@ if (empty($_SESSION['user']) || empty($_SESSION['user']['account_id'])) {
 
 <!-- Import Modular Cyberpunk Styles and Javascript Controller -->
 <link rel="stylesheet" href="/css/character_viewer.css?v=<?= time() ?>">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="/js/character_3d_viewer.js?v=<?= time() ?>" defer></script>
 <script src="/js/character_viewer.js?v=<?= time() ?>" defer></script>
 
 <main class="container">
@@ -55,13 +57,20 @@ if (empty($_SESSION['user']) || empty($_SESSION['user']['account_id'])) {
                     
                     <!-- Col 1: Name, Class Avatar, Section ID -->
                     <div class="char-identity-panel">
-                        <img id="char-profile-avatar" src="/img/classes/humar.png" class="char-class-avatar" alt="Avatar">
+                        <!-- Glowing Holographic 3D scan container -->
+                        <div id="char-profile-avatar-container" class="char-avatar-container">
+                            <canvas id="char-profile-3d-canvas"></canvas>
+                            <img id="char-profile-avatar-fallback" src="/img/favicon.svg" class="char-class-avatar" style="display: none;">
+                        </div>
                         <h2 id="char-profile-name" class="char-name-title">--</h2>
                         <span id="char-profile-class" class="class-badge">--</span>
                         <div id="char-profile-online" style="margin-bottom: 0.75rem; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem;">--</div>
                         <div id="char-profile-secid" class="section-id-badge">
                             <!-- Populated dynamically -->
                         </div>
+                        <button id="viewer-btn-switch-char" class="dl-btn animate-pulse" style="display: none; margin-top: 1rem; width: 100%; font-family: 'Share Tech Mono', monospace; font-weight: bold; border-color: var(--pso-blue); background: rgba(0, 255, 255, 0.12); color: var(--pso-blue); padding: 8px 12px; font-size: 0.85rem;">
+                            <i class="fas fa-sync-alt"></i> <?= __('Switch Character') ?>
+                        </button>
                     </div>
 
                     <!-- Col 2: In-Game Stats -->
@@ -188,12 +197,24 @@ if (empty($_SESSION['user']) || empty($_SESSION['user']['account_id'])) {
                         <div id="viewer-equipped-grid" class="equipped-grid">
                             <!-- Injected dynamically via JS -->
                         </div>
+                        <div id="viewer-equipped-details" class="equipped-details-list" style="margin-top: 15px; border-top: 1px dashed rgba(0, 255, 255, 0.15); padding-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+                            <!-- Injected dynamically via JS -->
+                        </div>
                     </div>
 
                     <!-- Backpack inventory (30 slots) -->
                     <div class="viewer-card" style="flex: 1;">
-                        <h3 class="stats-header" style="margin-bottom: 1rem;"><i class="fas fa-briefcase"></i> <?= __('Backpack Inventory (30 slots)') ?></h3>
+                        <h3 class="stats-header" style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <span><i class="fas fa-briefcase"></i> <?= __('Backpack Inventory') ?></span>
+                            <div class="layout-toggle" data-target="backpack">
+                                <button class="toggle-btn active" data-view="grid"><i class="fas fa-th"></i> <?= __('Grid') ?></button>
+                                <button class="toggle-btn" data-view="list"><i class="fas fa-list"></i> <?= __('List') ?></button>
+                            </div>
+                        </h3>
                         <div id="viewer-backpack-grid" class="backpack-grid">
+                            <!-- Injected dynamically via JS -->
+                        </div>
+                        <div id="viewer-backpack-list" class="backpack-list-view" style="display: none;">
                             <!-- Injected dynamically via JS -->
                         </div>
                     </div>
@@ -210,7 +231,13 @@ if (empty($_SESSION['user']) || empty($_SESSION['user']['account_id'])) {
                                 <option value="-1"><?= __('Shared Bank') ?></option>
                             </select>
                         </div>
-                        <input type="text" id="viewer-bank-search" class="bank-search-input" placeholder="<?= __('🔍 Search bank items...') ?>">
+                        <div class="bank-control-right" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <div class="layout-toggle" data-target="bank">
+                                <button class="toggle-btn active" data-view="grid"><i class="fas fa-th"></i> <?= __('Grid') ?></button>
+                                <button class="toggle-btn" data-view="list"><i class="fas fa-list"></i> <?= __('List') ?></button>
+                            </div>
+                            <input type="text" id="viewer-bank-search" class="bank-search-input" placeholder="<?= __('🔍 Search bank items...') ?>">
+                        </div>
                     </div>
 
                     <!-- Meseta Display -->
@@ -219,8 +246,11 @@ if (empty($_SESSION['user']) || empty($_SESSION['user']['account_id'])) {
                         <strong id="viewer-bank-meseta" style="color: var(--pso-orange);">0 Meseta</strong>
                     </div>
 
-                    <!-- 200 Bank slots Grid layout -->
+                    <!-- 200 Bank slots Grid / List layouts -->
                     <div id="viewer-bank-grid" class="bank-grid">
+                        <!-- Injected dynamically via JS -->
+                    </div>
+                    <div id="viewer-bank-list" class="bank-list-view" style="display: none;">
                         <!-- Injected dynamically via JS -->
                     </div>
 

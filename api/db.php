@@ -75,6 +75,20 @@ function get_db()
             $db->exec("ALTER TABLE users ADD COLUMN display_name TEXT");
         }
 
+        // Ensure receive_system_mail column exists (QoL notification setting)
+        $hasReceiveSystemMail = false;
+        $result = $db->query("PRAGMA table_info(users)");
+        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+            if ($row['name'] === 'receive_system_mail') {
+                $hasReceiveSystemMail = true;
+                break;
+            }
+        }
+        $result->finalize();
+        if (!$hasReceiveSystemMail) {
+            $db->exec("ALTER TABLE users ADD COLUMN receive_system_mail INTEGER DEFAULT 1");
+        }
+
         // --- Auto-migration for Bounty/Missions & Streaks tables ---
         $db->exec("
             CREATE TABLE IF NOT EXISTS missions (

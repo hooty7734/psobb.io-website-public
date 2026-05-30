@@ -26,14 +26,20 @@ function send_personal_mail($client_acc_id, $from_name, $text)
 
     $date_str = date('Y-m-d H:i:s');
 
-    // Fetch target player's language preference from the database
+    // Fetch target player's settings from the database
     $marker = "\tE"; // Default to English
     if (function_exists('get_db')) {
         try {
             $db = get_db();
-            $stmt = $db->prepare("SELECT language FROM users WHERE account_id = :acc LIMIT 1");
+            $stmt = $db->prepare("SELECT language, receive_system_mail FROM users WHERE account_id = :acc LIMIT 1");
             $stmt->bindValue(':acc', $client_acc_id, SQLITE3_INTEGER);
             $row = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
+            
+            // Check system mail opt-out preference
+            if ($row && isset($row['receive_system_mail']) && (int)$row['receive_system_mail'] === 0) {
+                return; // Player has opted out of system mails. Silence immediately.
+            }
+            
             if ($row && isset($row['language']) && strtolower(trim($row['language'])) === 'jp') {
                 $marker = "\tJ";
             }

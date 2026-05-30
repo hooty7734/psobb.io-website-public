@@ -1474,3 +1474,664 @@ footer {
     background: rgba(0, 255, 255, 0.6);
 }
 
+/* Premium Cyberpunk SPA Player Portal Styles */
+.portal-tabs-nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 2rem;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    border-bottom: 2px solid rgba(0, 255, 255, 0.15);
+}
+
+.portal-tab-btn {
+    background: rgba(0, 255, 255, 0.05);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    color: rgba(0, 255, 255, 0.7);
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: bold;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.portal-tab-btn:hover {
+    border-color: var(--pso-blue);
+    color: var(--pso-blue);
+    background: rgba(0, 255, 255, 0.1);
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.portal-tab-btn.active {
+    background: rgba(0, 255, 255, 0.2);
+    border-color: var(--pso-blue);
+    color: var(--pso-blue);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+
+.portal-tab-pane {
+    display: none;
+    animation: fadeInUp 0.4s ease forwards;
+}
+
+.portal-tab-pane.active {
+    display: block;
+}
+
+/* Glowing PWA Install Card */
+.pwa-install-card {
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.05) 0%, rgba(0, 255, 255, 0.15) 100%);
+    border: 1px solid var(--pso-blue);
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.1), inset 0 0 20px rgba(0, 255, 255, 0.05);
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    animation: pulseGlow 3s infinite alternate;
+}
+
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 15px rgba(0, 255, 255, 0.1); }
+    100% { box-shadow: 0 0 25px rgba(0, 255, 255, 0.25); }
+}
+
+.pwa-install-info h3 {
+    margin-top: 0;
+    color: var(--pso-blue);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.25rem;
+    margin-bottom: 5px;
+}
+
+.pwa-install-info p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: rgba(224, 240, 255, 0.85);
+}
+
+.pwa-install-btn {
+    border-color: var(--pso-blue);
+    background: rgba(0, 255, 255, 0.2);
+    color: var(--pso-blue);
+    font-size: 1rem;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+}
+
+/* Web-to-Game Console Styles */
+.chat-portal-container {
+    background: rgba(0, 10, 20, 0.6);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.chat-character-select-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed rgba(0, 255, 255, 0.2);
+    padding-bottom: 10px;
+}
+
+.chat-character-select-row label {
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--pso-blue);
+    font-weight: bold;
+}
+
+.chat-character-select-row select {
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    color: #fff;
+    border-radius: 4px;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+.chat-messages-log {
+    height: 250px;
+    overflow-y: auto;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 4px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.chat-message-bubble {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 12px;
+    border-radius: 6px;
+    max-width: 85%;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.chat-message-bubble.sent {
+    background: rgba(0, 255, 255, 0.1);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    align-self: flex-end;
+    color: #00ffff;
+}
+
+.chat-message-bubble.system {
+    background: rgba(255, 170, 0, 0.08);
+    border: 1px solid rgba(255, 170, 0, 0.2);
+    align-self: center;
+    color: #ffaa00;
+    text-align: center;
+    max-width: 100%;
+    font-size: 0.8rem;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+.chat-input-row {
+    display: flex;
+    gap: 8px;
+}
+
+.chat-input-row input {
+    flex: 1;
+    padding: 12px;
+    background: rgba(0,0,0,0.8);
+    border: 1px solid rgba(0,255,255,0.3);
+    color: #fff;
+    border-radius: 4px;
+    font-size: 0.95rem;
+}
+
+.chat-input-row input:focus {
+    border-color: var(--pso-blue);
+    outline: none;
+    box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+}
+
+.chat-send-btn {
+    border-color: var(--pso-blue);
+    background: rgba(0, 255, 255, 0.15);
+    color: var(--pso-blue);
+    padding: 10px 20px;
+    font-weight: bold;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+/* Material Gauges Grid & Reset Box */
+.material-gauges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.material-gauge-card {
+    background: rgba(0, 10, 20, 0.5);
+    border: 1px solid rgba(0, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 1.25rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.material-gauge-card h4 {
+    margin: 0;
+    color: #eee;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.05rem;
+    letter-spacing: 0.5px;
+}
+
+.gauge-circle-container {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+
+.gauge-svg {
+    transform: rotate(-90deg);
+}
+
+.gauge-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.05);
+    stroke-width: 8;
+}
+
+.gauge-fill {
+    fill: none;
+    stroke: var(--pso-blue);
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.6s ease;
+}
+
+.gauge-fill.hp { stroke: #ff4444; }
+.gauge-fill.tp { stroke: #aa66cc; }
+.gauge-fill.stats { stroke: #00ffcc; }
+
+.gauge-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: #fff;
+    text-align: center;
+    line-height: 1.1;
+}
+
+.gauge-value small {
+    display: block;
+    font-size: 0.6rem;
+    color: rgba(255,255,255,0.4);
+    margin-top: 2px;
+}
+
+.mat-details-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.8rem;
+    border-top: 1px dashed rgba(255,255,255,0.08);
+    padding-top: 8px;
+    margin-top: 5px;
+}
+
+.mat-detail-row {
+    display: flex;
+    justify-content: space-between;
+    color: rgba(255,255,255,0.7);
+}
+
+.mat-detail-val {
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: bold;
+    color: #fff;
+}
+
+.mat-reset-box {
+    background: rgba(255, 68, 68, 0.03);
+    border: 1px solid rgba(255, 68, 68, 0.2);
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+.mat-reset-box h3 {
+    margin-top: 0;
+    color: #ff4444;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.15rem;
+    margin-bottom: 5px;
+}
+
+.mat-reset-box p {
+    margin: 0 0 1rem;
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.4;
+}
+
+.mat-reset-btn {
+    border-color: #ff4444;
+    background: rgba(255, 68, 68, 0.15);
+    color: #ff4444;
+    padding: 10px 24px;
+    font-size: 0.95rem;
+}
+
+.mat-reset-btn:hover {
+    background: #ff4444;
+    color: #000;
+    box-shadow: 0 0 15px rgba(255, 68, 68, 0.5);
+}
+
+/* Custom Notification Toggle Switch */
+.switch-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 255, 255, 0.03);
+    border: 1px solid rgba(0, 255, 255, 0.15);
+    padding: 12px 15px;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+}
+
+.switch-label-block h4 {
+    margin: 0 0 3px 0;
+    color: #fff;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1rem;
+}
+
+.switch-label-block p {
+    margin: 0;
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.5);
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+    flex-shrink: 0;
+}
+
+.switch input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #333;
+    transition: .4s;
+    border-radius: 34px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #888;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: rgba(0, 255, 255, 0.2);
+    border-color: var(--pso-blue);
+}
+
+input:checked + .slider:before {
+    transform: translateX(24px);
+    background-color: var(--pso-blue);
+    box-shadow: 0 0 8px var(--pso-blue);
+}
+
+/* Dashboard Tab System */
+.dashboard-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid rgba(0, 255, 255, 0.15);
+    padding-bottom: 10px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+.dashboard-tabs::-webkit-scrollbar {
+    height: 4px;
+}
+.dashboard-tabs::-webkit-scrollbar-thumb {
+    background: var(--pso-blue);
+    border-radius: 2px;
+}
+.tab-btn {
+    border-color: rgba(0, 255, 255, 0.3);
+    background: rgba(0, 10, 20, 0.6);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 10px 18px;
+    font-size: 0.9rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: bold;
+    white-space: nowrap;
+    transition: all 0.2s ease-in-out;
+}
+.tab-btn:hover {
+    border-color: var(--pso-blue);
+    color: #fff;
+    background: rgba(0, 255, 255, 0.08);
+}
+.tab-btn.active {
+    border-color: var(--pso-blue);
+    background: rgba(0, 255, 255, 0.15);
+    color: var(--pso-blue);
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+}
+.dashboard-tab-pane {
+    display: none;
+    animation: dashboardFadeIn 0.4s ease;
+}
+.dashboard-tab-pane.active {
+    display: block;
+}
+
+@keyframes dashboardFadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Character Slots Selection */
+.character-slots-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
+.slot-btn {
+    border-color: rgba(255,255,255,0.15);
+    background: rgba(0,0,0,0.4);
+    color: rgba(255,255,255,0.6);
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+.slot-btn:hover {
+    border-color: rgba(0,255,255,0.5);
+    color: #fff;
+    background: rgba(0,255,255,0.05);
+}
+.slot-btn.active {
+    border-color: var(--pso-blue);
+    background: rgba(0, 255, 255, 0.1);
+    color: var(--pso-blue);
+    box-shadow: 0 0 8px rgba(0, 255, 255, 0.15);
+}
+
+/* Character Viewer & Bank Grids Layout */
+.char-banks-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+@media (max-width: 900px) {
+    .char-banks-grid {
+        grid-template-columns: 1fr;
+    }
+}
+.equipped-gear-box {
+    background: rgba(0, 10, 20, 0.4);
+    border: 1px solid rgba(0, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+.equipped-grid-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+.item-slot {
+    aspect-ratio: 1;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+.item-slot:hover {
+    border-color: var(--pso-blue);
+    box-shadow: 0 0 8px rgba(0, 255, 255, 0.25);
+    background: rgba(0, 255, 255, 0.05);
+}
+.item-slot-icon {
+    max-width: 80%;
+    max-height: 80%;
+    object-fit: contain;
+    filter: drop-shadow(0 0 5px rgba(255,255,255,0.2));
+}
+.item-slot.rare-red { border-color: #ff4444; box-shadow: inset 0 0 8px rgba(255, 68, 68, 0.15); }
+.item-slot.rare-red:hover { box-shadow: 0 0 10px rgba(255, 68, 68, 0.4), inset 0 0 10px rgba(255, 68, 68, 0.2); }
+.item-slot.rare-orange { border-color: #ffaa00; box-shadow: inset 0 0 8px rgba(255, 170, 0, 0.15); }
+.item-slot.rare-orange:hover { box-shadow: 0 0 10px rgba(255, 170, 0, 0.4), inset 0 0 10px rgba(255, 170, 0, 0.2); }
+.item-slot.rare-purple { border-color: #aa66cc; box-shadow: inset 0 0 8px rgba(170, 102, 204, 0.15); }
+.item-slot.rare-purple:hover { box-shadow: 0 0 10px rgba(170, 102, 204, 0.4), inset 0 0 10px rgba(170, 102, 204, 0.2); }
+
+.item-slot-label {
+    position: absolute;
+    bottom: 2px;
+    font-size: 0.55rem;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    font-weight: bold;
+    pointer-events: none;
+}
+
+/* Tooltip Styling */
+.item-tooltip {
+    position: absolute;
+    display: none;
+    z-index: 10000;
+    background: rgba(0, 5, 10, 0.95);
+    border: 1px solid var(--pso-blue);
+    border-radius: 6px;
+    padding: 12px;
+    max-width: 320px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 255, 255, 0.2);
+    pointer-events: none;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #eee;
+}
+.tooltip-title {
+    font-weight: bold;
+    font-size: 0.95rem;
+    color: #fff;
+    border-bottom: 1px dashed rgba(255,255,255,0.2);
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+}
+.tooltip-stat-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.7);
+}
+.tooltip-stat-val {
+    color: #00ffff;
+    font-weight: bold;
+}
+
+/* Backpack & Bank Grids */
+.item-grid-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.1rem;
+    color: #eee;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.backpack-grid-box {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 6px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 2rem;
+}
+.bank-grid-box {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 6px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 6px;
+    padding: 10px;
+    max-height: 450px;
+    overflow-y: auto;
+}
+@media (max-width: 600px) {
+    .backpack-grid-box, .bank-grid-box {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+/* PWA App Install Card styling */
+.pwa-install-card {
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.08) 0%, rgba(0, 255, 255, 0.02) 100%);
+    border: 1px solid var(--pso-blue);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+}
+.pwa-install-btn {
+    border-color: var(--pso-blue);
+    background: rgba(0, 255, 255, 0.15);
+    color: var(--pso-blue);
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+    font-family: 'Share Tech Mono', monospace;
+}
+.pwa-install-btn:hover {
+    background: var(--pso-blue);
+    color: #000;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+}
+
+
+

@@ -63,35 +63,35 @@ include 'includes/header.php';
                                 <div id="streak-fill" class="streak-fill" style="width: 0%;"></div>
                             </div>
                             <div class="streak-nodes">
-                                <div class="streak-node" data-day="3" data-milestone="3">
-                                    <div class="streak-node-dot"></div>
-                                    <div class="streak-node-label">3 Days</div>
-                                    <div class="streak-node-reward">Monogrinder</div>
-                                </div>
                                 <div class="streak-node" data-day="7" data-milestone="7">
                                     <div class="streak-node-dot"></div>
                                     <div class="streak-node-label">7 Days</div>
-                                    <div class="streak-node-reward">Stat Mat</div>
-                                </div>
-                                <div class="streak-node" data-day="14" data-milestone="14">
-                                    <div class="streak-node-dot"></div>
-                                    <div class="streak-node-label">14 Days</div>
-                                    <div class="streak-node-reward">Stat Mat</div>
-                                </div>
-                                <div class="streak-node" data-day="21" data-milestone="21">
-                                    <div class="streak-node-dot"></div>
-                                    <div class="streak-node-label">21 Days</div>
-                                    <div class="streak-node-reward">Stat Mat</div>
-                                </div>
-                                <div class="streak-node" data-day="28" data-milestone="28">
-                                    <div class="streak-node-dot"></div>
-                                    <div class="streak-node-label">28 Days</div>
-                                    <div class="streak-node-reward">Stat Mat</div>
+                                    <div class="streak-node-reward">Random Mat</div>
                                 </div>
                                 <div class="streak-node" data-day="30" data-milestone="30">
                                     <div class="streak-node-dot"></div>
                                     <div class="streak-node-label">30 Days</div>
-                                    <div class="streak-node-reward">Trigrinder</div>
+                                    <div class="streak-node-reward">Random Mat</div>
+                                </div>
+                                <div class="streak-node" data-day="90" data-milestone="90">
+                                    <div class="streak-node-dot"></div>
+                                    <div class="streak-node-label">90 Days</div>
+                                    <div class="streak-node-reward">Random Mat</div>
+                                </div>
+                                <div class="streak-node" data-day="180" data-milestone="180">
+                                    <div class="streak-node-dot"></div>
+                                    <div class="streak-node-label">180 Days</div>
+                                    <div class="streak-node-reward">Random Mat</div>
+                                </div>
+                                <div class="streak-node" data-day="270" data-milestone="270">
+                                    <div class="streak-node-dot"></div>
+                                    <div class="streak-node-label">270 Days</div>
+                                    <div class="streak-node-reward">Random Mat</div>
+                                </div>
+                                <div class="streak-node" data-day="365" data-milestone="365">
+                                    <div class="streak-node-dot"></div>
+                                    <div class="streak-node-label">365 Days</div>
+                                    <div class="streak-node-reward">Yahoo! Mag</div>
                                 </div>
                             </div>
                         </div>
@@ -273,8 +273,8 @@ include 'includes/header.php';
         /* Streak Calendar Grid */
         .streak-calendar {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 8px;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 6px;
         }
         .streak-day {
             position: relative;
@@ -313,6 +313,8 @@ include 'includes/header.php';
         .streak-day.tier-stat .day-reward { color: rgba(170, 102, 204, 0.4); }
         .streak-day.tier-tri { border-color: rgba(255, 215, 0, 0.15); }
         .streak-day.tier-tri .day-reward { color: rgba(255, 215, 0, 0.5); }
+        .streak-day.tier-yahoo { border-color: rgba(0, 200, 200, 0.2); }
+        .streak-day.tier-yahoo .day-reward { color: rgba(0, 200, 200, 0.6); }
 
         /* Claimed state */
         .streak-day.day-claimed {
@@ -369,17 +371,30 @@ include 'includes/header.php';
         }
         .streak-day.day-reached .day-num { color: rgba(255, 170, 0, 0.6); }
 
-        /* Day 30 final reward highlight */
-        .streak-day.tier-tri.day-claimable {
-            border-color: rgba(255, 215, 0, 0.6);
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 140, 0, 0.08));
-            animation: day-pulse-gold 2s ease-in-out infinite;
+        /* Random Material reward highlight when claimable */
+        .streak-day.tier-stat.day-claimable {
+            border-color: rgba(170, 102, 204, 0.6);
+            background: linear-gradient(135deg, rgba(170, 102, 204, 0.12), rgba(200, 150, 255, 0.06));
+            animation: day-pulse-stat 2s ease-in-out infinite;
         }
-        .streak-day.tier-tri.day-claimable .day-reward { color: #ffd700; }
-        .streak-day.tier-tri.day-claimable .claim-label { color: #ffd700; text-shadow: 0 0 8px rgba(255, 215, 0, 0.5); }
-        @keyframes day-pulse-gold {
-            0%, 100% { box-shadow: 0 0 8px rgba(255, 215, 0, 0.15); }
-            50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.35); }
+        .streak-day.tier-stat.day-claimable .day-reward { color: #aa66cc; }
+        .streak-day.tier-stat.day-claimable .claim-label { color: #aa66cc; text-shadow: 0 0 8px rgba(170, 102, 204, 0.5); }
+        @keyframes day-pulse-stat {
+            0%, 100% { box-shadow: 0 0 8px rgba(170, 102, 204, 0.15); }
+            50% { box-shadow: 0 0 20px rgba(170, 102, 204, 0.4); }
+        }
+
+        /* Day 365 final reward highlight */
+        .streak-day.tier-yahoo.day-claimable {
+            border-color: rgba(0, 200, 200, 0.6);
+            background: linear-gradient(135deg, rgba(0, 200, 200, 0.12), rgba(0, 255, 204, 0.06));
+            animation: day-pulse-yahoo 2s ease-in-out infinite;
+        }
+        .streak-day.tier-yahoo.day-claimable .day-reward { color: #00c8c8; }
+        .streak-day.tier-yahoo.day-claimable .claim-label { color: #00c8c8; text-shadow: 0 0 8px rgba(0, 200, 200, 0.5); }
+        @keyframes day-pulse-yahoo {
+            0%, 100% { box-shadow: 0 0 8px rgba(0, 200, 200, 0.15); }
+            50% { box-shadow: 0 0 20px rgba(0, 200, 200, 0.4); }
         }
 
         /* Streak claim button (kept for daily reward section) */
@@ -413,8 +428,8 @@ include 'includes/header.php';
 
         @media (max-width: 600px) {
             .streak-calendar {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 6px;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 5px;
             }
             .streak-bar-wrapper {
                 overflow-x: auto;

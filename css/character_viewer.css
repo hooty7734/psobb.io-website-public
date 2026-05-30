@@ -129,6 +129,32 @@
     transform: scale(1.08);
 }
 
+.char-avatar-container {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    margin-bottom: 1rem;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px dashed rgba(0, 255, 255, 0.3);
+    border-radius: 6px;
+    box-shadow: inset 0 0 15px rgba(0, 255, 255, 0.08), 0 0 15px rgba(0, 255, 255, 0.05);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#char-profile-3d-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: grab;
+}
+
+#char-profile-3d-canvas:active {
+    cursor: grabbing;
+}
+
 .char-name-title {
     font-size: 1.6rem;
     font-weight: 700;
@@ -518,6 +544,233 @@
 }
 
 .bank-grid::-webkit-scrollbar-thumb:hover {
+    background: var(--pso-blue);
+}
+
+/* Layout Switch Toggles */
+.layout-toggle {
+    display: inline-flex;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    padding: 2px;
+}
+
+.toggle-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 4px 10px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.toggle-btn:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.05);
+}
+
+.toggle-btn.active {
+    color: #000;
+    background: var(--pso-blue);
+    font-weight: bold;
+    box-shadow: 0 0 5px var(--pso-blue-glow);
+}
+
+/* Equipped details inspector styling */
+.equipped-detail-row {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.equipped-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.equipped-slot-label {
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--pso-blue);
+    font-size: 0.75rem;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+.equipped-item-name {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #fff;
+}
+
+.equipped-item-props {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+}
+
+.mag-pbs-list {
+    width: 100%;
+    color: var(--pso-orange);
+    font-size: 0.7rem;
+    margin-top: 2px;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+.mag-stat-summary {
+    color: #aaa;
+    margin-left: 2px;
+}
+
+/* Attributes Badges and Tags */
+.badge {
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: #eee;
+}
+
+.badge-native { border-color: rgba(0, 168, 107, 0.3); background: rgba(0, 168, 107, 0.12); color: #00ff88; }
+.badge-abeast { border-color: rgba(255, 170, 0, 0.3); background: rgba(255, 170, 0, 0.12); color: #ffaa00; }
+.badge-machine { border-color: rgba(255, 94, 91, 0.3); background: rgba(255, 94, 91, 0.12); color: #ff5e5b; }
+.badge-dark { border-color: rgba(155, 93, 229, 0.3); background: rgba(155, 93, 229, 0.12); color: #d78eff; }
+.badge-hit { border-color: rgba(0, 255, 255, 0.4); background: rgba(0, 255, 255, 0.15); color: #00ffff; text-shadow: 0 0 4px var(--pso-blue-glow); }
+.badge-slots { border-color: rgba(255, 209, 102, 0.3); background: rgba(255, 209, 102, 0.12); color: #ffd166; }
+.badge-def { border-color: rgba(255, 255, 255, 0.15); color: #ccc; }
+.badge-evp { border-color: rgba(255, 159, 28, 0.3); background: rgba(255, 159, 28, 0.12); color: #ff9f1c; }
+.badge-unit { border-color: rgba(46, 196, 182, 0.3); background: rgba(46, 196, 182, 0.12); color: #2ec4b6; }
+.badge-level { border-color: rgba(0, 255, 255, 0.3); background: rgba(0, 255, 255, 0.08); color: var(--pso-blue); }
+.badge-synchro { border-color: rgba(255, 255, 255, 0.08); color: #999; }
+.badge-iq { border-color: rgba(255, 255, 255, 0.08); color: #999; }
+.badge-qty { border-color: rgba(255, 255, 255, 0.1); background: rgba(0,0,0,0.3); color: #fff; }
+
+/* Rare Item text coloring */
+.rare-red-text { color: #ff4444 !important; text-shadow: 0 0 5px rgba(255,68,68,0.3); }
+.rare-orange-text { color: #ffaa00 !important; text-shadow: 0 0 5px rgba(255,170,0,0.3); }
+.rare-purple-text { color: #ba55d3 !important; text-shadow: 0 0 5px rgba(186,85,211,0.3); }
+
+/* Classic table list view spreadsheet */
+.backpack-list-view, .bank-list-view {
+    max-height: 480px;
+    overflow-y: auto;
+    border: 1px solid var(--pso-border-color);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.4);
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+    margin-top: 10px;
+}
+
+.classic-list-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    color: #ccc;
+    text-align: left;
+}
+
+.classic-list-table th {
+    background: rgba(0, 255, 255, 0.12);
+    color: var(--pso-blue);
+    padding: 10px 14px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 2px solid var(--pso-blue);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.classic-list-table td {
+    padding: 8px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    vertical-align: middle;
+}
+
+.list-item-row:hover {
+    background: rgba(0, 255, 255, 0.03);
+}
+
+.list-item-row.empty-row:hover {
+    background: transparent;
+}
+
+.list-item-identity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.list-item-emoji {
+    font-size: 1rem;
+    filter: drop-shadow(0 0 3px rgba(255,255,255,0.1));
+}
+
+.list-item-name-text {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+    color: #fff;
+}
+
+.list-item-equipped-pill {
+    font-size: 0.6rem;
+    font-weight: bold;
+    color: #000;
+    background: var(--pso-blue);
+    padding: 1px 4px;
+    border-radius: 3px;
+    margin-left: 5px;
+    letter-spacing: 0.5px;
+}
+
+.list-item-specs-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.spec-dim {
+    color: #666;
+    font-size: 0.8rem;
+}
+
+/* Custom scrollbars for lists */
+.backpack-list-view::-webkit-scrollbar, .bank-list-view::-webkit-scrollbar {
+    width: 6px;
+}
+
+.backpack-list-view::-webkit-scrollbar-track, .bank-list-view::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.backpack-list-view::-webkit-scrollbar-thumb, .bank-list-view::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.backpack-list-view::-webkit-scrollbar-thumb:hover, .bank-list-view::-webkit-scrollbar-thumb:hover {
     background: var(--pso-blue);
 }
 

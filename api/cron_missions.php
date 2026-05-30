@@ -1330,11 +1330,20 @@ CRITICAL RULE: Return ONLY valid JSON properly formatted with double quotes stri
                         $assign->execute();
                         echo "[CRON] Successfully assigned new quest ID {$new_mission_id}!\n";
 
+                        $clean_reward = renderRewardString($reward_item_string);
+                        $clean_obj = getClearObjective($selected_goal, $selected_target_id, $questData['title'], $questData['description']);
+
                         if ($user_lang === 'jp') {
-                            $mail_msg = "ギルドカードに新しいバウンティが追加されました。幸運を祈ります！";
+                            $mail_msg = "新ミッション: 「" . $questData['title'] . "」を受注しました！\n";
+                            $mail_msg .= "目標: " . $clean_obj . "\n";
+                            $mail_msg .= "報酬: " . $clean_reward . "\n\n";
+                            $mail_msg .= "詳細: " . mb_strimwidth($questData['description'], 0, 200, "...");
                             send_personal_mail($accId, "ハンターズギルド", $mail_msg);
                         } else {
-                            $mail_msg = "A new bounty has been posted to your Guild Card. Good luck!";
+                            $mail_msg = "New Bounty: " . $questData['title'] . "\n";
+                            $mail_msg .= "Objective: " . $clean_obj . "\n";
+                            $mail_msg .= "Reward: " . $clean_reward . "\n\n";
+                            $mail_msg .= "Description: " . mb_strimwidth($questData['description'], 0, 200, "...");
                             send_personal_mail($accId, "Hunters Guild", $mail_msg);
                         }
                     }

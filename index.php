@@ -32,9 +32,9 @@ include 'includes/header.php';
                 <!-- AUTO-MISSION-START -->
                 <article class="news-item animate-fade-in">
                     <div class="event-badge" style="background: #00ff88; color: #000; padding: 2px 8px; display: inline-block; border-radius: 4px; font-size: 0.8rem; margin-bottom: 0.5rem; font-weight: bold;">Active Event</div>
-                    <h3 style="color: var(--pso-orange);">Deep Scan Titan 557: Double EXP</h3>
-                    <p><strong>Mission Window:</strong> May 22, 2026 (12 AM PST) - May 25, 2026 (12 AM PST)</p>
-                    <p>The Hunter's Guild is running a veterans' training cycle. All enemies defeated this weekend will grant **2x Experience Points**!</p>
+                    <h3 style="color: var(--pso-orange);">Nexus Flux 784: Double EXP</h3>
+                    <p><strong>Mission Window:</strong> May 29, 2026 (12 AM PST) - June 1, 2026 (12 AM PST)</p>
+                    <p>A surge in photon atmospheric pressure has enhanced neural link efficiency. All enemies defeated this weekend will grant **2x Experience Points**!</p>
                     <div style="font-size: 0.85rem; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px; border-left: 3px solid var(--pso-blue);">
                         <strong>Global Start Times:</strong><br>
                         🇺🇸 PST: Friday, 12:00 AM<br>

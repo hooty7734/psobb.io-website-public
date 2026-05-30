@@ -153,6 +153,7 @@ function parse_item_data($bytes) {
     } elseif ($group === 0x02) {
         // MAG
         $level = ord($data1[2]);
+        $pbFlags = ord($data1[3]);
         $def = unpack('v', substr($data1, 4, 2))[1] / 100;
         $pow = unpack('v', substr($data1, 6, 2))[1] / 100;
         $dex = unpack('v', substr($data1, 8, 2))[1] / 100;
@@ -168,7 +169,8 @@ function parse_item_data($bytes) {
             'dex' => $dex,
             'mind' => $mind,
             'synchro' => $synchro,
-            'iq' => $iq
+            'iq' => $iq,
+            'pb_flags' => $pbFlags
         ];
     } elseif ($group === 0x03) {
         // Tool / Tech Disk
@@ -392,41 +394,66 @@ if (file_exists($psocharPath)) {
     
     // Check if character is online to dynamically merge stats from live server memory
     $clientsResponse = @file_get_contents($NEWSERV_API_URL . '/y/clients');
+    $accountOnline = false;
+    $onlineCharName = '';
     if ($clientsResponse !== false) {
         $clients = json_decode($clientsResponse, true);
         if (is_array($clients)) {
             foreach ($clients as $c) {
-                if (isset($c['Account']['AccountID']) && (int)$c['Account']['AccountID'] === $accountId && isset($c['Name']) && $c['Name'] === $charName) {
-                    $character['online'] = true;
-                    $character['lobby_id'] = $c['LobbyID'] ?? null;
+                if (isset($c['Account']['AccountID']) && (int)$c['Account']['AccountID'] === $accountId) {
+                    $accountOnline = true;
+                    $onlineCharName = $c['Name'] ?? '';
                     
-                    // Direct override of inventory items with memory allocation mapping
-                    if (isset($c['InventoryItems']) && is_array($c['InventoryItems'])) {
-                        $liveInv = [];
-                        foreach ($c['InventoryItems'] as $item) {
-                            $desc = $item['Description'] ?? '';
-                            $data = $item['Data'] ?? '';
-                            $itemId = $item['ItemID'] ?? 0;
-                            $flags = $item['Flags'] ?? 0;
-                            
-                            $bin = hex2bin(preg_replace('/[^a-fA-F0-9]/', '', $data));
-                            $parsed = parse_item_data($bin);
-                            if ($parsed) {
-                                $parsed['item_id'] = $itemId;
-                                $parsed['equipped'] = ($flags & 8) !== 0;
-                                if (!empty($desc)) $parsed['name'] = $desc;
-                                $liveInv[] = $parsed;
-                            }
+                    if (isset($c['Name']) && $c['Name'] === $charName) {
+                        $character['online'] = true;
+                        $character['lobby_id'] = $c['LobbyID'] ?? null;
+                        
+                        // Pull material counts from the internal server API
+                        $character['mats']['HP'] = (int)($c['NumHPMaterialsUsed'] ?? $character['mats']['HP']);
+                        $character['mats']['TP'] = (int)($c['NumTPMaterialsUsed'] ?? $character['mats']['TP']);
+                        $character['mats']['Power'] = (int)($c['NumPowerMaterialsUsed'] ?? $character['mats']['Power']);
+                        $character['mats']['Def'] = (int)($c['NumDefMaterialsUsed'] ?? $character['mats']['Def']);
+                        $character['mats']['Mind'] = (int)($c['NumMindMaterialsUsed'] ?? $character['mats']['Mind']);
+                        $character['mats']['Evade'] = (int)($c['NumEvadeMaterialsUsed'] ?? $character['mats']['Evade']);
+                        $character['mats']['Luck'] = (int)($c['NumLuckMaterialsUsed'] ?? $character['mats']['Luck']);
+                        
+                        if (isset($c['Level'])) {
+                            $character['level'] = (int)$c['Level'];
                         }
-                        $character['inventory'] = $liveInv;
+                        
+                        // Direct override of inventory items with memory allocation mapping
+                        if (isset($c['InventoryItems']) && is_array($c['InventoryItems'])) {
+                            $liveInv = [];
+                            foreach ($c['InventoryItems'] as $item) {
+                                $desc = $item['Description'] ?? '';
+                                $data = $item['Data'] ?? '';
+                                $itemId = $item['ItemID'] ?? 0;
+                                $flags = $item['Flags'] ?? 0;
+                                
+                                $bin = hex2bin(preg_replace('/[^a-fA-F0-9]/', '', $data));
+                                $parsed = parse_item_data($bin);
+                                if ($parsed) {
+                                    $parsed['item_id'] = $itemId;
+                                    $parsed['equipped'] = ($flags & 8) !== 0;
+                                    if (!empty($desc)) $parsed['name'] = $desc;
+                                    $liveInv[] = $parsed;
+                                }
+                            }
+                            $character['inventory'] = $liveInv;
+                        }
                     }
-                    break;
                 }
             }
         }
     }
     
-    echo json_encode(['success' => true, 'character' => $character, 'mock' => false]);
+    echo json_encode([
+        'success' => true, 
+        'character' => $character, 
+        'mock' => false,
+        'account_online' => $accountOnline,
+        'online_char_name' => $onlineCharName
+    ]);
     exit;
 }
 
@@ -443,7 +470,7 @@ $satoMag = [
     'name' => 'Sato',
     'mag_stats' => [
         'level' => 200, 'def' => 50.0, 'pow' => 0.0, 'dex' => 0.0, 
-        'mind' => 150.0, 'synchro' => 120, 'iq' => 200
+        'mind' => 150.0, 'synchro' => 120, 'iq' => 200, 'pb_flags' => 42
     ]
 ];
 
@@ -455,7 +482,7 @@ $kamaMag = [
     'name' => 'Kama',
     'mag_stats' => [
         'level' => 200, 'def' => 5.0, 'pow' => 145.0, 'dex' => 50.0, 
-        'mind' => 0.0, 'synchro' => 120, 'iq' => 200
+        'mind' => 0.0, 'synchro' => 120, 'iq' => 200, 'pb_flags' => 5
     ]
 ];
 
@@ -467,7 +494,7 @@ $diwariMag = [
     'name' => 'Diwari',
     'mag_stats' => [
         'level' => 200, 'def' => 5.0, 'pow' => 150.0, 'dex' => 45.0, 
-        'mind' => 0.0, 'synchro' => 120, 'iq' => 200
+        'mind' => 0.0, 'synchro' => 120, 'iq' => 200, 'pb_flags' => 40
     ]
 ];
 
@@ -713,7 +740,7 @@ $mockCharacters = [
             $yamato,
             ['hex' => '0101030040020000000000000000000000000000', 'item_id' => 550301, 'group' => 1, 'equipped' => true, 'name' => 'Custom Frame', 'slots' => 2, 'def_bonus' => 2, 'evp_bonus' => 1],
             ['hex' => '0102030040000000000000000000000000000000', 'item_id' => 550302, 'group' => 1, 'equipped' => true, 'name' => 'Custom Barrier', 'def_bonus' => 1, 'evp_bonus' => 1],
-            ['hex' => '020032000000280000002800000028000000280E', 'item_id' => 550303, 'group' => 2, 'equipped' => true, 'name' => 'Baby MAG', 'mag_stats' => ['level' => 50, 'def' => 10.0, 'pow' => 20.0, 'dex' => 10.0, 'mind' => 10.0, 'synchro' => 40, 'iq' => 40]],
+            ['hex' => '020032000000280000002800000028000000280E', 'item_id' => 550303, 'group' => 2, 'equipped' => true, 'name' => 'Baby MAG', 'mag_stats' => ['level' => 50, 'def' => 10.0, 'pow' => 20.0, 'dex' => 10.0, 'mind' => 10.0, 'synchro' => 40, 'iq' => 40, 'pb_flags' => 1]],
             ['hex' => '0300000000050000000000000000000000000000', 'item_id' => 550304, 'group' => 3, 'name' => 'Monomate', 'count' => 5],
             ['hex' => '0301000000050000000000000000000000000000', 'item_id' => 550305, 'group' => 3, 'name' => 'Monofluid', 'count' => 5],
         ],
@@ -756,11 +783,17 @@ $character = $mockCharacters[$slot];
 $character['shared_bank'] = $mockSharedBank;
 
 // Mock online state for demonstration visual wow
-$character['online'] = ($slot === 0 || $slot === 2);
+$character['online'] = ($slot === 0);
 if ($character['online']) {
     $character['lobby_id'] = 1;
 }
 
-echo json_encode(['success' => true, 'character' => $character, 'mock' => true]);
+echo json_encode([
+    'success' => true, 
+    'character' => $character, 
+    'mock' => true, 
+    'account_online' => true, 
+    'online_char_name' => 'Aria'
+]);
 exit;
 ?>

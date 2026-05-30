@@ -83,6 +83,7 @@ if ($data_json === false) {
                 foreach ($episodes as $ep => $diffs) {
                     $episode_num = (int)str_replace('Episode', '', $ep);
                     foreach ($diffs as $diff => $sids) {
+                        $difficulty_name = ($diff === 'VeryHard') ? 'Very Hard' : $diff;
                         foreach ($sids as $sid => $monsters) {
                             $section_id = $sid;
                             if ($section_id === 'Greennill') $section_id = 'Greenill'; // Fix Newserv typo
@@ -140,13 +141,13 @@ if ($data_json === false) {
                                     }
                                     
                                     // Deduplicate identical items from the same monster
-                                    $uniq = "$episode_num|$diff|$section_id|$monster_clean|$item_name";
+                                    $uniq = "$episode_num|$difficulty_name|$section_id|$monster_clean|$item_name";
                                     if (isset($seen[$uniq])) continue;
                                     $seen[$uniq] = true;
                                     
                                     $flat_drops[] = [
                                         "episode" => $episode_num,
-                                        "difficulty" => $diff,
+                                        "difficulty" => $difficulty_name,
                                         "section_id" => $section_id,
                                         "monster" => $monster_clean,
                                         "item" => $item_name,
