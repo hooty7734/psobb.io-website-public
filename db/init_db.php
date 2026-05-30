@@ -71,11 +71,26 @@ $db->exec("CREATE TABLE IF NOT EXISTS player_missions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     account_id INTEGER NOT NULL,
     mission_id INTEGER NOT NULL,
+    character_name TEXT NOT NULL DEFAULT '',
     status TEXT NOT NULL DEFAULT 'in_progress',
     progress INTEGER NOT NULL DEFAULT 0,
+    accepted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     completed_at DATETIME,
     UNIQUE(account_id, mission_id)
 )");
+
+// Schema migrations for existing databases — add columns if missing
+$cols = [];
+$colRes = $db->query("PRAGMA table_info(player_missions)");
+while ($col = $colRes->fetchArray(SQLITE3_ASSOC)) {
+    $cols[] = $col['name'];
+}
+if (!in_array('character_name', $cols)) {
+    $db->exec("ALTER TABLE player_missions ADD COLUMN character_name TEXT NOT NULL DEFAULT ''");
+}
+if (!in_array('accepted_at', $cols)) {
+    $db->exec("ALTER TABLE player_missions ADD COLUMN accepted_at DATETIME DEFAULT CURRENT_TIMESTAMP");
+}
 
 // Mods table
 $db->exec("CREATE TABLE IF NOT EXISTS mods (

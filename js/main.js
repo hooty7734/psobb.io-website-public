@@ -1826,30 +1826,87 @@ function renderMilestones(milestones, inGame) {
         return;
     }
 
+    // Separate unclaimed vs claimed
+    const unclaimed = milestones.filter(m => !m.claimed);
+    const claimed = milestones.filter(m => m.claimed);
+
     container.innerHTML = '';
-    milestones.forEach(m => {
-        const card = document.createElement('div');
-        card.className = `milestone-card ${m.claimed ? 'claimed' : ''}`;
 
-        let btnHtml = '';
-        if (m.claimed) {
-            btnHtml = `<p style="color: #aa66cc; margin-top: 1.5rem; font-family: 'Share Tech Mono', monospace; text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);">CLAIMED:<br>${m.claimed_category}</p>`;
-        } else {
+    // Summary bar
+    const summaryBar = document.createElement('div');
+    summaryBar.style.cssText = 'display:flex; gap:12px; margin-bottom:1rem; flex-wrap:wrap;';
+    summaryBar.innerHTML = `
+        <span style="font-family:'Share Tech Mono',monospace; font-size:0.8rem; padding:4px 10px; border-radius:4px; background:rgba(0,255,136,0.15); border:1px solid rgba(0,255,136,0.3); color:#00ff88;">
+            <i class="fas fa-gift"></i> ${unclaimed.length} Available
+        </span>
+        <span style="font-family:'Share Tech Mono',monospace; font-size:0.8rem; padding:4px 10px; border-radius:4px; background:rgba(170,102,204,0.15); border:1px solid rgba(170,102,204,0.3); color:#aa66cc;">
+            <i class="fas fa-check"></i> ${claimed.length} Claimed
+        </span>
+    `;
+    container.appendChild(summaryBar);
+
+    // Render UNCLAIMED milestones first (these are the important ones)
+    if (unclaimed.length > 0) {
+        unclaimed.forEach(m => {
+            const card = document.createElement('div');
+            card.className = 'milestone-card';
             const disabledStr = !inGame ? 'disabled' : '';
-            btnHtml = `<button class="open-claim-btn" data-level="${m.level}" ${disabledStr}>Claim Reward</button>`;
-        }
+            const glowClass = (m.level % 25 === 0) ? 'milestone-major' : '';
+            card.innerHTML = `
+                <div class="milestone-level" ${glowClass ? 'style="color:#ffaa00; text-shadow:0 0 10px rgba(255,170,0,0.5);"' : ''}>Level ${m.level}</div>
+                <button class="open-claim-btn" data-level="${m.level}" ${disabledStr}>
+                    <i class="fas fa-gift"></i> Claim Reward
+                </button>
+            `;
+            container.appendChild(card);
+        });
+    } else {
+        const allDone = document.createElement('p');
+        allDone.style.cssText = 'color:#00ff88; font-family:"Share Tech Mono",monospace; text-align:center; padding:1rem;';
+        allDone.innerHTML = '<i class="fas fa-check-circle"></i> All available milestones claimed! Keep leveling for more.';
+        container.appendChild(allDone);
+    }
 
-        card.innerHTML = `
-            <div class="milestone-level">Level ${m.level}</div>
-            ${btnHtml}
-        `;
-        container.appendChild(card);
-    });
+    // Render CLAIMED milestones in a collapsible section
+    if (claimed.length > 0) {
+        const toggle = document.createElement('button');
+        toggle.style.cssText = 'background:rgba(170,102,204,0.1); border:1px solid rgba(170,102,204,0.3); color:#aa66cc; padding:8px 16px; border-radius:6px; font-family:"Share Tech Mono",monospace; font-size:0.8rem; cursor:pointer; width:100%; margin-top:1rem; transition:all 0.3s;';
+        toggle.innerHTML = `<i class="fas fa-chevron-down"></i> Show ${claimed.length} Claimed Milestones`;
+        
+        const claimedContainer = document.createElement('div');
+        claimedContainer.style.cssText = 'display:none; margin-top:0.75rem;';
+        claimedContainer.className = 'milestones-grid';
 
+        claimed.forEach(m => {
+            const card = document.createElement('div');
+            card.className = 'milestone-card claimed';
+            card.style.cssText = 'opacity:0.6; transform:scale(0.95);';
+            card.innerHTML = `
+                <div class="milestone-level">Level ${m.level}</div>
+                <p style="color:#aa66cc; margin-top:0.5rem; font-family:'Share Tech Mono',monospace; font-size:0.75rem; text-shadow:0 0 5px rgba(255,255,255,0.1);">
+                    <i class="fas fa-check"></i> ${m.claimed_category}
+                </p>
+            `;
+            claimedContainer.appendChild(card);
+        });
+
+        toggle.addEventListener('click', () => {
+            const isHidden = claimedContainer.style.display === 'none';
+            claimedContainer.style.display = isHidden ? '' : 'none';
+            toggle.innerHTML = isHidden 
+                ? `<i class="fas fa-chevron-up"></i> Hide ${claimed.length} Claimed Milestones`
+                : `<i class="fas fa-chevron-down"></i> Show ${claimed.length} Claimed Milestones`;
+        });
+
+        container.appendChild(toggle);
+        container.appendChild(claimedContainer);
+    }
+
+    // Attach claim button listeners
     document.querySelectorAll('.open-claim-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             if (!inGame) return;
-            window.currentClaimLevel = parseInt(e.target.getAttribute('data-level'));
+            window.currentClaimLevel = parseInt(e.target.closest('.open-claim-btn').getAttribute('data-level'));
             const modal = document.getElementById('claim-modal');
             const levelSpan = document.getElementById('modal-level');
             const modalError = document.getElementById('modal-error');
