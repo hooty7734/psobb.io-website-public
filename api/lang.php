@@ -339,7 +339,7 @@ $I18N = [
 
         // about.php (psobb.io)
         'About psobb.io' => 'psobb.ioについて',
-        'Welcome to the ultimate custom Phantasy Star Online Blue Burst server. Our mission is to seamlessly bridge classic 2004 Sega dreamscape nostalgia with bleeding-edge modern web capabilities, automated game services, and advanced AI integration.' => '究極のカスタムファンタシースターオンラインブルーバーストサーバーへようこそ。私たちの使命は、2004年のセガのタイムレスな懐かしさと、最先端のモダンなウェブ機能、自動化されたゲームサービス、および高度なAI統合をシームレスに架橋することです。',
+        'Welcome to the ultimate custom Phantasy Star Online Blue Burst server. Our mission is to seamlessly bridge classic 2004 Sega dreamscape nostalgia with bleeding-edge modern web capabilities, automated game services, and advanced AI integration.' => '究極 of カスタムファンタシースターオンラインブルーバーストサーバーへようこそ。私たちの使命は、2004年のセガのタイムレスな懐かしさと、最先端のモダンなウェブ機能、自動化されたゲームサービス、および高度なAI統合をシームレスに架橋することです。',
         'psobb.io Command Deck' => 'psobb.io司令デック',
         'Root Administrator & System Architect' => 'ルート管理者 ＆ システム設計者',
         'Core Backend & Web Integration' => 'コアバックエンド ＆ ウェブ統合',
@@ -351,10 +351,10 @@ $I18N = [
         'SQLite Database' => 'SQLite データベース',
         'Lightweight, high-performance local database for secure player telemetry, custom quest flags, and community event progress.' => 'セキュアなプレイヤーテレメトリ、カスタムクエストフラグ、およびコミュニティイベントの進行状況を処理する、軽量で高性能なローカルデータベースです。',
 
-        // New Crew Members (LucindaRie, Oman Computar/Repflez, Pixelated)
+         // New Crew Members (LucindaRie, Oman Computar/Repflez, Pixelated)
         'Server Co-Founder & Creative Muse' => 'サーバー共同創設者 ＆ クリエイティブ・ミューズ',
         'Preservation & Community Vibe' => '原作再現 ＆ コミュニティの雰囲気作り',
-        'LucindaRie is the co-founder of psobb.io and the wife of LiquidSpikes. She cares deeply about preserving the original aesthetic and design inspiration of Phantasy Star Online. LucindaRie acts as our creative guide, ensuring our features and community spaces stay fully aligned with the timeless, nostalgic magic of the 2004 classic.' => 'LucindaRieは、psobb.ioの共同創設者であり、LiquidSpikesの妻です。ファンタシースターオンラインの原作の美学とデザインインスピレーションを保存することに深い愛情を注いでいます。彼女は私たちのクリエイティブガイドとして、ゲームの機能やコミュニティスペースが、2004年の名作が持つタイムレスでノスタルジックな魔法と完璧に調和し続けるように見守っています。',
+        'LucindaRie is the co-founder of psobb.io and the wife of LiquidSpikes. She cares deeply about preserving the original aesthetic and design inspiration of Phantasy Star Online. LucindaRie acts as our creative guide, ensuring our features and community spaces stay fully aligned with the timeless, nostalgic magic of the 2004 classic.' => 'LucindaRieは、psobb.ioの共同創設者であり、LiquidSpikes의 妻です。ファンタシースターオンラインの原作の美学とデザインインスピレーションを保存することに深い愛情を注いでいます。彼女は私たちのクリエイティブガイドとして、ゲームの機能やコミュニティスペースが、2004年の名作が持つタイムレスでノスタルジックな魔法と完璧に調和し続けるように見守っています。',
         'Contributor & newserv Pioneer' => 'コントリビューター ＆ newserv開拓者',
         'Core Server Development' => 'コアサーバー開発',
         'Oman Computar (also known as Repflez) is an expert contributor to the open-source newserv server emulator and has worked extensively on several legacy Phantasy Star Online projects. His deep understanding of custom server logic and network packets has been vital to our server development and core engine refinement.' => 'Oman Computar（Repflezとしても知られる）は、オープンソース of newservエミュレータの熟練したコントリビューターであり、数多くのレガシーなファンタシースターオンラインプロジェクトに携わってきました。カスタムサーバーロジックとネットワークパケットに関する彼の深い知見は、私たちのサーバー開発とコアエンジンの改良において極めて重要な役割を果たしています。',

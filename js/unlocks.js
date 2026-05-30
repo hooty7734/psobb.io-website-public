@@ -273,8 +273,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Update streak count
                 document.getElementById('streak-count').textContent = data.streak;
 
-                // Update progress bar (max at 30 days)
-                const fillPct = Math.min((data.streak / 30) * 100, 100);
+                // Update timeline dot reward for Day 365
+                const node365 = document.querySelector('.streak-node[data-day="365"] .streak-node-reward');
+                if (node365) {
+                    node365.textContent = data.has_claimed_yahoo ? 'Rare Drop' : 'Yahoo! Mag';
+                }
+
+                // Update progress bar (max at 365 days)
+                const fillPct = Math.min((data.streak / 365) * 100, 100);
                 document.getElementById('streak-fill').style.width = fillPct + '%';
 
                 // Update nodes
@@ -296,13 +302,51 @@ document.addEventListener('DOMContentLoaded', () => {
                 const claimsDiv = document.getElementById('streak-claims');
                 claimsDiv.innerHTML = '';
 
-                const daysArray = Array.from({ length: 30 }, (_, i) => i + 1);
+                const daysArray = Array.from({ length: 365 }, (_, i) => i + 1);
                 daysArray.forEach(m => {
                     let rewardName = 'Monogrinder';
                     let tierClass = 'tier-mono';
-                    if (m === 30) { rewardName = 'Trigrinder'; tierClass = 'tier-tri'; }
-                    else if (m % 2 === 0) { rewardName = 'Stat Material'; tierClass = 'tier-stat'; }
-                    else if (m % 3 === 0) { rewardName = 'Digrinder'; tierClass = 'tier-dig'; }
+                    
+                    if (m === 365) {
+                        rewardName = data.has_claimed_yahoo ? 'Rare Drop' : 'Yahoo! Mag';
+                        tierClass = 'tier-yahoo';
+                    } else if (m === 7 || m === 30 || m === 90 || m === 180 || m === 270) {
+                        rewardName = 'Random Material';
+                        tierClass = 'tier-stat';
+                    } else if (m <= 30) {
+                        if (m % 5 === 0) {
+                            rewardName = 'Random Material';
+                            tierClass = 'tier-stat';
+                        } else if (m % 3 === 0) {
+                            rewardName = 'Digrinder';
+                            tierClass = 'tier-dig';
+                        } else {
+                            rewardName = 'Monogrinder';
+                            tierClass = 'tier-mono';
+                        }
+                    } else if (m <= 90) {
+                        if (m % 5 === 0) {
+                            rewardName = 'Random Material';
+                            tierClass = 'tier-stat';
+                        } else if (m % 3 === 0) {
+                            rewardName = 'Trigrinder';
+                            tierClass = 'tier-tri';
+                        } else {
+                            rewardName = 'Digrinder';
+                            tierClass = 'tier-dig';
+                        }
+                    } else if (m <= 180) {
+                        if (m % 4 === 0) {
+                            rewardName = 'Random Material';
+                            tierClass = 'tier-stat';
+                        } else {
+                            rewardName = 'Trigrinder';
+                            tierClass = 'tier-tri';
+                        }
+                    } else {
+                        rewardName = 'Random Material';
+                        tierClass = 'tier-stat';
+                    }
 
                     const day = document.createElement('div');
                     day.className = `streak-day ${tierClass}`;

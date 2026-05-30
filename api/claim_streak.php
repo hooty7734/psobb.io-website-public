@@ -26,8 +26,8 @@ $accountId = $_SESSION['user']['account_id'];
 $input = json_decode(file_get_contents('php://input'), true);
 $milestone = intval($input['milestone'] ?? 0);
 
-// Validate milestone falls within standard 30-day epoch cycle
-$validMilestones = range(1, 30);
+// Validate milestone falls within standard 365-day epoch cycle
+$validMilestones = range(1, 365);
 if (!in_array($milestone, $validMilestones)) {
     http_response_code(400);
     echo json_encode(["error" => "Invalid streak milestone."]);
@@ -144,7 +144,7 @@ $stmt->bindValue(':cycle', $currentCycle, SQLITE3_INTEGER);
 $result = $stmt->execute()->fetchArray();
 $maxClaimedMilestone = $result['max_ms'];
 
-if ($maxClaimedMilestone == 30) {
+if ($maxClaimedMilestone == 365) {
     $currentCycle++;
 } else if ($maxClaimedMilestone > 0 && $streak < $maxClaimedMilestone) {
     $currentCycle++;
@@ -176,19 +176,70 @@ $materials = [
     '030B06' => 'Luck Material'
 ];
 
-// Map the milestone index to a dynamic reward scale
-if ($milestone === 30) {
-    $itemString = '030A02';
-    $itemName = 'Trigrinder';
-} else if ($milestone % 2 === 0) {
+// Check if the user has ever claimed the Day 365 milestone in any cycle
+$stmt = $db->prepare("SELECT COUNT(*) as cnt FROM streak_claims WHERE account_id = :aid AND milestone = 365");
+$stmt->bindValue(':aid', $accountId, SQLITE3_INTEGER);
+$result = $stmt->execute()->fetchArray();
+$hasClaimedYahoo = $result['cnt'] > 0;
+
+$alternativeRares = [
+    '030C05' => 'Heart of Chao',
+    '030C00' => 'Cell of MAG 502',
+    '031805' => "Amitie's Memo",
+    '031808' => "Yahoo!'s engine",
+    '030C06' => 'Heart of Opa-Opa',
+    '030C07' => 'Heart of Pian'
+];
+
+// Map the milestone index to the gradual, tiered reward scale
+if ($milestone === 365) {
+    if ($hasClaimedYahoo) {
+        $itemString = array_rand($alternativeRares);
+        $itemName = $alternativeRares[$itemString];
+    } else {
+        $itemString = '024A00';
+        $itemName = 'Yahoo! Mag';
+    }
+} else if ($milestone === 7 || $milestone === 30 || $milestone === 90 || $milestone === 180 || $milestone === 270) {
     $itemString = array_rand($materials);
     $itemName = $materials[$itemString];
-} else if ($milestone % 3 === 0) {
-    $itemString = '030A01';
-    $itemName = 'Digrinder';
+} else if ($milestone <= 30) {
+    // Range 1 (Days 1 - 30): Early steps
+    if ($milestone % 5 === 0) {
+        $itemString = array_rand($materials);
+        $itemName = $materials[$itemString];
+    } else if ($milestone % 3 === 0) {
+        $itemString = '030A01';
+        $itemName = 'Digrinder';
+    } else {
+        $itemString = '030A00';
+        $itemName = 'Monogrinder';
+    }
+} else if ($milestone <= 90) {
+    // Range 2 (Days 31 - 90): Digrinders, Trigrinders & Stat Mats
+    if ($milestone % 5 === 0) {
+        $itemString = array_rand($materials);
+        $itemName = $materials[$itemString];
+    } else if ($milestone % 3 === 0) {
+        $itemString = '030A02';
+        $itemName = 'Trigrinder';
+    } else {
+        $itemString = '030A01';
+        $itemName = 'Digrinder';
+    }
+} else if ($milestone <= 180) {
+    // Range 3 (Days 91 - 180): Trigrinders & Stat Mats
+    if ($milestone % 4 === 0) {
+        $itemString = array_rand($materials);
+        $itemName = $materials[$itemString];
+    } else {
+        $itemString = '030A02';
+        $itemName = 'Trigrinder';
+    }
 } else {
-    $itemString = '030A00';
-    $itemName = 'Monogrinder';
+    // Range 4 (Days 181 - 364): High tier Stat Mats (all days are random material claims)
+    $itemString = array_rand($materials);
+    $itemName = $materials[$itemString];
 }
 
 // Execute the robust item parser to handle the drop securely

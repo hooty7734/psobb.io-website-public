@@ -5,7 +5,7 @@
  * --------------------------------------------------------------------------
  * This endpoint is polled by the active player dashboard to render the Hunter
  * Rewards module. It computes contiguous login days backwards from the present
- * and determines which Reward Cycle (1-30 days) the player is currently on.
+ * and determines which Reward Cycle (1-365 days) the player is currently on.
  */
 require_once 'config.php';
 require_once 'db.php';
@@ -77,14 +77,14 @@ while (true) {
 }
 
 // 5. Reward Cycle Management
-// Rewards run in 30-day "Cycles". Once a player claims Milestone 30 of Cycle N,
+// Rewards run in 365-day "Cycles". Once a player claims Milestone 365 of Cycle N,
 // they are automatically bumped into Cycle N+1.
 $stmt = $db->prepare("SELECT COALESCE(MAX(streak_cycle), 1) as cycle FROM streak_claims WHERE account_id = :aid");
 $stmt->bindValue(':aid', $accountId, SQLITE3_INTEGER);
 $result = $stmt->execute()->fetchArray();
 $currentCycle = $result['cycle'];
 
-// Verify if the terminal milestone (30) of the current cycle has been claimed,
+// Verify if the terminal milestone (365) of the current cycle has been claimed,
 // or if the player's streak has broken since their last claim.
 $stmt = $db->prepare("SELECT COALESCE(MAX(milestone), 0) as max_ms FROM streak_claims WHERE account_id = :aid AND streak_cycle = :cycle");
 $stmt->bindValue(':aid', $accountId, SQLITE3_INTEGER);
@@ -92,16 +92,16 @@ $stmt->bindValue(':cycle', $currentCycle, SQLITE3_INTEGER);
 $result = $stmt->execute()->fetchArray();
 $maxClaimedMilestone = $result['max_ms'];
 
-if ($maxClaimedMilestone == 30) {
+if ($maxClaimedMilestone == 365) {
     $currentCycle++;
 } else if ($maxClaimedMilestone > 0 && $streak < $maxClaimedMilestone) {
     $currentCycle++;
 }
 
 // 6. Claim State Mapping
-// Map out exactly which of the 30 milestones the player has ALREADY claimed, 
+// Map out exactly which of the 365 milestones the player has ALREADY claimed, 
 // and which ones they CAN claim today based on their computed $streak score.
-$milestones = range(1, 30);
+$milestones = range(1, 365);
 $claimed = [];
 $claimable = [];
 
@@ -142,6 +142,12 @@ $dailyClaimed = $result['cnt'] > 0;
 $tomorrow = new DateTime('tomorrow');
 $nextReset = $tomorrow->getTimestamp();
 
+// Check if the user has ever claimed the Day 365 milestone in any cycle
+$stmt = $db->prepare("SELECT COUNT(*) as cnt FROM streak_claims WHERE account_id = :aid AND milestone = 365");
+$stmt->bindValue(':aid', $accountId, SQLITE3_INTEGER);
+$result = $stmt->execute()->fetchArray();
+$hasClaimedYahoo = $result['cnt'] > 0;
+
 // 8. Output Pipeline
 echo json_encode([
     "is_online" => $isOnline,
@@ -152,6 +158,7 @@ echo json_encode([
     "today_recorded" => $isOnline,     // Deprecated legacy output
     "daily_claimed" => $dailyClaimed,
     "next_daily_reset" => $nextReset,
-    "server_time" => time()
+    "server_time" => time(),
+    "has_claimed_yahoo" => $hasClaimedYahoo
 ]);
 ?>
