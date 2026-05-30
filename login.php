@@ -461,6 +461,18 @@ include 'includes/header.php';
                                 </label>
                             </div>
 
+                            <!-- Discord streak DM preferences toggle -->
+                            <div class="switch-container">
+                                <div class="switch-label-block">
+                                    <h4><?= __('Discord Streak Alerts') ?></h4>
+                                    <p><?= __('Receive Discord DM alerts when your login streak is about to expire. Uncheck to disable.') ?></p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="discord-streak-toggle" onchange="toggleDiscordStreakPref()">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
                             <!-- Display alias name -->
                             <div style="padding: 15px; border: 1px solid rgba(0, 255, 255, 0.2); background: rgba(0, 10, 20, 0.4); border-radius: 8px;">
                                 <h4 style="margin-top: 0; color: #00ffff; font-family:'Share Tech Mono',monospace;"><?= __('Leaderboard Display Alias') ?></h4>

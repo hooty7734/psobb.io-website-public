@@ -15,12 +15,13 @@ $yesterday = date("Y-m-d", strtotime("-1 day"));
 $discordConfig = json_decode(file_get_contents("/psobb-bot/discord_config.json"), true);
 $botToken = $discordConfig["bot_token"];
 
-// 1. Find all users who logged in yesterday but NOT today
+// 1. Find all users who logged in yesterday but NOT today and have alerts enabled
 $query = "SELECT u.discord_id, u.username, u.account_id 
           FROM users u 
           JOIN daily_logins dl ON u.account_id = dl.account_id 
           WHERE dl.login_date = :yesterday 
           AND u.discord_id IS NOT NULL 
+          AND (u.receive_discord_streak_msg IS NULL OR u.receive_discord_streak_msg = 1)
           AND u.account_id NOT IN (SELECT account_id FROM daily_logins WHERE login_date = :today)";
 
 $stmt = $db->prepare($query);

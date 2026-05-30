@@ -98,11 +98,21 @@ try {
         // Supplementary Web Data
         // ----------------------------------------------------------------------
         // Fetch external integrations (like Discord OAuth limits) from the local SQLite DB
-        $stmt = $db->prepare("SELECT discord_id, language FROM users WHERE username = :username");
+        $stmt = $db->prepare("SELECT discord_id, language, receive_system_mail, receive_discord_streak_msg FROM users WHERE username = :username");
         $stmt->bindValue(':username', $username, SQLITE3_TEXT);
         $res = $stmt->execute();
         $row = $res ? $res->fetchArray(SQLITE3_ASSOC) : false;
-        $user_account['discord_id'] = $row ? $row['discord_id'] : null;
+        
+        $discord_id = $row ? $row['discord_id'] : null;
+        $receive_system_mail = $row && isset($row['receive_system_mail']) ? (int)$row['receive_system_mail'] : 1;
+        $receive_discord_streak_msg = $row && isset($row['receive_discord_streak_msg']) ? (int)$row['receive_discord_streak_msg'] : 1;
+
+        $user_account['discord_id'] = $discord_id;
+        $user_account['receive_system_mail'] = $receive_system_mail;
+        $user_account['receive_discord_streak_msg'] = $receive_discord_streak_msg;
+
+        $_SESSION['user']['receive_system_mail'] = $receive_system_mail;
+        $_SESSION['user']['receive_discord_streak_msg'] = $receive_discord_streak_msg;
         
         $lang = $row && $row['language'] ? $row['language'] : 'en';
         setcookie('psobb_lang', $lang, time() + 31536000, '/');

@@ -246,6 +246,9 @@ function showDashboard(user) {
         // Initialize system mail checkbox preference
         loadSystemMailPref();
 
+        // Initialize Discord streak DM checkbox preference
+        loadDiscordStreakPref();
+
         // Initialize milestone categories claim triggers inside portal
         initClaimModalCategoryButtons();
 
@@ -1680,6 +1683,51 @@ window.toggleSystemMailPref = async function() {
         }
     } catch (e) {
         console.error('System mail preferences update failed:', e);
+        checkbox.checked = !enabled;
+    }
+};
+
+// Discord streak DM preferences toggle controllers
+window.loadDiscordStreakPref = function() {
+    const userStr = sessionStorage.getItem('psobb_user');
+    if (!userStr) return;
+    const user = JSON.parse(userStr);
+    const checkbox = document.getElementById('discord-streak-toggle');
+    if (checkbox) {
+        checkbox.checked = (user.receive_discord_streak_msg !== 0);
+    }
+};
+
+window.toggleDiscordStreakPref = async function() {
+    const checkbox = document.getElementById('discord-streak-toggle');
+    const userStr = sessionStorage.getItem('psobb_user');
+    if (!checkbox || !userStr) return;
+
+    const user = JSON.parse(userStr);
+    const enabled = checkbox.checked;
+
+    try {
+        const response = await fetch('/api/toggle_discord_streak.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': window.getCSRFToken()
+            },
+            body: JSON.stringify({
+                receive_discord_streak_msg: enabled ? 1 : 0
+            })
+        });
+        const data = await response.json();
+        if (response.ok && data.success) {
+            user.receive_discord_streak_msg = enabled ? 1 : 0;
+            sessionStorage.setItem('psobb_user', JSON.stringify(user));
+            console.log(`[Preferences] Discord streak DM alerts toggled successfully: ${enabled}`);
+        } else {
+            throw new Error(data.error);
+        }
+    } catch (e) {
+        console.error('Discord streak alerts preferences update failed:', e);
         checkbox.checked = !enabled;
     }
 };

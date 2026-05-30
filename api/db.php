@@ -89,6 +89,20 @@ function get_db()
             $db->exec("ALTER TABLE users ADD COLUMN receive_system_mail INTEGER DEFAULT 1");
         }
 
+        // Ensure receive_discord_streak_msg column exists (QoL Discord DM streak alert setting)
+        $hasReceiveDiscordStreakMsg = false;
+        $result = $db->query("PRAGMA table_info(users)");
+        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+            if ($row['name'] === 'receive_discord_streak_msg') {
+                $hasReceiveDiscordStreakMsg = true;
+                break;
+            }
+        }
+        $result->finalize();
+        if (!$hasReceiveDiscordStreakMsg) {
+            $db->exec("ALTER TABLE users ADD COLUMN receive_discord_streak_msg INTEGER DEFAULT 1");
+        }
+
         // --- Auto-migration for Bounty/Missions & Streaks tables ---
         $db->exec("
             CREATE TABLE IF NOT EXISTS missions (
