@@ -1,6 +1,6 @@
 <?php
 // Hex string builders for NewServ $item drops
-function build_pso_weapon($base_hex, $special_name = '', $untekked = false, $native = 0, $abeast = 0, $machine = 0, $dark = 0) {
+function build_pso_weapon($base_hex, $special_name = '', $untekked = false, $native = 0, $abeast = 0, $machine = 0, $dark = 0, $hit = 0) {
     $special_map = [
         'draw' => 1, 'drain' => 2, 'fill' => 3, 'gush' => 4,
         'heart' => 5, 'mind' => 6, 'soul' => 7, 'geist' => 8,
@@ -25,12 +25,13 @@ function build_pso_weapon($base_hex, $special_name = '', $untekked = false, $nat
     }
     $data[4] = chr($special_val);
     
-    // Add stats (Native=1, ABeast=2, Machine=3, Dark=4)
+    // Add stats (Native=1, ABeast=2, Machine=3, Dark=4, Hit=5)
     $idx = 6;
     if ($native > 0) { $data[$idx] = chr(1); $data[$idx+1] = chr($native); $idx += 2; }
     if ($abeast > 0 && $idx < 12) { $data[$idx] = chr(2); $data[$idx+1] = chr($abeast); $idx += 2; }
     if ($machine > 0 && $idx < 12) { $data[$idx] = chr(3); $data[$idx+1] = chr($machine); $idx += 2; }
     if ($dark > 0 && $idx < 12) { $data[$idx] = chr(4); $data[$idx+1] = chr($dark); $idx += 2; }
+    if ($hit > 0 && $idx < 12) { $data[$idx] = chr(5); $data[$idx+1] = chr($hit); $idx += 2; }
     
     return strtoupper(bin2hex($data));
 }

@@ -50,7 +50,8 @@ function buildHexPayload($itemStr) {
             if (!empty($parts) && strpos($parts[0], '/') !== false) {
                 $stats = explode('/', $parts[0]);
                 $idx = 6;
-                for ($i = 0; $i < 4; $i++) {
+                // Native=1, A.Beast=2, Machine=3, Dark=4, Hit=5
+                for ($i = 0; $i < 5; $i++) {
                     if (isset($stats[$i]) && $stats[$i] > 0 && $idx < 12) {
                         $data[$idx] = chr($i + 1);
                         $data[$idx+1] = chr($stats[$i]);
