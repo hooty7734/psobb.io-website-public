@@ -42,6 +42,9 @@ start_secure_session();
     <div class="scan-lines"></div>
     <header class="animate-fade-in">
         <a href="/" class="logo-text" style="text-decoration:none;">PSOBB.IO</a>
+        <?php if (!empty($_SESSION['user']) && $current_page !== 'login'): ?>
+            <a href="/login.php" class="header-portal-btn" style="border: 1px solid #00ffff; color: #00ffff; background: rgba(0, 255, 255, 0.1); padding: 5px 12px; box-shadow: 0 0 5px rgba(0, 255, 255, 0.2); font-family: 'Share Tech Mono', monospace; font-weight: bold; font-size: 0.8rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; margin-left: 15px; transition: all 0.2s;"><i class="fas fa-arrow-left"></i> <?= __('Back to Portal') ?></a>
+        <?php endif; ?>
         <div class="menu-toggle" id="mobile-menu">
             <span class="bar"></span>
             <span class="bar"></span>

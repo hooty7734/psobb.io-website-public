@@ -2444,18 +2444,10 @@ body.pwa-standalone .logo-text {
     }
 }
 
-/* Embedded iframe view adjustments */
-html.in-iframe header,
-html.in-iframe footer {
-    display: none !important;
-}
-html.in-iframe body {
-    padding-top: 0 !important;
-    background: transparent !important;
-    min-height: auto !important;
-}
-html.in-iframe .scan-lines {
-    display: none !important;
+.header-portal-btn:hover {
+    background: rgba(0, 255, 255, 0.25) !important;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.4) !important;
+    color: #fff !important;
 }
 
 

@@ -6,11 +6,7 @@
  * - Session Management (Login, Logout, Dashboard State)
  * - Server Telemetry Fetching (Player counts, Active Games)
  * - DOM manipulation and layout animation (Intersection Observers)
- * - CSRF Header Injection for secure API interaction
-// Detect if running inside an iframe and add class to html immediately to avoid header/footer flash
-if (window.self !== window.top) {
-    document.documentElement.classList.add('in-iframe');
-}
+ * - CSRF Header Injection for secure API interaction */
 
 document.addEventListener('DOMContentLoaded', () => {
     // Detect PWA Standalone Mode
@@ -1050,16 +1046,6 @@ window.switchDashboardTab = function(tabId) {
     } else if (tabId === 'tab-guild') {
         window.loadUnlocks();
         window.loadStreak();
-    } else if (tabId === 'tab-bounties') {
-        const frame = document.getElementById('bounties-iframe');
-        if (frame && !frame.src) {
-            frame.src = frame.getAttribute('data-src');
-        }
-    } else if (tabId === 'tab-lfg') {
-        const frame = document.getElementById('lfg-iframe');
-        if (frame && !frame.src) {
-            frame.src = frame.getAttribute('data-src');
-        }
     }
 };
 
