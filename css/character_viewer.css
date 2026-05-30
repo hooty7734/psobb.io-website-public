@@ -784,3 +784,20 @@
         grid-template-columns: 1fr;
     }
 }
+
+@media (max-width: 768px) {
+    .bank-grid {
+        grid-template-columns: repeat(6, 1fr) !important;
+    }
+    .backpack-grid {
+        grid-template-columns: repeat(5, 1fr) !important;
+    }
+}
+@media (max-width: 480px) {
+    .bank-grid {
+        grid-template-columns: repeat(5, 1fr) !important;
+    }
+    .backpack-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+    }
+}

@@ -2406,5 +2406,43 @@ body.pwa-standalone .logo-text {
     50% { box-shadow: 0 0 20px rgba(0, 200, 200, 0.4); }
 }
 
+/* ==========================================================================
+   Responsive Dashboard Grids and Progressive Inventory Columns
+   ========================================================================== */
+.dashboard-grid-guild {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 1.5rem;
+}
+.dashboard-grid-settings {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+    .dashboard-grid-guild,
+    .dashboard-grid-settings {
+        grid-template-columns: 1fr !important;
+        gap: 1.25rem !important;
+    }
+}
+
+@media (max-width: 1024px) {
+    .backpack-grid-box, .bank-grid-box {
+        grid-template-columns: repeat(8, 1fr) !important;
+    }
+}
+@media (max-width: 768px) {
+    .backpack-grid-box, .bank-grid-box {
+        grid-template-columns: repeat(6, 1fr) !important;
+    }
+}
+@media (max-width: 480px) {
+    .backpack-grid-box, .bank-grid-box {
+        grid-template-columns: repeat(5, 1fr) !important;
+    }
+}
+
 
 
