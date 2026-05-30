@@ -465,6 +465,18 @@ if (file_exists($psocharPath)) {
         }
     }
     
+    // Strip internal hex codes from all items before sending to frontend
+    // Players should only see resolved item names, never raw hex
+    $strip_hex = function(&$items) {
+        foreach ($items as &$item) {
+            unset($item['hex']);
+            unset($item['item_id']);
+        }
+    };
+    $strip_hex($character['inventory']);
+    $strip_hex($character['bank']['items']);
+    $strip_hex($character['shared_bank']['items']);
+    
     echo json_encode([
         'success' => true, 
         'character' => $character, 

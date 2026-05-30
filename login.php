@@ -189,6 +189,9 @@ include 'includes/header.php';
                         <button class="dl-btn slot-btn" onclick="switchCharSlot(1)" data-slot="1">Character 2</button>
                         <button class="dl-btn slot-btn" onclick="switchCharSlot(2)" data-slot="2">Character 3</button>
                         <button class="dl-btn slot-btn" onclick="switchCharSlot(3)" data-slot="3">Character 4</button>
+                        <button id="btn-download-char" class="dl-btn" onclick="window.downloadCharacterData()" style="margin-left:auto; border-color:rgba(0,255,200,0.3); color:#00ffc8; background:rgba(0,255,200,0.06); font-size:0.75rem; padding:6px 12px;" title="Download .psochar and .psobank files">
+                            <i class="fas fa-download"></i> <?= __('Export') ?>
+                        </button>
                     </div>
 
                     <div id="viewer-loader" style="text-align: center; padding: 2rem; display: none;">
@@ -441,15 +444,27 @@ include 'includes/header.php';
                                 </div>
                             </div>
 
-                            <!-- Bounty board link and quick review -->
+                            <!-- Player's Active Bounties Board (Native) -->
                             <div style="border: 1px solid rgba(0, 255, 255, 0.2); background: rgba(0, 10, 20, 0.4); padding: 1.5rem; border-radius: 8px; margin-bottom:2rem;">
-                                <h3 style="color:#00ffff; font-family:'Share Tech Mono', monospace; margin-top:0; border-bottom:1px solid rgba(0,255,255,0.2); padding-bottom:8px; margin-bottom:12px;"><i class="fas fa-crosshairs animate-pulse" style="color:#00ffff; margin-right:8px;"></i><?= __('Hunter\'s Guild Bounties') ?></h3>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                    <h3 style="color:#00ffff; font-family:'Share Tech Mono', monospace; margin:0;"><i class="fas fa-crosshairs animate-pulse" style="color:#00ffff; margin-right:8px;"></i><?= __('Your Bounties') ?></h3>
+                                    <a href="missions.php" class="dl-btn" style="text-decoration:none; padding:4px 12px; font-size:0.7rem; border-color:rgba(0,255,255,0.3); color:#00ffff;"><i class="fas fa-bullseye"></i> <?= __('Full Board') ?></a>
+                                </div>
                                 
-                                <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom:15px;"><?= __('Accept unique custom personal bounties from the Hunters Guild Bounty Board to earn rare weapon packages, shield upgrades, and Meseta cash payouts!') ?></p>
-                                
-                                <a href="missions.php" class="dl-btn" style="display:block; text-align:center; text-decoration:none; border-color: #00ffff; background: rgba(0, 255, 255, 0.15); color: #00ffff; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size:0.9rem; padding:10px;">
-                                    <i class="fas fa-bullseye"></i> <?= __('Open Hunters Guild Board') ?>
-                                </a>
+                                <!-- Bounty status bar -->
+                                <div id="bounty-stats-bar" style="display:flex; gap:10px; margin-bottom:1rem;">
+                                    <span style="font-size:0.75rem; color:#888; font-family:'Share Tech Mono',monospace;">
+                                        <i class="fas fa-spinner fa-spin"></i> <?= __('Loading bounties...') ?>
+                                    </span>
+                                </div>
+
+                                <!-- Alert/success banner for bounty actions -->
+                                <div id="bounty-action-alert" style="display:none; padding:8px 12px; border-radius:6px; margin-bottom:12px; font-size:0.8rem; font-family:'Share Tech Mono',monospace;"></div>
+
+                                <!-- Bounty cards container -->
+                                <div id="bounty-cards-container" style="display:flex; flex-direction:column; gap:0.75rem;">
+                                    <div class="skeleton" style="height:100px; border-radius:8px;"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -549,24 +564,96 @@ include 'includes/header.php';
                     </div>
                 </div>
 
-                <!-- Tab 6: LFG Terminal -->
+                <!-- Tab 6: LFG Terminal (Native) -->
                 <div id="tab-lfg" class="dashboard-tab-pane">
-                    <div style="border: 1px solid rgba(255, 170, 0, 0.2); background: rgba(0, 10, 20, 0.4); padding: 1rem; border-radius: 8px;">
-                        <h3 style="color:#ffaa00; font-family:'Share Tech Mono', monospace; margin-top:0; border-bottom:1px solid rgba(255,170,0,0.2); padding-bottom:8px; margin-bottom:12px;"><i class="fas fa-users"></i> <?= __('Looking for Group Terminal') ?></h3>
-                        <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom:15px;"><?= __('Coordinate with other players and join active party rooms in-game instantly.') ?></p>
-                        <div id="lfg-embed-container" style="border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); min-height: 500px;">
-                            <iframe id="lfg-iframe" src="" data-src="/lfg.php" style="width:100%; height:600px; border:none; background: rgba(0,0,0,0.3);" loading="lazy"></iframe>
+                    <!-- Alert banner -->
+                    <div id="lfg-alert" style="display:none; padding:10px 15px; border-radius:6px; margin-bottom:1rem; font-size:0.85rem; font-family:'Share Tech Mono', monospace;"></div>
+
+                    <!-- Character sync + quick post (compact row) -->
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                        <!-- Character Status -->
+                        <div style="border:1px solid rgba(255,170,0,0.2); background:rgba(0,10,20,0.5); border-radius:8px; padding:1rem;">
+                            <h4 style="margin:0 0 8px; color:#ffaa00; font-family:'Share Tech Mono',monospace; font-size:0.85rem;"><i class="fas fa-satellite-dish"></i> <?= __('CHARACTER STATUS') ?></h4>
+                            <div id="lfg-char-sync" style="font-size:0.85rem; color:#888;"><?= __('Synchronizing...') ?></div>
+                        </div>
+                        <!-- Quick Post -->
+                        <div style="border:1px solid rgba(255,170,0,0.2); background:rgba(0,10,20,0.5); border-radius:8px; padding:1rem;">
+                            <h4 style="margin:0 0 8px; color:#ffaa00; font-family:'Share Tech Mono',monospace; font-size:0.85rem;"><i class="fas fa-plus-circle"></i> <?= __('QUICK POST') ?></h4>
+                            <div style="display:flex; gap:8px;">
+                                <input type="text" id="lfg-quick-desc" placeholder="<?= __('e.g. Running TTF Ultimate, need FO') ?>" maxlength="250" style="flex:1; padding:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,170,0,0.3); color:#fff; border-radius:4px; font-size:0.85rem;">
+                                <button id="lfg-quick-post-btn" onclick="window.portalLfgPost()" class="dl-btn" style="border-color:#ffaa00; color:#ffaa00; background:rgba(255,170,0,0.1); padding:8px 14px; white-space:nowrap; font-size:0.8rem;" disabled>
+                                    <i class="fas fa-lock"></i> <?= __('Post') ?>
+                                </button>
+                            </div>
+                            <div style="display:flex; gap:6px; margin-top:8px;">
+                                <label style="font-size:0.7rem; color:#aaa; display:flex; align-items:center; gap:3px; cursor:pointer;">
+                                    <input type="checkbox" class="lfg-seek-check" value="HU" checked style="accent-color:#ff4444;"> <span style="color:#ff6666;">HU</span>
+                                </label>
+                                <label style="font-size:0.7rem; color:#aaa; display:flex; align-items:center; gap:3px; cursor:pointer;">
+                                    <input type="checkbox" class="lfg-seek-check" value="RA" checked style="accent-color:#44ff44;"> <span style="color:#66ff66;">RA</span>
+                                </label>
+                                <label style="font-size:0.7rem; color:#aaa; display:flex; align-items:center; gap:3px; cursor:pointer;">
+                                    <input type="checkbox" class="lfg-seek-check" value="FO" checked style="accent-color:#4488ff;"> <span style="color:#6699ff;">FO</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Groups Feed -->
+                    <div style="border:1px solid rgba(255,170,0,0.2); background:rgba(0,10,20,0.4); border-radius:8px; padding:1rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <h3 style="margin:0; color:#ffaa00; font-family:'Share Tech Mono',monospace; font-size:0.95rem;"><i class="fas fa-users"></i> <?= __('ACTIVE GROUPS') ?> <span id="lfg-count-badge" style="display:inline-block; background:rgba(255,170,0,0.15); border:1px solid rgba(255,170,0,0.3); color:#ffaa00; padding:1px 8px; border-radius:10px; font-size:0.7rem; margin-left:6px;">0</span></h3>
+                            <button onclick="window.portalLfgRefresh()" class="dl-btn" style="padding:4px 10px; font-size:0.7rem; border-color:rgba(255,170,0,0.3); color:#ffaa00;"><i class="fas fa-sync-alt"></i></button>
+                        </div>
+                        <div id="lfg-listings-feed" style="display:flex; flex-direction:column; gap:0.75rem;">
+                            <div class="skeleton" style="height:80px; border-radius:8px;"></div>
+                            <div class="skeleton" style="height:80px; border-radius:8px;"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tab 7: Drop Chart -->
+                <!-- Tab 7: Drop Chart (Native) -->
                 <div id="tab-drops" class="dashboard-tab-pane">
-                    <div style="border: 1px solid rgba(0, 255, 200, 0.2); background: rgba(0, 10, 20, 0.4); padding: 1rem; border-radius: 8px;">
-                        <h3 style="color:#00ffc8; font-family:'Share Tech Mono', monospace; margin-top:0; border-bottom:1px solid rgba(0,255,200,0.2); padding-bottom:8px; margin-bottom:12px;"><i class="fas fa-dice-d20"></i> <?= __('Drop Chart') ?></h3>
-                        <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom:15px;"><?= __('Browse item drop tables based on episode, difficulty, and section ID. Data is sourced live from newserv configurations.') ?></p>
-                        <div id="drops-embed-container" style="border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); min-height: 500px;">
-                            <iframe id="drops-iframe" src="" data-src="/drops.php" style="width:100%; height:700px; border:none; background: rgba(0,0,0,0.3);" loading="lazy"></iframe>
+                    <div style="border:1px solid rgba(0,255,200,0.2); background:rgba(0,10,20,0.4); border-radius:8px; padding:1rem;">
+                        <h3 style="margin:0 0 12px; color:#00ffc8; font-family:'Share Tech Mono',monospace;"><i class="fas fa-dice-d20"></i> <?= __('Drop Chart') ?></h3>
+
+                        <!-- Filters row -->
+                        <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:1rem;">
+                            <select id="drops-episode" style="flex:1; min-width:120px; padding:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(0,255,200,0.3); color:#fff; border-radius:4px; font-family:'Share Tech Mono',monospace;">
+                                <option value="Episode_1"><?= __('Episode 1') ?></option>
+                                <option value="Episode_2"><?= __('Episode 2') ?></option>
+                                <option value="Episode_4"><?= __('Episode 4') ?></option>
+                            </select>
+                            <select id="drops-difficulty" style="flex:1; min-width:120px; padding:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(0,255,200,0.3); color:#fff; border-radius:4px; font-family:'Share Tech Mono',monospace;">
+                                <option value="Normal"><?= __('Normal') ?></option>
+                                <option value="Hard"><?= __('Hard') ?></option>
+                                <option value="VHard"><?= __('Very Hard') ?></option>
+                                <option value="Ultimate" selected><?= __('Ultimate') ?></option>
+                            </select>
+                            <select id="drops-section-id" style="flex:1; min-width:120px; padding:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(0,255,200,0.3); color:#fff; border-radius:4px; font-family:'Share Tech Mono',monospace;">
+                                <option value="Viridia">Viridia</option>
+                                <option value="Greenill">Greenill</option>
+                                <option value="Skyly">Skyly</option>
+                                <option value="Bluefull">Bluefull</option>
+                                <option value="Purplenum">Purplenum</option>
+                                <option value="Pinkal">Pinkal</option>
+                                <option value="Redria">Redria</option>
+                                <option value="Oran">Oran</option>
+                                <option value="Yellowboze">Yellowboze</option>
+                                <option value="Whitill">Whitill</option>
+                            </select>
+                            <button onclick="window.portalLoadDrops()" class="dl-btn" style="padding:8px 16px; border-color:#00ffc8; color:#00ffc8; background:rgba(0,255,200,0.1); font-family:'Share Tech Mono',monospace;">
+                                <i class="fas fa-search"></i> <?= __('Search') ?>
+                            </button>
+                        </div>
+
+                        <!-- Active character section ID hint -->
+                        <div id="drops-char-hint" style="display:none; margin-bottom:12px; padding:8px 12px; background:rgba(0,255,200,0.06); border:1px solid rgba(0,255,200,0.15); border-radius:6px; font-size:0.8rem; color:#00ffc8;">
+                        </div>
+
+                        <!-- Drops table -->
+                        <div id="drops-table-container" style="overflow-x:auto;">
+                            <p style="color:#888; font-family:'Share Tech Mono',monospace; text-align:center; padding:2rem;"><?= __('Select filters and press Search to load drop tables.') ?></p>
                         </div>
                     </div>
                 </div>

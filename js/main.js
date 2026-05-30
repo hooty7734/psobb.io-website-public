@@ -232,6 +232,7 @@ function showDashboard(user) {
         document.getElementById('dash-username-header').textContent = lastPlayer;
         document.getElementById('dash-username').textContent = lastPlayer;
         document.getElementById('dash-account-id').textContent = user.AccountID;
+        window._portalAccountId = parseInt(user.AccountID) || 0;
 
         document.getElementById('dash-team').textContent = user.BBTeamID ? 'Team #' + user.BBTeamID : 'None';
 
@@ -1064,20 +1065,14 @@ window.switchDashboardTab = function(tabId, clickedEl) {
     } else if (tabId === 'tab-guild') {
         window.loadUnlocks();
         window.loadStreak();
+        // Load player bounties
+        if (window.portalLoadBounties) window.portalLoadBounties();
     } else if (tabId === 'tab-lfg') {
-        // Lazy-load LFG iframe on first visit
-        const lfgIframe = document.getElementById('lfg-iframe');
-        if (lfgIframe && !lfgIframe.dataset.loaded && lfgIframe.dataset.src) {
-            lfgIframe.src = lfgIframe.dataset.src;
-            lfgIframe.dataset.loaded = '1';
-        }
+        // Initialize native LFG
+        if (window.portalLfgInit) window.portalLfgInit();
     } else if (tabId === 'tab-drops') {
-        // Lazy-load Drops iframe on first visit
-        const dropsIframe = document.getElementById('drops-iframe');
-        if (dropsIframe && !dropsIframe.dataset.loaded && dropsIframe.dataset.src) {
-            dropsIframe.src = dropsIframe.dataset.src;
-            dropsIframe.dataset.loaded = '1';
-        }
+        // Initialize native Drop Chart
+        if (window.portalDropsInit) window.portalDropsInit();
     }
 
     // Scroll to top on tab switch (mobile)

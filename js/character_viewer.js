@@ -9,11 +9,18 @@
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Initial State Definitions
     let activeSlot = 0;
+    window.activeSlot = 0; // Expose for dashboard and download button
     let bankCache = {}; // Cache of all slots bank items to support global cross-bank searches
     let activeCharData = null;
     let activeBankIndex = 0; // 0 = character, -1 = shared
     let accountOnline = false;
     let onlineCharName = '';
+    
+    // Download character data (ZIP of .psochar + .psobank)
+    window.downloadCharacterData = function() {
+        const slot = window.activeSlot || 0;
+        window.open(`/api/download_character.php?slot=${slot}`, '_blank');
+    };
     
     // Create floating tooltip element dynamically
     const tooltipEl = document.createElement('div');
@@ -151,6 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         activeSlot = slotIndex;
+        window.activeSlot = slotIndex;
         loadCharacter(slotIndex);
     }
     
@@ -422,7 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
         slotEl.className = 'item-slot';
         
         if (item) {
-            slotEl.setAttribute('data-hex', item.hex);
+            slotEl.setAttribute('data-item-name', item.name);
             
             // Set rarity classes for borders
             if (item.name.includes('Psycho Wand') || item.name.includes('Sealed J-Sword') || item.name.includes('Sato')) {
@@ -557,8 +565,18 @@ document.addEventListener('DOMContentLoaded', () => {
             html += `<div class="tooltip-spec">Qty: ${item.count}</div>`;
         }
         
-        // Hex details in monospace footer
-        html += `<div style="font-size:0.65rem; color:#666; margin-top:8px; border-top:1px solid rgba(255,255,255,0.08); padding-top:4px; font-family: monospace; letter-spacing: 0.5px;">HEX: ${item.hex.substring(0, 16)}...</div>`;
+        // Category label footer (no raw hex for players)
+        let catLabel = 'Item';
+        if (item.group === 0x00) catLabel = 'Weapon';
+        else if (item.group === 0x01) {
+            if (item.name.toLowerCase().includes('armor') || item.name.toLowerCase().includes('frame')) catLabel = 'Armor';
+            else if (item.name.toLowerCase().includes('shield') || item.name.toLowerCase().includes('barrier')) catLabel = 'Shield';
+            else catLabel = 'Unit';
+        }
+        else if (item.group === 0x02) catLabel = 'MAG';
+        else if (item.group === 0x03) catLabel = item.name.includes('Disk') ? 'Technique Disk' : 'Tool';
+        else if (item.group === 0x04) catLabel = 'Meseta';
+        html += `<div style="font-size:0.65rem; color:#666; margin-top:8px; border-top:1px solid rgba(255,255,255,0.08); padding-top:4px; font-family: 'Share Tech Mono', monospace; letter-spacing: 0.5px;"><i class="fas fa-tag"></i> ${catLabel}</div>`;
         
         tooltipEl.innerHTML = html;
         tooltipEl.style.display = 'block';
