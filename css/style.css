@@ -2133,5 +2133,278 @@ input:checked + .slider:before {
     box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
 }
 
+/* ==========================================================================
+   PWA Standalone App Mode Styling Overrides
+   ========================================================================== */
+@media (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui) {
+    header nav, 
+    header .menu-toggle {
+        display: none !important;
+    }
+    header {
+        justify-content: center !important;
+        padding: 0.8rem 1rem !important;
+        border-bottom: 2px solid rgba(0, 255, 255, 0.4) !important;
+        background: rgba(5, 10, 20, 0.95) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
+    }
+    .logo-text {
+        font-size: 1.25rem !important;
+        letter-spacing: 3px !important;
+    }
+    #pwa-install-card,
+    .pwa-install-card {
+        display: none !important;
+    }
+}
+
+body.pwa-standalone header nav,
+body.pwa-standalone header .menu-toggle,
+body.pwa-standalone #pwa-install-card,
+body.pwa-standalone .pwa-install-card {
+    display: none !important;
+}
+body.pwa-standalone header {
+    justify-content: center !important;
+    padding: 0.8rem 1rem !important;
+    border-bottom: 2px solid rgba(0, 255, 255, 0.4) !important;
+    background: rgba(5, 10, 20, 0.95) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
+}
+body.pwa-standalone .logo-text {
+    font-size: 1.25rem !important;
+    letter-spacing: 3px !important;
+}
+
+/* ==========================================================================
+   Daily Login Streak Styles (Missing in Player Portal)
+   ========================================================================== */
+.streak-container {
+    background: var(--pso-panel);
+    border: 1px solid rgba(255, 170, 0, 0.4);
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+.streak-info {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+.streak-number {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 3rem;
+    font-weight: bold;
+    color: #ffaa00;
+    text-shadow: 0 0 20px rgba(255, 170, 0, 0.6);
+    line-height: 1;
+}
+.streak-label {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+.streak-bar-wrapper {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+.streak-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+    overflow: visible;
+    position: relative;
+}
+.streak-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ffaa00, #ff6600);
+    border-radius: 3px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 12px rgba(255, 170, 0, 0.6), 0 0 4px rgba(255, 170, 0, 0.8);
+    position: relative;
+}
+.streak-fill::after {
+    content: '';
+    position: absolute;
+    right: -3px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #ffaa00, 0 0 20px rgba(255, 170, 0, 0.5);
+}
+.streak-nodes {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.75rem;
+}
+.streak-node {
+    text-align: center;
+    position: relative;
+}
+.streak-node-dot {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    background: var(--pso-dark);
+    margin: 0 auto 0.4rem;
+    transition: all 0.3s ease;
+}
+.streak-node.reached .streak-node-dot {
+    border-color: #ffaa00;
+    background: #ffaa00;
+    box-shadow: 0 0 12px rgba(255, 170, 0, 0.8);
+}
+.streak-node.claimable .streak-node-dot {
+    border-color: #00ff88;
+    background: #00ff88;
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.8);
+    animation: pulse-glow-portal 1.5s ease-in-out infinite;
+}
+.streak-node.claimed .streak-node-dot {
+    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+}
+@keyframes pulse-glow-portal {
+    0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.6); }
+    50% { box-shadow: 0 0 25px rgba(0, 255, 136, 1); }
+}
+.streak-node-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+.streak-node-reward {
+    font-size: 0.7rem;
+    color: #ffaa00;
+    margin-top: 0.2rem;
+}
+
+/* Streak Calendar Grid */
+.streak-calendar {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 6px;
+}
+.streak-day {
+    position: relative;
+    border-radius: 8px;
+    padding: 10px 6px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    transition: all 0.25s ease;
+    cursor: default;
+    overflow: hidden;
+}
+.streak-day .day-num {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.25);
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+}
+.streak-day .day-reward {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1.2;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* Reward tier coloring */
+.streak-day.tier-mono { border-color: rgba(255, 170, 0, 0.12); }
+.streak-day.tier-mono .day-reward { color: rgba(255, 170, 0, 0.4); }
+.streak-day.tier-dig { border-color: rgba(51, 181, 229, 0.12); }
+.streak-day.tier-dig .day-reward { color: rgba(51, 181, 229, 0.4); }
+.streak-day.tier-stat { border-color: rgba(170, 102, 204, 0.12); }
+.streak-day.tier-stat .day-reward { color: rgba(170, 102, 204, 0.4); }
+.streak-day.tier-tri { border-color: rgba(255, 215, 0, 0.15); }
+.streak-day.tier-tri .day-reward { color: rgba(255, 215, 0, 0.5); }
+.streak-day.tier-yahoo { border-color: rgba(0, 200, 200, 0.2); }
+.streak-day.tier-yahoo .day-reward { color: rgba(0, 200, 200, 0.6); }
+
+/* Claimed state */
+.streak-day.day-claimed {
+    background: rgba(255, 255, 255, 0.04);
+    opacity: 0.5;
+}
+.streak-day.day-claimed .day-reward {
+    text-decoration: line-through;
+    text-decoration-color: rgba(255,255,255,0.15);
+}
+.streak-day.day-claimed .day-check {
+    position: absolute;
+    top: 4px;
+    right: 5px;
+    font-size: 0.65rem;
+    color: rgba(0, 255, 136, 0.7);
+}
+
+/* Claimable state */
+.streak-day.day-claimable {
+    border-color: rgba(0, 255, 136, 0.5);
+    background: rgba(0, 255, 136, 0.08);
+    cursor: pointer;
+    animation: day-pulse-portal 2s ease-in-out infinite;
+}
+.streak-day.day-claimable .day-num { color: rgba(0, 255, 136, 0.8); }
+.streak-day.day-claimable .day-reward { color: #00ff88; }
+.streak-day.day-claimable:hover {
+    background: rgba(0, 255, 136, 0.18);
+    border-color: rgba(0, 255, 136, 0.8);
+    box-shadow: 0 0 18px rgba(0, 255, 136, 0.3), inset 0 0 15px rgba(0, 255, 136, 0.05);
+    transform: translateY(-2px);
+}
+.streak-day.day-claimable .claim-label {
+    display: block;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #00ff88;
+    margin-top: 4px;
+    text-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+}
+
+/* Reached but not yet claimable */
+.streak-day.day-reached {
+    background: rgba(255, 170, 0, 0.04);
+    border-color: rgba(255, 170, 0, 0.15);
+}
+.streak-day.day-reached .day-num { color: rgba(255, 170, 0, 0.6); }
+
+/* Random Material reward highlight when claimable */
+.streak-day.tier-stat.day-claimable {
+    border-color: rgba(170, 102, 204, 0.6);
+    background: linear-gradient(135deg, rgba(170, 102, 204, 0.12), rgba(200, 150, 255, 0.06));
+    animation: day-pulse-stat-portal 2s ease-in-out infinite;
+}
+.streak-day.tier-stat.day-claimable .day-reward { color: #aa66cc; }
+.streak-day.tier-stat.day-claimable .claim-label { color: #aa66cc; text-shadow: 0 0 8px rgba(170, 102, 204, 0.5); }
+@keyframes day-pulse-stat-portal {
+    0%, 100% { box-shadow: 0 0 8px rgba(170, 102, 204, 0.15); }
+    50% { box-shadow: 0 0 20px rgba(170, 102, 204, 0.4); }
+}
+
+/* Day 365 final reward highlight */
+.streak-day.tier-yahoo.day-claimable {
+    border-color: rgba(0, 200, 200, 0.6);
+    background: linear-gradient(135deg, rgba(0, 200, 200, 0.12), rgba(0, 255, 204, 0.06));
+    animation: day-pulse-yahoo-portal 2s ease-in-out infinite;
+}
+.streak-day.tier-yahoo.day-claimable .day-reward { color: #00c8c8; }
+.streak-day.tier-yahoo.day-claimable .claim-label { color: #00c8c8; text-shadow: 0 0 8px rgba(0, 200, 200, 0.5); }
+@keyframes day-pulse-yahoo-portal {
+    0%, 100% { box-shadow: 0 0 8px rgba(0, 200, 200, 0.15); }
+    50% { box-shadow: 0 0 20px rgba(0, 200, 200, 0.4); }
+}
+
 
 

@@ -10,6 +10,16 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Detect PWA Standalone Mode
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if (isStandalone) {
+        document.body.classList.add('pwa-standalone');
+        const installCard = document.getElementById('pwa-install-card');
+        if (installCard) {
+            installCard.style.setProperty('display', 'none', 'important');
+        }
+    }
+
     window.getCSRFToken = function() {
         const meta = document.querySelector('meta[name="csrf-token"]');
         return meta ? meta.getAttribute('content') : '';
@@ -1930,6 +1940,21 @@ function createFireworks() {
 
 // Daily Streak Calendar claims
 window.loadStreak = function() {
+    // Non-linear fill calculation based on evenly spaced milestone segments
+    function calculateFillPercentage(streak) {
+        const milestones = [0, 7, 30, 90, 180, 270, 365];
+        const segmentWidth = 100 / (milestones.length - 1); // 20% per segment
+        for (let i = 0; i < milestones.length - 1; i++) {
+            const current = milestones[i];
+            const next = milestones[i+1];
+            if (streak >= current && streak <= next) {
+                const segmentProgress = (streak - current) / (next - current);
+                return (i * segmentWidth) + (segmentProgress * segmentWidth);
+            }
+        }
+        return 100;
+    }
+
     fetch('/api/get_streak.php', { credentials: 'same-origin' })
         .then(res => {
             if (res.status === 401) {
@@ -1947,7 +1972,7 @@ window.loadStreak = function() {
                 node365.textContent = data.has_claimed_yahoo ? 'Rare Drop' : 'Yahoo! Mag';
             }
 
-            const fillPct = Math.min((data.streak / 365) * 100, 100);
+            const fillPct = calculateFillPercentage(data.streak);
             document.getElementById('streak-fill').style.width = fillPct + '%';
 
             const nodes = document.querySelectorAll('.streak-node');
@@ -1968,7 +1993,35 @@ window.loadStreak = function() {
             const claimsDiv = document.getElementById('streak-claims');
             if (claimsDiv) {
                 claimsDiv.innerHTML = '';
-                const daysArray = Array.from({ length: 365 }, (_, i) => i + 1);
+
+                // Sliding 30-day window centered around their current streak
+                let startDay = 1;
+                if (data.streak > 15) {
+                    startDay = Math.max(1, Math.min(336, data.streak - 14));
+                }
+                // Align to 10-day boundaries for clean grid row alignment
+                startDay = Math.floor((startDay - 1) / 10) * 10 + 1;
+                const endDay = Math.min(365, startDay + 29);
+
+                // Add range label above the grid
+                let labelEl = document.getElementById('streak-range-label');
+                if (!labelEl) {
+                    labelEl = document.createElement('div');
+                    labelEl.id = 'streak-range-label';
+                    labelEl.style.fontSize = '0.85rem';
+                    labelEl.style.color = '#ffaa00';
+                    labelEl.style.fontFamily = "'Share Tech Mono', monospace";
+                    labelEl.style.marginBottom = '12px';
+                    labelEl.style.textAlign = 'right';
+                    labelEl.style.letterSpacing = '1px';
+                    claimsDiv.parentNode.insertBefore(labelEl, claimsDiv);
+                }
+                labelEl.innerHTML = `<i class="fas fa-calendar-alt"></i> REWARD SCHEDULE: DAYS ${startDay} - ${endDay}`;
+
+                const daysArray = [];
+                for (let i = startDay; i <= endDay; i++) {
+                    daysArray.push(i);
+                }
                 daysArray.forEach(m => {
                     let rewardName = 'Monogrinder';
                     let tierClass = 'tier-mono';

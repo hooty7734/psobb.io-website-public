@@ -41,12 +41,30 @@ $playersDir = '/opt/newserv/system/players/';
 if (!is_dir($playersDir)) {
     $playersDir = __DIR__ . '/../../newserv/system/players/';
 }
-$psocharPath = $playersDir . "player_{$username}_{$slot}.psochar";
 
 // Helper to clamp values
 function clamp($val, $min, $max) {
     return max($min, min($max, $val));
 }
+
+// Helper to resolve player files case-insensitively
+function resolve_player_file($dir, $filename) {
+    $fullPath = $dir . $filename;
+    if (file_exists($fullPath)) {
+        return $fullPath;
+    }
+    if (is_dir($dir)) {
+        $files = scandir($dir);
+        foreach ($files as $f) {
+            if (strcasecmp($f, $filename) === 0) {
+                return $dir . $f;
+            }
+        }
+    }
+    return $fullPath;
+}
+
+$psocharPath = resolve_player_file($playersDir, "player_{$username}_{$slot}.psochar");
 
 // Master Class Names Map
 $CLASS_MAP = [
@@ -299,7 +317,7 @@ if (file_exists($psocharPath)) {
     $bankMeseta = 0;
     
     // Try to load dedicated .psobank file first, then fall back to embedded bank
-    $psobankPath = $playersDir . "player_{$username}_{$slot}.psobank";
+    $psobankPath = resolve_player_file($playersDir, "player_{$username}_{$slot}.psobank");
     $bankData = false;
     if (file_exists($psobankPath)) {
         $bankData = @file_get_contents($psobankPath);
@@ -340,7 +358,7 @@ if (file_exists($psocharPath)) {
     // Shared Bank parsing
     $sharedBankItems = [];
     $sharedBankMeseta = 0;
-    $sharedBankPath = $playersDir . "shared_bank_{$username}.psobank";
+    $sharedBankPath = resolve_player_file($playersDir, "shared_bank_{$username}.psobank");
     if (file_exists($sharedBankPath)) {
         $sharedData = @file_get_contents($sharedBankPath);
         if ($sharedData && strlen($sharedData) >= 8) {

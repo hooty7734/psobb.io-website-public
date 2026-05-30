@@ -254,6 +254,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // DAILY STREAK & DAILY REWARD SYSTEM
     // =============================================
     function loadStreak() {
+        // Non-linear fill calculation based on evenly spaced milestone segments
+        function calculateFillPercentage(streak) {
+            const milestones = [0, 7, 30, 90, 180, 270, 365];
+            const segmentWidth = 100 / (milestones.length - 1); // 20% per segment
+            for (let i = 0; i < milestones.length - 1; i++) {
+                const current = milestones[i];
+                const next = milestones[i+1];
+                if (streak >= current && streak <= next) {
+                    const segmentProgress = (streak - current) / (next - current);
+                    return (i * segmentWidth) + (segmentProgress * segmentWidth);
+                }
+            }
+            return 100;
+        }
+
         fetch('api/get_streak.php', { credentials: 'same-origin' })
             .then(res => {
                 if (res.status === 401) {
@@ -279,8 +294,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     node365.textContent = data.has_claimed_yahoo ? 'Rare Drop' : 'Yahoo! Mag';
                 }
 
-                // Update progress bar (max at 365 days)
-                const fillPct = Math.min((data.streak / 365) * 100, 100);
+                // Update progress bar
+                const fillPct = calculateFillPercentage(data.streak);
                 document.getElementById('streak-fill').style.width = fillPct + '%';
 
                 // Update nodes
