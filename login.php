@@ -56,14 +56,50 @@ include 'includes/header.php';
                     </div>
                 </div>
 
-                <!-- Dashboard SPA Tabs Navigation -->
-                <div class="dashboard-tabs">
-                    <button class="dl-btn tab-btn active" onclick="switchDashboardTab('tab-hub')" data-tab="tab-hub"><i class="fas fa-home"></i> <?= __('Hub') ?></button>
-                    <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-banks')" data-tab="tab-banks"><i class="fas fa-database"></i> <?= __('Backpack & Banks') ?></button>
-                    <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-guild')" data-tab="tab-guild"><i class="fas fa-crosshairs"></i> <?= __('Hunters Guild') ?></button>
-                    <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-chat')" data-tab="tab-chat"><i class="fas fa-terminal"></i> <?= __('Ragol Chat') ?></button>
+                <!-- Dashboard SPA Tabs Navigation (Desktop) -->
+                <div class="dashboard-tabs desktop-only">
+                    <button class="dl-btn tab-btn active" onclick="switchDashboardTab('tab-hub')" data-tab="tab-hub"><i class="fas fa-id-card"></i> <?= __('Account') ?></button>
+                    <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-banks')" data-tab="tab-banks"><i class="fas fa-user-astronaut"></i> <?= __('Character') ?></button>
+                    <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-guild')" data-tab="tab-guild"><i class="fas fa-crosshairs"></i> <?= __('Bounties') ?></button>
+                    <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-chat')" data-tab="tab-chat"><i class="fas fa-comments"></i> <?= __('Chat') ?></button>
+                    <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-lfg')" data-tab="tab-lfg"><i class="fas fa-users"></i> <?= __('LFG') ?></button>
+                    <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-drops')" data-tab="tab-drops"><i class="fas fa-dice-d20"></i> <?= __('Drops') ?></button>
                     <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-settings')" data-tab="tab-settings"><i class="fas fa-cog"></i> <?= __('Settings') ?></button>
                 </div>
+
+                <!-- Mobile Bottom Navigation Bar (shown only on mobile after login) -->
+                <nav class="mobile-bottom-nav" id="dashboard-bottom-nav">
+                    <div class="mobile-bottom-nav-inner">
+                        <button class="bottom-nav-item active" onclick="switchDashboardTab('tab-hub', this)" data-tab="tab-hub">
+                            <i class="fas fa-id-card"></i>
+                            <span><?= __('Account') ?></span>
+                        </button>
+                        <button class="bottom-nav-item" onclick="switchDashboardTab('tab-banks', this)" data-tab="tab-banks">
+                            <i class="fas fa-user-astronaut"></i>
+                            <span><?= __('Character') ?></span>
+                        </button>
+                        <button class="bottom-nav-item" onclick="switchDashboardTab('tab-guild', this)" data-tab="tab-guild">
+                            <i class="fas fa-crosshairs"></i>
+                            <span><?= __('Bounties') ?></span>
+                        </button>
+                        <button class="bottom-nav-item" onclick="switchDashboardTab('tab-chat', this)" data-tab="tab-chat">
+                            <i class="fas fa-comments"></i>
+                            <span><?= __('Chat') ?></span>
+                        </button>
+                        <button class="bottom-nav-item" onclick="switchDashboardTab('tab-lfg', this)" data-tab="tab-lfg">
+                            <i class="fas fa-users"></i>
+                            <span><?= __('LFG') ?></span>
+                        </button>
+                        <button class="bottom-nav-item" onclick="switchDashboardTab('tab-drops', this)" data-tab="tab-drops">
+                            <i class="fas fa-dice-d20"></i>
+                            <span><?= __('Drops') ?></span>
+                        </button>
+                        <button class="bottom-nav-item" onclick="switchDashboardTab('tab-settings', this)" data-tab="tab-settings">
+                            <i class="fas fa-cog"></i>
+                            <span><?= __('Settings') ?></span>
+                        </button>
+                    </div>
+                </nav>
 
                 <!-- Tab 1: Hub -->
                 <div id="tab-hub" class="dashboard-tab-pane active">
@@ -509,6 +545,28 @@ include 'includes/header.php';
                                 <h4 style="margin-top: 15px; color: #ff4444; font-family:'Share Tech Mono',monospace;"><?= __('Danger Zone') ?></h4>
                                 <button onclick="requestDeleteAccount()" class="dl-btn" style="width:100%; border-color:#ff4444; color:#ff4444; background:rgba(255, 68, 68, 0.1); box-sizing: border-box;"><i class="fas fa-user-slash"></i> <?= __('Delete Account') ?></button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 6: LFG Terminal -->
+                <div id="tab-lfg" class="dashboard-tab-pane">
+                    <div style="border: 1px solid rgba(255, 170, 0, 0.2); background: rgba(0, 10, 20, 0.4); padding: 1rem; border-radius: 8px;">
+                        <h3 style="color:#ffaa00; font-family:'Share Tech Mono', monospace; margin-top:0; border-bottom:1px solid rgba(255,170,0,0.2); padding-bottom:8px; margin-bottom:12px;"><i class="fas fa-users"></i> <?= __('Looking for Group Terminal') ?></h3>
+                        <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom:15px;"><?= __('Coordinate with other players and join active party rooms in-game instantly.') ?></p>
+                        <div id="lfg-embed-container" style="border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); min-height: 500px;">
+                            <iframe id="lfg-iframe" src="" data-src="/lfg.php" style="width:100%; height:600px; border:none; background: rgba(0,0,0,0.3);" loading="lazy"></iframe>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 7: Drop Chart -->
+                <div id="tab-drops" class="dashboard-tab-pane">
+                    <div style="border: 1px solid rgba(0, 255, 200, 0.2); background: rgba(0, 10, 20, 0.4); padding: 1rem; border-radius: 8px;">
+                        <h3 style="color:#00ffc8; font-family:'Share Tech Mono', monospace; margin-top:0; border-bottom:1px solid rgba(0,255,200,0.2); padding-bottom:8px; margin-bottom:12px;"><i class="fas fa-dice-d20"></i> <?= __('Drop Chart') ?></h3>
+                        <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom:15px;"><?= __('Browse item drop tables based on episode, difficulty, and section ID. Data is sourced live from newserv configurations.') ?></p>
+                        <div id="drops-embed-container" style="border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); min-height: 500px;">
+                            <iframe id="drops-iframe" src="" data-src="/drops.php" style="width:100%; height:700px; border:none; background: rgba(0,0,0,0.3);" loading="lazy"></iframe>
                         </div>
                     </div>
                 </div>

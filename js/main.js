@@ -196,6 +196,7 @@ function showDashboard(user) {
         dashboard.style.display = 'block';
         const mainBox = document.querySelector('.login-container');
         if (mainBox) mainBox.classList.add('dashboard-active');
+        document.body.classList.add('dashboard-mode');
 
         // Handle Discord Redirect Flags
         const urlParams = new URLSearchParams(window.location.search);
@@ -1033,15 +1034,24 @@ window.installPortalApp = async function() {
     }
 };
 
-// Switch Dashboard Tab Panes
-window.switchDashboardTab = function(tabId) {
+// Switch Dashboard Tab Panes (supports both desktop tabs + mobile bottom nav)
+window.switchDashboardTab = function(tabId, clickedEl) {
     document.querySelectorAll('.dashboard-tab-pane').forEach(pane => {
         pane.classList.remove('active');
     });
     const target = document.getElementById(tabId);
     if (target) target.classList.add('active');
 
+    // Update desktop tab buttons
     document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-tab') === tabId) {
+            btn.classList.add('active');
+        }
+    });
+
+    // Update mobile bottom nav buttons
+    document.querySelectorAll('.bottom-nav-item').forEach(btn => {
         btn.classList.remove('active');
         if (btn.getAttribute('data-tab') === tabId) {
             btn.classList.add('active');
@@ -1054,7 +1064,24 @@ window.switchDashboardTab = function(tabId) {
     } else if (tabId === 'tab-guild') {
         window.loadUnlocks();
         window.loadStreak();
+    } else if (tabId === 'tab-lfg') {
+        // Lazy-load LFG iframe on first visit
+        const lfgIframe = document.getElementById('lfg-iframe');
+        if (lfgIframe && !lfgIframe.dataset.loaded && lfgIframe.dataset.src) {
+            lfgIframe.src = lfgIframe.dataset.src;
+            lfgIframe.dataset.loaded = '1';
+        }
+    } else if (tabId === 'tab-drops') {
+        // Lazy-load Drops iframe on first visit
+        const dropsIframe = document.getElementById('drops-iframe');
+        if (dropsIframe && !dropsIframe.dataset.loaded && dropsIframe.dataset.src) {
+            dropsIframe.src = dropsIframe.dataset.src;
+            dropsIframe.dataset.loaded = '1';
+        }
     }
+
+    // Scroll to top on tab switch (mobile)
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 // Switch Character Slot

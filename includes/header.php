@@ -21,7 +21,9 @@ start_secure_session();
     <link rel="manifest" href="/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/style.css?v=<?php echo time(); ?>">
     <script src="/js/main.js?v=<?php echo time(); ?>" defer></script>
@@ -43,7 +45,9 @@ start_secure_session();
     <header class="animate-fade-in">
         <a href="/" class="logo-text" style="text-decoration:none;">PSOBB.IO</a>
         <?php if (!empty($_SESSION['user']) && $current_page !== 'login'): ?>
-            <a href="/login.php" class="header-portal-btn" style="border: 1px solid #00ffff; color: #00ffff; background: rgba(0, 255, 255, 0.1); padding: 5px 12px; box-shadow: 0 0 5px rgba(0, 255, 255, 0.2); font-family: 'Share Tech Mono', monospace; font-weight: bold; font-size: 0.8rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; margin-left: 15px; transition: all 0.2s;"><i class="fas fa-arrow-left"></i> <?= __('Back to Portal') ?></a>
+            <a href="/login.php" class="header-portal-btn"
+                style="border: 1px solid #00ffff; color: #00ffff; background: rgba(0, 255, 255, 0.1); padding: 5px 12px; box-shadow: 0 0 5px rgba(0, 255, 255, 0.2); font-family: 'Share Tech Mono', monospace; font-weight: bold; font-size: 0.8rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; margin-left: 15px; transition: all 0.2s;"><i
+                    class="fas fa-arrow-left"></i> <?= __('Back to Portal') ?></a>
         <?php endif; ?>
         <div class="menu-toggle" id="mobile-menu">
             <span class="bar"></span>

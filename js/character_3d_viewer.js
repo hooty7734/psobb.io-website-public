@@ -22,6 +22,15 @@ window.Character3DViewer = (() => {
     let previousMousePosition = { x: 0, y: 0 };
     let rotationSpeedX = 0;
     let rotationSpeedY = 0;
+    let pinchStartDist = 0;
+    let ambientParticles = null;
+    
+    // Class-to-color mapping for PSO character classes
+    const CLASS_COLORS = {
+        'HUmar':    0xff4444, 'HUnewearl': 0xff6666, 'HUcast':    0xcc3333, 'HUcaseal':  0xff5555,
+        'RAmar':    0x44ff44, 'RAmarl':    0x66ff66, 'RAcast':    0x33cc33, 'RAcaseal':  0x55ff55,
+        'FOmar':    0x4488ff, 'FOmarl':    0x6699ff, 'FOnewm':    0x3377ee, 'FOnewearl': 0x5588ff,
+    };
     
     // Cleanup any existing Three.js context and objects cleanly to prevent leaks
     function disposeViewer() {
@@ -36,6 +45,8 @@ window.Character3DViewer = (() => {
             canvas.removeEventListener('mousemove', onMouseMove);
             canvas.removeEventListener('touchstart', onTouchStart);
             canvas.removeEventListener('touchmove', onTouchMove);
+            canvas.removeEventListener('touchstart', onTouchStartPinch);
+            canvas.removeEventListener('touchmove', onTouchMovePinch);
         }
         
         if (pointsObject) {
@@ -48,6 +59,13 @@ window.Character3DViewer = (() => {
         if (gridHelper) {
             if (scene) scene.remove(gridHelper);
             gridHelper = null;
+        }
+        
+        if (ambientParticles) {
+            if (scene) scene.remove(ambientParticles);
+            if (ambientParticles.geometry) ambientParticles.geometry.dispose();
+            if (ambientParticles.material) ambientParticles.material.dispose();
+            ambientParticles = null;
         }
         
         if (renderer) {
@@ -153,12 +171,13 @@ window.Character3DViewer = (() => {
             geometry.boundingBox.getCenter(center);
             geometry.translate(-center.x, -center.y, -center.z);
             
-            // Neon cyan glowing points material
+            // Neon glowing points material — color based on class
+            const classColor = CLASS_COLORS[className] || 0x00ffff;
             const material = new THREE.PointsMaterial({
-                color: 0x00ffff,
-                size: 0.12,
+                color: classColor,
+                size: 0.14,
                 transparent: true,
-                opacity: 0.85,
+                opacity: 0.88,
                 blending: THREE.AdditiveBlending,
                 sizeAttenuation: true
             });
@@ -166,11 +185,30 @@ window.Character3DViewer = (() => {
             pointsObject = new THREE.Points(geometry, material);
             scene.add(pointsObject);
             
+            // Add ambient floating photon particles
+            const ambientCount = 120;
+            const ambientPositions = new Float32Array(ambientCount * 3);
+            for (let i = 0; i < ambientCount * 3; i++) {
+                ambientPositions[i] = (Math.random() - 0.5) * 16;
+            }
+            const ambientGeo = new THREE.BufferGeometry();
+            ambientGeo.setAttribute('position', new THREE.BufferAttribute(ambientPositions, 3));
+            const ambientMat = new THREE.PointsMaterial({
+                color: classColor,
+                size: 0.04,
+                transparent: true,
+                opacity: 0.35,
+                blending: THREE.AdditiveBlending,
+                sizeAttenuation: true
+            });
+            ambientParticles = new THREE.Points(ambientGeo, ambientMat);
+            scene.add(ambientParticles);
+            
             // Add a beautiful cybernetic grid helper at the feet
             const boundingBox = geometry.boundingBox;
             const modelHeight = boundingBox.max.y - boundingBox.min.y;
             
-            gridHelper = new THREE.GridHelper(8, 16, 0x00ffff, 0x003333);
+            gridHelper = new THREE.GridHelper(8, 16, classColor, 0x003333);
             gridHelper.position.y = -modelHeight / 2 - 0.1;
             gridHelper.material.transparent = true;
             gridHelper.material.opacity = 0.3;
@@ -196,6 +234,9 @@ window.Character3DViewer = (() => {
             canvas.addEventListener('mousemove', onMouseMove);
             canvas.addEventListener('touchstart', onTouchStart, { passive: true });
             canvas.addEventListener('touchmove', onTouchMove, { passive: true });
+            // Pinch-to-zoom
+            canvas.addEventListener('touchstart', onTouchStartPinch, { passive: true });
+            canvas.addEventListener('touchmove', onTouchMovePinch, { passive: true });
             
             animate();
             
@@ -214,7 +255,13 @@ window.Character3DViewer = (() => {
         // Slowly spin automatically when not actively dragging
         if (!isDragging && pointsObject) {
             pointsObject.rotation.y += 0.005;
-            if (gridHelper) gridHelper.rotation.y -= 0.002; // Rotate grid opposite way for visual wow
+            if (gridHelper) gridHelper.rotation.y -= 0.002;
+        }
+        
+        // Float ambient particles
+        if (ambientParticles) {
+            ambientParticles.rotation.y += 0.001;
+            ambientParticles.rotation.x += 0.0005;
         }
         
         renderer.render(scene, camera);
@@ -287,6 +334,26 @@ window.Character3DViewer = (() => {
     function onTouchEnd() {
         isDragging = false;
         window.removeEventListener('touchend', onTouchEnd);
+    }
+    
+    // Pinch-to-zoom support for mobile
+    function onTouchStartPinch(e) {
+        if (e.touches.length === 2 && camera) {
+            const dx = e.touches[0].clientX - e.touches[1].clientX;
+            const dy = e.touches[0].clientY - e.touches[1].clientY;
+            pinchStartDist = Math.sqrt(dx * dx + dy * dy);
+        }
+    }
+    
+    function onTouchMovePinch(e) {
+        if (e.touches.length === 2 && camera && pinchStartDist > 0) {
+            const dx = e.touches[0].clientX - e.touches[1].clientX;
+            const dy = e.touches[0].clientY - e.touches[1].clientY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const delta = dist - pinchStartDist;
+            camera.position.z = Math.max(2, Math.min(30, camera.position.z - delta * 0.02));
+            pinchStartDist = dist;
+        }
     }
     
     // Auto-resize handler

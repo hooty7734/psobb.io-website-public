@@ -2450,5 +2450,259 @@ body.pwa-standalone .logo-text {
     color: #fff !important;
 }
 
+/* ==========================================================================
+   Mobile Bottom Navigation Bar (Player Portal Dashboard)
+   Only visible on mobile when the dashboard is active (post-login).
+   ========================================================================== */
+.mobile-bottom-nav {
+    display: none; /* Hidden by default; shown on mobile via media query */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9000;
+    background: rgba(5, 8, 18, 0.92);
+    backdrop-filter: blur(20px) saturate(1.8);
+    -webkit-backdrop-filter: blur(20px) saturate(1.8);
+    border-top: 1px solid rgba(0, 255, 255, 0.15);
+    box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.6), 0 -1px 0 rgba(0, 255, 255, 0.08);
+    padding: 4px 0;
+    padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.mobile-bottom-nav::-webkit-scrollbar { display: none; }
 
+.mobile-bottom-nav-inner {
+    display: flex;
+    min-width: 100%;
+    justify-content: space-around;
+}
 
+.bottom-nav-item {
+    flex: 0 0 auto;
+    min-width: 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 8px 4px;
+    color: rgba(255, 255, 255, 0.45);
+    text-decoration: none;
+    font-size: 0.62rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    border: none;
+    background: none;
+}
+
+.bottom-nav-item i {
+    font-size: 1.15rem;
+    margin-bottom: 3px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bottom-nav-item span {
+    display: block;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.bottom-nav-item.active {
+    color: var(--pso-blue);
+}
+
+.bottom-nav-item.active i {
+    text-shadow: 0 0 12px var(--pso-blue), 0 0 24px rgba(0, 255, 255, 0.3);
+    transform: scale(1.12);
+}
+
+.bottom-nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 2px;
+    background: var(--pso-blue);
+    border-radius: 0 0 2px 2px;
+    box-shadow: 0 0 8px var(--pso-blue);
+}
+
+.bottom-nav-item:hover {
+    color: rgba(0, 255, 255, 0.8);
+}
+
+/* Mobile: show bottom nav when dashboard is active */
+@media (max-width: 768px) {
+    body.dashboard-mode .mobile-bottom-nav {
+        display: flex;
+    }
+    
+    /* Hide the horizontal desktop tabs on mobile */
+    body.dashboard-mode .dashboard-tabs {
+        display: none !important;
+    }
+    
+    /* Add bottom padding to main content so it doesn't overlap the nav */
+    body.dashboard-mode main {
+        padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+    }
+    
+    /* Reduce container padding on mobile */
+    body.dashboard-mode .container {
+        padding: 0 0.75rem 1rem;
+    }
+    
+    /* Dashboard header welcome bar - compact on mobile */
+    body.dashboard-mode #dashboard > div:first-child {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 1rem !important;
+    }
+    
+    /* Full width login container on mobile */
+    body.dashboard-mode .login-container.dashboard-active {
+        margin: 1rem auto;
+        padding: 0.75rem;
+    }
+    
+    /* Hide the desktop header nav but keep logo */
+    body.dashboard-mode header nav {
+        display: none !important;
+    }
+    body.dashboard-mode header .menu-toggle {
+        display: none !important;
+    }
+    body.dashboard-mode header {
+        justify-content: center;
+        padding: 0.6rem 1rem;
+    }
+    
+    /* Dashboard tab pane transitions */
+    .dashboard-tab-pane {
+        animation: mobileTabSlideIn 0.3s ease forwards;
+    }
+    
+    /* Dashboard content grid - single column on mobile */
+    body.dashboard-mode .dashboard-content-grid,
+    body.dashboard-mode .char-banks-grid,
+    body.dashboard-mode .dashboard-grid-guild,
+    body.dashboard-mode .dashboard-grid-settings {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* Hunter's license card - full width on mobile */
+    body.dashboard-mode .hunters-license-card {
+        max-width: 100%;
+    }
+    
+    /* Material gauges - 2 across on mobile */
+    body.dashboard-mode .material-gauges-grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* Streak calendar responsive */
+    body.dashboard-mode .streak-calendar {
+        grid-template-columns: repeat(5, 1fr) !important;
+    }
+    
+    /* Chat log full height on mobile */
+    body.dashboard-mode .chat-messages-log {
+        height: 300px;
+    }
+}
+
+@keyframes mobileTabSlideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Desktop: keep tabs as-is but polish them slightly */
+@media (min-width: 769px) {
+    .mobile-bottom-nav {
+        display: none !important;
+    }
+}
+
+/* ==========================================================================
+   Improved Glass Card Component
+   ========================================================================== */
+.glass-card {
+    background: rgba(10, 18, 30, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+    border-color: rgba(0, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 15px rgba(0, 255, 255, 0.06);
+}
+
+/* ==========================================================================
+   Skeleton Loading Placeholder
+   ========================================================================== */
+.skeleton {
+    background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.5s ease-in-out infinite;
+    border-radius: 4px;
+}
+
+@keyframes skeletonShimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* ==========================================================================
+   Utility Display Classes
+   ========================================================================== */
+.mobile-only { display: none; }
+.desktop-only { display: block; }
+
+@media (max-width: 768px) {
+    .mobile-only { display: block; }
+    .desktop-only { display: none; }
+}
+
+/* ==========================================================================
+   Improved Global Mobile Experience
+   ========================================================================== */
+@media (max-width: 768px) {
+    /* Smooth scrolling everywhere */
+    html { scroll-behavior: smooth; }
+    
+    /* Larger touch targets */
+    .dl-btn, button, a.dl-btn {
+        min-height: 44px;
+    }
+    
+    /* Better news cards on mobile */
+    .news-item {
+        border-radius: 10px;
+        padding: 1.25rem;
+        border-color: rgba(0, 255, 255, 0.15);
+    }
+    
+    /* Sidebar as compact cards on mobile */
+    .sidebar .server-status-widget,
+    .sidebar .sidebar-widget {
+        border-radius: 10px;
+    }
+}
