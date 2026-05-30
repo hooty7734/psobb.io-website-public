@@ -61,6 +61,8 @@ include 'includes/header.php';
                     <button class="dl-btn tab-btn active" onclick="switchDashboardTab('tab-hub')" data-tab="tab-hub"><i class="fas fa-home"></i> <?= __('Hub') ?></button>
                     <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-banks')" data-tab="tab-banks"><i class="fas fa-database"></i> <?= __('Backpack & Banks') ?></button>
                     <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-guild')" data-tab="tab-guild"><i class="fas fa-crosshairs"></i> <?= __('Hunters Guild') ?></button>
+                    <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-bounties')" data-tab="tab-bounties"><i class="fas fa-bullseye"></i> <?= __('Bounty Board') ?></button>
+                    <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-lfg')" data-tab="tab-lfg"><i class="fas fa-satellite"></i> <?= __('LFG Terminal') ?></button>
                     <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-chat')" data-tab="tab-chat"><i class="fas fa-terminal"></i> <?= __('Ragol Chat') ?></button>
                     <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-settings')" data-tab="tab-settings"><i class="fas fa-cog"></i> <?= __('Settings') ?></button>
                 </div>
@@ -132,9 +134,9 @@ include 'includes/header.php';
                                 <h3 style="color:#ffaa00; font-family:'Share Tech Mono',monospace; margin-top:0; border-bottom:1px solid rgba(255,170,0,0.2); padding-bottom:8px; margin-bottom:12px;"><i class="fas fa-users"></i> <?= __('LFG Terminal & Group Warp') ?></h3>
                                 <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom:15px;"><?= __('Coordinate with other players and join active party rooms in-game instantly with Direct Warp capabilities.') ?></p>
                                 <div style="display:flex; gap:10px;">
-                                    <a href="lfg.php" class="dl-btn" style="flex:1; text-align:center; text-decoration:none; border-color: #ffaa00; background: rgba(255, 170, 0, 0.15); color: #ffaa00; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size:0.9rem; padding:10px;">
+                                    <button onclick="switchDashboardTab('tab-lfg')" class="dl-btn" style="flex:1; text-align:center; border-color: #ffaa00; background: rgba(255, 170, 0, 0.15); color: #ffaa00; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size:0.9rem; padding:10px; cursor:pointer;">
                                         <i class="fas fa-satellite"></i> <?= __('Open LFG Terminal') ?>
-                                    </a>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -407,9 +409,9 @@ include 'includes/header.php';
                                 
                                 <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom:15px;"><?= __('Accept unique custom personal bounties from the Hunters Guild Bounty Board to earn rare weapon packages, shield upgrades, and Meseta cash payouts!') ?></p>
                                 
-                                <a href="missions.php" class="dl-btn" style="display:block; text-align:center; text-decoration:none; border-color: #00ffff; background: rgba(0, 255, 255, 0.15); color: #00ffff; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size:0.9rem; padding:10px;">
+                                <button onclick="switchDashboardTab('tab-bounties')" class="dl-btn" style="display:block; width:100%; text-align:center; border-color: #00ffff; background: rgba(0, 255, 255, 0.15); color: #00ffff; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size:0.9rem; padding:10px; cursor:pointer;">
                                     <i class="fas fa-bullseye"></i> <?= __('Open Hunters Guild Board') ?>
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -494,6 +496,20 @@ include 'includes/header.php';
                                 <button onclick="requestDeleteAccount()" class="dl-btn" style="width:100%; border-color:#ff4444; color:#ff4444; background:rgba(255, 68, 68, 0.1); box-sizing: border-box;"><i class="fas fa-user-slash"></i> <?= __('Delete Account') ?></button>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Tab 6: Bounty Board (embedded iframe) -->
+                <div id="tab-bounties" class="dashboard-tab-pane">
+                    <div style="border: 1px solid rgba(0, 255, 255, 0.2); background: rgba(0, 10, 20, 0.5); padding: 10px; border-radius: 8px; height: calc(100vh - 220px); min-height: 600px;">
+                        <iframe id="bounties-iframe" data-src="/missions.php" style="width: 100%; height: 100%; border: none; border-radius: 6px; background: transparent;"></iframe>
+                    </div>
+                </div>
+
+                <!-- Tab 7: LFG Terminal (embedded iframe) -->
+                <div id="tab-lfg" class="dashboard-tab-pane">
+                    <div style="border: 1px solid rgba(255, 170, 0, 0.2); background: rgba(0, 10, 20, 0.5); padding: 10px; border-radius: 8px; height: calc(100vh - 220px); min-height: 600px;">
+                        <iframe id="lfg-iframe" data-src="/lfg.php" style="width: 100%; height: 100%; border: none; border-radius: 6px; background: transparent;"></iframe>
                     </div>
                 </div>
 

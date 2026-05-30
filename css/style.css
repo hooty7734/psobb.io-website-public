@@ -2444,5 +2444,19 @@ body.pwa-standalone .logo-text {
     }
 }
 
+/* Embedded iframe view adjustments */
+html.in-iframe header,
+html.in-iframe footer {
+    display: none !important;
+}
+html.in-iframe body {
+    padding-top: 0 !important;
+    background: transparent !important;
+    min-height: auto !important;
+}
+html.in-iframe .scan-lines {
+    display: none !important;
+}
+
 
 
