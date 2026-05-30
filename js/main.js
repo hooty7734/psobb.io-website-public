@@ -1392,8 +1392,14 @@ window.triggerMaterialReset = async function() {
     const msgEl = document.getElementById('reset-mat-message');
     if (!c || !msgEl) return;
 
-    const confirmed = confirm(`CAUTION: Are you sure you want to reset all consumed materials back to 0 for Character Slot ${window.activeSlot + 1} (${c.name})?\nThis will recalibrate ATP/MST/EVP/DFP/LCK stats and CANNOT be undone!`);
+    const confirmed = confirm(`CAUTION: Are you absolutely sure you want to reset all consumed materials back to 0 for Character Slot ${window.activeSlot + 1} (${c.name})?\n\nThis will permanently reset your character's stats and CANNOT be undone!`);
     if (!confirmed) return;
+
+    const typedConfirm = prompt(`To confirm this permanent reset, please type the word "WIPE" in all caps below:`);
+    if (typedConfirm !== "WIPE") {
+        alert("Action cancelled. The confirmation word did not match.");
+        return;
+    }
 
     msgEl.textContent = "Recalibrating stats...";
     msgEl.style.color = "#ffaa00";
