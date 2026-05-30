@@ -56,50 +56,14 @@ include 'includes/header.php';
                     </div>
                 </div>
 
-                <!-- Dashboard SPA Tabs Navigation (Desktop) -->
-                <div class="dashboard-tabs desktop-only">
-                    <button class="dl-btn tab-btn active" onclick="switchDashboardTab('tab-hub')" data-tab="tab-hub"><i class="fas fa-id-card"></i> <?= __('Account') ?></button>
+                <!-- Dashboard SPA Tabs Navigation -->
+                <div class="dashboard-tabs">
+                    <button class="dl-btn tab-btn active" onclick="switchDashboardTab('tab-hub')" data-tab="tab-hub"><i class="fas fa-home"></i> <?= __('Hub') ?></button>
                     <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-banks')" data-tab="tab-banks"><i class="fas fa-user-astronaut"></i> <?= __('Character') ?></button>
-                    <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-guild')" data-tab="tab-guild"><i class="fas fa-crosshairs"></i> <?= __('Bounties') ?></button>
-                    <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-chat')" data-tab="tab-chat"><i class="fas fa-comments"></i> <?= __('Chat') ?></button>
-                    <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-lfg')" data-tab="tab-lfg"><i class="fas fa-users"></i> <?= __('LFG') ?></button>
-                    <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-drops')" data-tab="tab-drops"><i class="fas fa-dice-d20"></i> <?= __('Drops') ?></button>
+                    <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-guild')" data-tab="tab-guild"><i class="fas fa-crosshairs"></i> <?= __('Hunters Guild') ?></button>
+                    <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-chat')" data-tab="tab-chat"><i class="fas fa-terminal"></i> <?= __('Ragol Chat') ?></button>
                     <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-settings')" data-tab="tab-settings"><i class="fas fa-cog"></i> <?= __('Settings') ?></button>
                 </div>
-
-                <!-- Mobile Bottom Navigation Bar (shown only on mobile after login) -->
-                <nav class="mobile-bottom-nav" id="dashboard-bottom-nav">
-                    <div class="mobile-bottom-nav-inner">
-                        <button class="bottom-nav-item active" onclick="switchDashboardTab('tab-hub', this)" data-tab="tab-hub">
-                            <i class="fas fa-id-card"></i>
-                            <span><?= __('Account') ?></span>
-                        </button>
-                        <button class="bottom-nav-item" onclick="switchDashboardTab('tab-banks', this)" data-tab="tab-banks">
-                            <i class="fas fa-user-astronaut"></i>
-                            <span><?= __('Character') ?></span>
-                        </button>
-                        <button class="bottom-nav-item" onclick="switchDashboardTab('tab-guild', this)" data-tab="tab-guild">
-                            <i class="fas fa-crosshairs"></i>
-                            <span><?= __('Bounties') ?></span>
-                        </button>
-                        <button class="bottom-nav-item" onclick="switchDashboardTab('tab-chat', this)" data-tab="tab-chat">
-                            <i class="fas fa-comments"></i>
-                            <span><?= __('Chat') ?></span>
-                        </button>
-                        <button class="bottom-nav-item" onclick="switchDashboardTab('tab-lfg', this)" data-tab="tab-lfg">
-                            <i class="fas fa-users"></i>
-                            <span><?= __('LFG') ?></span>
-                        </button>
-                        <button class="bottom-nav-item" onclick="switchDashboardTab('tab-drops', this)" data-tab="tab-drops">
-                            <i class="fas fa-dice-d20"></i>
-                            <span><?= __('Drops') ?></span>
-                        </button>
-                        <button class="bottom-nav-item" onclick="switchDashboardTab('tab-settings', this)" data-tab="tab-settings">
-                            <i class="fas fa-cog"></i>
-                            <span><?= __('Settings') ?></span>
-                        </button>
-                    </div>
-                </nav>
 
                 <!-- Tab 1: Hub -->
                 <div id="tab-hub" class="dashboard-tab-pane active">
@@ -181,7 +145,7 @@ include 'includes/header.php';
                     </div>
                 </div>
 
-                <!-- Tab 2: Backpack & Banks -->
+                <!-- Tab 2: Character & Equipment -->
                 <div id="tab-banks" class="dashboard-tab-pane">
                     <!-- Character Slots selector -->
                     <div class="character-slots-bar">
@@ -189,9 +153,6 @@ include 'includes/header.php';
                         <button class="dl-btn slot-btn" onclick="switchCharSlot(1)" data-slot="1">Character 2</button>
                         <button class="dl-btn slot-btn" onclick="switchCharSlot(2)" data-slot="2">Character 3</button>
                         <button class="dl-btn slot-btn" onclick="switchCharSlot(3)" data-slot="3">Character 4</button>
-                        <button id="btn-download-char" class="dl-btn" onclick="window.downloadCharacterData()" style="margin-left:auto; border-color:rgba(0,255,200,0.3); color:#00ffc8; background:rgba(0,255,200,0.06); font-size:0.75rem; padding:6px 12px;" title="Download .psochar and .psobank files">
-                            <i class="fas fa-download"></i> <?= __('Export') ?>
-                        </button>
                     </div>
 
                     <div id="viewer-loader" style="text-align: center; padding: 2rem; display: none;">
@@ -200,163 +161,142 @@ include 'includes/header.php';
                     </div>
 
                     <div id="viewer-content-pane">
-                        <div class="char-banks-grid">
-                            <!-- Left Column: Character profile details, circular gauges, section ID and Reset -->
-                            <div>
-                                <div class="equipped-gear-box">
-                                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                                        <h3 id="char-profile-name" style="margin:0; color:#fff; font-family:'Share Tech Mono', monospace; font-size:1.4rem;">Hunter</h3>
-                                        <div id="char-profile-online" style="font-size:0.8rem; font-weight:bold;">--</div>
-                                    </div>
-                                    <p style="margin: 4px 0 12px 0; color:rgba(255,255,255,0.5); font-size:0.9rem; font-family:'Share Tech Mono', monospace;">
-                                        <span id="char-profile-class">--</span> // <span id="char-profile-level">--</span>
-                                    </p>
-
-                                    <div style="display:flex; justify-content:center; align-items:center; background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.05); border-radius:8px; padding:15px; margin-bottom:1.5rem; position:relative; min-height:160px;">
-                                        <img id="char-profile-avatar-fallback" src="" alt="avatar" style="max-height:140px; object-fit:contain; filter:drop-shadow(0 0 8px rgba(0, 255, 255, 0.3)); display:none;">
-                                        <div id="char-profile-secid" style="position:absolute; bottom:8px; right:8px; display:flex; align-items:center; gap:5px; background:rgba(0,0,0,0.8); border:1px solid rgba(255,255,255,0.1); padding:4px 8px; border-radius:4px;">
-                                            <!-- SecID Icon -->
-                                        </div>
-                                    </div>
-
-                                    <!-- Basic stats -->
-                                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; font-size:0.85rem; font-family:'Share Tech Mono', monospace;">
-                                        <div class="tooltip-stat-row"><span>ATP:</span><span id="stat-val-atp" class="tooltip-stat-val">--</span></div>
-                                        <div class="tooltip-stat-row"><span>MST:</span><span id="stat-val-mst" class="tooltip-stat-val">--</span></div>
-                                        <div class="tooltip-stat-row"><span>EVP:</span><span id="stat-val-evp" class="tooltip-stat-val">--</span></div>
-                                        <div class="tooltip-stat-row"><span>HP:</span><span id="stat-val-hp" class="tooltip-stat-val">--</span></div>
-                                        <div class="tooltip-stat-row"><span>DFP:</span><span id="stat-val-dfp" class="tooltip-stat-val">--</span></div>
-                                        <div class="tooltip-stat-row"><span>ATA:</span><span id="stat-val-ata" class="tooltip-stat-val">--</span></div>
-                                        <div class="tooltip-stat-row"><span>LCK:</span><span id="stat-val-lck" class="tooltip-stat-val">--</span></div>
-                                        <div class="tooltip-stat-row"><span>Play Time:</span><span id="char-profile-playtime" style="color:#fff;">--</span></div>
-                                    </div>
-                                </div>
-
-                                <!-- Section ID Pre-Selector Container -->
-                                <div id="section-id-change-container" style="margin-bottom:1.5rem;">
-                                    <!-- Injected via JS -->
-                                </div>
-
-                                <!-- Stat Material Circular Gauges -->
-                                <h3 style="color:#00ffff; font-family:'Share Tech Mono', monospace; font-size:1rem; margin-bottom:10px;"><i class="fas fa-shield-alt"></i> <?= __('Material Consumption') ?></h3>
-                                
-                                <div class="material-gauges-grid" style="display:grid; grid-template-columns: 1fr; gap:12px; margin-bottom:1.5rem;">
-                                    <!-- HP gauge -->
-                                    <div class="material-gauge-card" style="flex-direction:row; justify-content:flex-start; text-align:left; gap:15px; padding:10px;">
-                                        <div class="gauge-circle-container" style="width:70px; height:70px;">
-                                            <svg class="gauge-svg" width="70" height="70" viewBox="0 0 100 100">
-                                                <circle class="gauge-bg" cx="50" cy="50" r="40"/>
-                                                <circle id="gauge-fill-hp" class="gauge-fill hp" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
-                                            </svg>
-                                            <div class="gauge-value" style="font-size:0.8rem;"><span id="gauge-val-hp">0</span><small>HP</small></div>
-                                        </div>
-                                        <div>
-                                            <h4 style="font-size:0.9rem; color:#ff4444; margin:0;"><?= __('HP Materials') ?></h4>
-                                            <span style="font-size:0.8rem; color:#aaa; font-family:'Share Tech Mono',monospace;" id="mat-val-hp">0 / 125</span>
-                                        </div>
-                                    </div>
-
-                                    <!-- TP gauge -->
-                                    <div class="material-gauge-card" style="flex-direction:row; justify-content:flex-start; text-align:left; gap:15px; padding:10px;">
-                                        <div class="gauge-circle-container" style="width:70px; height:70px;">
-                                            <svg class="gauge-svg" width="70" height="70" viewBox="0 0 100 100">
-                                                <circle class="gauge-bg" cx="50" cy="50" r="40"/>
-                                                <circle id="gauge-fill-tp" class="gauge-fill tp" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
-                                            </svg>
-                                            <div class="gauge-value" style="font-size:0.8rem;"><span id="gauge-val-tp">0</span><small>TP</small></div>
-                                        </div>
-                                        <div>
-                                            <h4 style="font-size:0.9rem; color:#aa66cc; margin:0;"><?= __('TP Materials') ?></h4>
-                                            <span style="font-size:0.8rem; color:#aaa; font-family:'Share Tech Mono',monospace;" id="mat-val-tp">0 / 125</span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Stat gauge -->
-                                    <div class="material-gauge-card" style="flex-direction:row; justify-content:flex-start; text-align:left; gap:15px; padding:10px;">
-                                        <div class="gauge-circle-container" style="width:70px; height:70px;">
-                                            <svg class="gauge-svg" width="70" height="70" viewBox="0 0 100 100">
-                                                <circle class="gauge-bg" cx="50" cy="50" r="40"/>
-                                                <circle id="gauge-fill-stats" class="gauge-fill stats" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
-                                            </svg>
-                                            <div class="gauge-value" style="font-size:0.8rem;"><span id="gauge-val-stats">0</span><small>STAT</small></div>
-                                        </div>
-                                        <div>
-                                            <h4 style="font-size:0.9rem; color:#00ffcc; margin:0;"><?= __('Stat Materials') ?></h4>
-                                            <span style="font-size:0.8rem; color:#aaa; font-family:'Share Tech Mono',monospace;" id="mat-val-stats">0 / 250</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Material details list -->
-                                <div class="material-gauge-card" style="text-align:left; align-items:stretch; padding:12px;">
-                                    <h4 style="margin:0 0 8px 0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px; font-size:0.95rem; color:#00ffff;"><i class="fas fa-list-ul"></i> <?= __('Material Summary') ?></h4>
-                                    <div class="mat-details-list" style="border:none; padding:0; margin:0;">
-                                        <div class="mat-detail-row"><span>Power Materials:</span><span id="mat-val-power" class="mat-detail-val">0</span></div>
-                                        <div class="mat-detail-row"><span>Mind Materials:</span><span id="mat-val-mind" class="mat-detail-val">0</span></div>
-                                        <div class="mat-detail-row"><span>Evade Materials:</span><span id="mat-val-evade" class="mat-detail-val">0</span></div>
-                                        <div class="mat-detail-row"><span>Def Materials:</span><span id="mat-val-def" class="mat-detail-val">0</span></div>
-                                        <div class="mat-detail-row"><span>Luck Materials:</span><span id="mat-val-luck" class="mat-detail-val">0 / 45</span></div>
-                                    </div>
-                                </div>
-
-                                <!-- Stat Material Recalibration button -->
-                                <div class="mat-reset-box">
-                                    <h3>⚠️ <?= __('Material Recalibration') ?></h3>
-                                    <p><?= __('Wipe all consumed materials on this slot and recalculate display stats safely. Resets require you to be offline, or in a lobby block (not inside an active game room).') ?></p>
-                                    <button onclick="triggerMaterialReset()" class="dl-btn mat-reset-btn" style="width:100%; font-family:'Share Tech Mono',monospace; font-weight:bold;"><i class="fas fa-trash-restore"></i> <?= __('WIPE ALL MATERIALS') ?></button>
-                                    <div id="reset-mat-message" style="margin-top:10px; font-weight:bold; display:none; font-size:0.85rem;"></div>
+                        <!-- ===== HERO: Character Identity Card ===== -->
+                        <div class="char-hero-card">
+                            <div class="char-hero-left">
+                                <div class="char-avatar-frame">
+                                    <img id="char-profile-avatar-fallback" src="" alt="avatar">
+                                    <div id="char-profile-secid" class="char-secid-badge"></div>
+                                    <div id="char-profile-online" class="char-online-indicator"></div>
                                 </div>
                             </div>
-
-                            <!-- Right Column: Equipped Gear, Backpack, and Bank -->
-                            <div>
-                                <!-- Equipped grid -->
-                                <div class="equipped-gear-box">
-                                    <h3 style="margin-top:0; font-family:'Share Tech Mono', monospace; font-size:1.05rem; color:#eee; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:6px;"><i class="fas fa-shield-halved"></i> <?= __('Equipped Gear') ?></h3>
-                                    <div class="equipped-grid-container" id="viewer-equipped-grid">
-                                        <!-- Injected by JS -->
-                                    </div>
+                            <div class="char-hero-right">
+                                <h2 id="char-profile-name" class="char-hero-name">Hunter</h2>
+                                <div class="char-hero-meta">
+                                    <span id="char-profile-class" class="char-class-badge">--</span>
+                                    <span class="char-level-badge">Lv.<span id="char-profile-level">--</span></span>
+                                    <span class="char-playtime-badge"><i class="fas fa-clock"></i> <span id="char-profile-playtime">--</span></span>
                                 </div>
-
-                                <!-- Backpack grid (30 slots) -->
-                                <div class="item-grid-title">
-                                    <span>🎒 <?= __('Backpack Inventory') ?></span>
-                                    <span style="font-size:0.8rem; color:#aaa; font-family:'Share Tech Mono',monospace;" id="viewer-backpack-count">0 / 30</span>
-                                </div>
-                                <div class="backpack-grid-box" id="viewer-backpack-grid">
-                                    <!-- Injected by JS -->
-                                </div>
-
-                                <!-- Bank section (200 slots) -->
-                                <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top:1.5rem; margin-top:1.5rem;">
-                                    <div class="item-grid-title" style="flex-wrap:wrap; gap:10px;">
-                                        <span>🏦 <?= __('Bank Vault') ?></span>
-                                        <span style="font-size:0.9rem; color:#ffaa00; font-family:'Share Tech Mono', monospace;" id="viewer-bank-meseta">0 Meseta</span>
-                                    </div>
-
-                                    <!-- Bank switcher dropdown & Swap button -->
-                                    <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
-                                        <select id="viewer-bank-select" style="flex:1; min-width:180px; padding: 10px; background: rgba(0, 0, 0, 0.5); color: #fff; border: 1px solid rgba(0, 255, 255, 0.3); border-radius: 4px; font-family:'Share Tech Mono', monospace; box-sizing: border-box;">
-                                            <option value="0"><?= __('Character Bank') ?></option>
-                                            <option value="-1"><?= __('Shared Bank') ?></option>
-                                        </select>
-                                        
-                                        <button id="viewer-btn-swap-bank" onclick="triggerBankSwap()" class="dl-btn" style="border-color:#00ffff; background:rgba(0, 255, 255, 0.1); color:#00ffff; font-family:'Share Tech Mono', monospace; font-weight:bold; padding:10px 20px;"><i class="fas fa-arrows-rotate"></i> <?= __('Swap Bank in Game') ?></button>
-                                    </div>
-                                    
-                                    <div id="bank-swap-result-msg" style="margin-bottom:12px; font-weight:bold; display:none; font-size:0.85rem;"></div>
-
-                                    <!-- Search bank -->
-                                    <div style="margin-bottom:15px;">
-                                        <input type="text" id="viewer-bank-search" placeholder="<?= __('Search bank items...') ?>" style="width:100%; padding:10px; background:rgba(0,0,0,0.5); border:1px solid rgba(0,255,255,0.3); color:#fff; border-radius:4px; font-size:0.9rem; box-sizing:border-box;">
-                                    </div>
-
-                                    <!-- Bank items grid (200 boxes) -->
-                                    <div class="bank-grid-box" id="viewer-bank-grid">
-                                        <!-- Injected by JS -->
-                                    </div>
+                                <div class="char-hero-meseta">
+                                    <i class="fas fa-coins" style="color:#ffaa00;"></i> <span id="char-meseta-val">0</span> <?= __('Meseta') ?>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- ===== PAPER DOLL: Equipment + Stats Side-by-Side ===== -->
+                        <div class="char-equip-stats-grid">
+                            <!-- Left: Paper Doll Equipment -->
+                            <div class="paper-doll-panel">
+                                <h3 class="panel-header"><i class="fas fa-shield-halved"></i> <?= __('Equipped Gear') ?></h3>
+                                <div class="paper-doll-layout">
+                                    <div class="pd-row pd-row-top">
+                                        <div class="pd-slot" data-slot="mag">
+                                            <div class="pd-slot-label"><?= __('MAG') ?></div>
+                                            <div class="pd-slot-box" id="pd-slot-mag"></div>
+                                        </div>
+                                    </div>
+                                    <div class="pd-row pd-row-mid">
+                                        <div class="pd-slot" data-slot="weapon">
+                                            <div class="pd-slot-label"><?= __('WEAPON') ?></div>
+                                            <div class="pd-slot-box" id="pd-slot-weapon"></div>
+                                        </div>
+                                        <div class="pd-slot pd-slot-center" data-slot="armor">
+                                            <div class="pd-slot-label"><?= __('ARMOR') ?></div>
+                                            <div class="pd-slot-box pd-armor" id="pd-slot-armor"></div>
+                                        </div>
+                                        <div class="pd-slot" data-slot="shield">
+                                            <div class="pd-slot-label"><?= __('SHIELD') ?></div>
+                                            <div class="pd-slot-box" id="pd-slot-shield"></div>
+                                        </div>
+                                    </div>
+                                    <div class="pd-row pd-row-bot">
+                                        <div class="pd-slot" data-slot="unit1">
+                                            <div class="pd-slot-label"><?= __('UNIT 1') ?></div>
+                                            <div class="pd-slot-box" id="pd-slot-unit1"></div>
+                                        </div>
+                                        <div class="pd-slot" data-slot="unit2">
+                                            <div class="pd-slot-label"><?= __('UNIT 2') ?></div>
+                                            <div class="pd-slot-box" id="pd-slot-unit2"></div>
+                                        </div>
+                                        <div class="pd-slot" data-slot="unit3">
+                                            <div class="pd-slot-label"><?= __('UNIT 3') ?></div>
+                                            <div class="pd-slot-box" id="pd-slot-unit3"></div>
+                                        </div>
+                                        <div class="pd-slot" data-slot="unit4">
+                                            <div class="pd-slot-label"><?= __('UNIT 4') ?></div>
+                                            <div class="pd-slot-box" id="pd-slot-unit4"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Equipped item names list -->
+                                <div id="equipped-item-names" class="equipped-names-list"></div>
+                            </div>
+
+                            <!-- Right: Stats & Materials -->
+                            <div class="char-stats-panel">
+                                <h3 class="panel-header"><i class="fas fa-chart-bar"></i> <?= __('Combat Stats') ?></h3>
+                                <div class="stat-bars-container">
+                                    <div class="stat-bar-row"><span class="stat-label">ATP</span><div class="stat-bar"><div class="stat-fill stat-atp" id="bar-atp"></div></div><span class="stat-value" id="stat-val-atp">--</span></div>
+                                    <div class="stat-bar-row"><span class="stat-label">DFP</span><div class="stat-bar"><div class="stat-fill stat-dfp" id="bar-dfp"></div></div><span class="stat-value" id="stat-val-dfp">--</span></div>
+                                    <div class="stat-bar-row"><span class="stat-label">MST</span><div class="stat-bar"><div class="stat-fill stat-mst" id="bar-mst"></div></div><span class="stat-value" id="stat-val-mst">--</span></div>
+                                    <div class="stat-bar-row"><span class="stat-label">ATA</span><div class="stat-bar"><div class="stat-fill stat-ata" id="bar-ata"></div></div><span class="stat-value" id="stat-val-ata">--</span></div>
+                                    <div class="stat-bar-row"><span class="stat-label">EVP</span><div class="stat-bar"><div class="stat-fill stat-evp" id="bar-evp"></div></div><span class="stat-value" id="stat-val-evp">--</span></div>
+                                    <div class="stat-bar-row"><span class="stat-label">LCK</span><div class="stat-bar"><div class="stat-fill stat-lck" id="bar-lck"></div></div><span class="stat-value" id="stat-val-lck">--</span></div>
+                                    <div class="stat-bar-row"><span class="stat-label">HP</span><div class="stat-bar"><div class="stat-fill stat-hp" id="bar-hp"></div></div><span class="stat-value" id="stat-val-hp">--</span></div>
+                                </div>
+
+                                <!-- Material Gauges (compact) -->
+                                <h3 class="panel-header" style="margin-top:1.5rem;"><i class="fas fa-gem"></i> <?= __('Materials Used') ?></h3>
+                                <div class="mat-compact-grid">
+                                    <div class="mat-compact-item"><div class="mat-icon hp-icon"></div><span class="mat-name">HP</span><span class="mat-val" id="mat-val-hp">0</span><span class="mat-max">/125</span></div>
+                                    <div class="mat-compact-item"><div class="mat-icon tp-icon"></div><span class="mat-name">TP</span><span class="mat-val" id="mat-val-tp">0</span><span class="mat-max">/125</span></div>
+                                    <div class="mat-compact-item"><div class="mat-icon pow-icon"></div><span class="mat-name">Power</span><span class="mat-val" id="mat-val-power">0</span></div>
+                                    <div class="mat-compact-item"><div class="mat-icon mind-icon"></div><span class="mat-name">Mind</span><span class="mat-val" id="mat-val-mind">0</span></div>
+                                    <div class="mat-compact-item"><div class="mat-icon evd-icon"></div><span class="mat-name">Evade</span><span class="mat-val" id="mat-val-evade">0</span></div>
+                                    <div class="mat-compact-item"><div class="mat-icon def-icon"></div><span class="mat-name">Def</span><span class="mat-val" id="mat-val-def">0</span></div>
+                                    <div class="mat-compact-item"><div class="mat-icon lck-icon"></div><span class="mat-name">Luck</span><span class="mat-val" id="mat-val-luck">0</span><span class="mat-max">/45</span></div>
+                                </div>
+
+                                <!-- Section ID change & Material reset (collapsed) -->
+                                <div id="section-id-change-container" style="margin-top:1rem;"></div>
+                                <details class="danger-details">
+                                    <summary><i class="fas fa-exclamation-triangle" style="color:#ff4444;"></i> <?= __('Material Recalibration') ?></summary>
+                                    <div class="mat-reset-box" style="margin-top:0.5rem;">
+                                        <p><?= __('Wipe all consumed materials on this slot and recalculate display stats safely. Requires you to be offline or in a lobby block.') ?></p>
+                                        <button onclick="triggerMaterialReset()" class="dl-btn mat-reset-btn" style="width:100%; font-family:'Share Tech Mono',monospace; font-weight:bold;"><i class="fas fa-trash-restore"></i> <?= __('WIPE ALL MATERIALS') ?></button>
+                                        <div id="reset-mat-message" style="margin-top:10px; font-weight:bold; display:none; font-size:0.85rem;"></div>
+                                    </div>
+                                </details>
+                            </div>
+                        </div>
+
+                        <!-- ===== BACKPACK INVENTORY (30 slots) ===== -->
+                        <div class="inventory-section">
+                            <div class="item-grid-title">
+                                <span>🎒 <?= __('Backpack Inventory') ?></span>
+                                <span style="font-size:0.8rem; color:#aaa; font-family:'Share Tech Mono',monospace;" id="viewer-backpack-count">0 / 30</span>
+                            </div>
+                            <div class="backpack-grid-box" id="viewer-backpack-grid"></div>
+                        </div>
+
+                        <!-- ===== BANK VAULT (200 slots) ===== -->
+                        <div class="inventory-section" style="border-top: 1px solid rgba(255,255,255,0.08); padding-top:1.5rem;">
+                            <div class="item-grid-title" style="flex-wrap:wrap; gap:10px;">
+                                <span>🏦 <?= __('Bank Vault') ?></span>
+                                <span style="font-size:0.9rem; color:#ffaa00; font-family:'Share Tech Mono', monospace;" id="viewer-bank-meseta">0 Meseta</span>
+                            </div>
+                            <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
+                                <select id="viewer-bank-select" style="flex:1; min-width:180px; padding: 10px; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(0,255,255,0.3); border-radius: 4px; font-family:'Share Tech Mono', monospace; box-sizing: border-box;">
+                                    <option value="0"><?= __('Character Bank') ?></option>
+                                    <option value="-1"><?= __('Shared Bank') ?></option>
+                                </select>
+                                <button id="viewer-btn-swap-bank" onclick="triggerBankSwap()" class="dl-btn" style="border-color:#00ffff; background:rgba(0,255,255,0.1); color:#00ffff; font-family:'Share Tech Mono', monospace; font-weight:bold; padding:10px 20px;"><i class="fas fa-arrows-rotate"></i> <?= __('Swap Bank in Game') ?></button>
+                            </div>
+                            <div id="bank-swap-result-msg" style="margin-bottom:12px; font-weight:bold; display:none; font-size:0.85rem;"></div>
+                            <div style="margin-bottom:15px;">
+                                <input type="text" id="viewer-bank-search" placeholder="<?= __('Search bank items...') ?>" style="width:100%; padding:10px; background:rgba(0,0,0,0.5); border:1px solid rgba(0,255,255,0.3); color:#fff; border-radius:4px; font-size:0.9rem; box-sizing:border-box;">
+                            </div>
+                            <div class="bank-grid-box" id="viewer-bank-grid"></div>
                         </div>
                     </div>
                 </div>
@@ -444,27 +384,15 @@ include 'includes/header.php';
                                 </div>
                             </div>
 
-                            <!-- Player's Active Bounties Board (Native) -->
+                            <!-- Bounty board link and quick review -->
                             <div style="border: 1px solid rgba(0, 255, 255, 0.2); background: rgba(0, 10, 20, 0.4); padding: 1.5rem; border-radius: 8px; margin-bottom:2rem;">
-                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                                    <h3 style="color:#00ffff; font-family:'Share Tech Mono', monospace; margin:0;"><i class="fas fa-crosshairs animate-pulse" style="color:#00ffff; margin-right:8px;"></i><?= __('Your Bounties') ?></h3>
-                                    <a href="missions.php" class="dl-btn" style="text-decoration:none; padding:4px 12px; font-size:0.7rem; border-color:rgba(0,255,255,0.3); color:#00ffff;"><i class="fas fa-bullseye"></i> <?= __('Full Board') ?></a>
-                                </div>
+                                <h3 style="color:#00ffff; font-family:'Share Tech Mono', monospace; margin-top:0; border-bottom:1px solid rgba(0,255,255,0.2); padding-bottom:8px; margin-bottom:12px;"><i class="fas fa-crosshairs animate-pulse" style="color:#00ffff; margin-right:8px;"></i><?= __('Hunter\'s Guild Bounties') ?></h3>
                                 
-                                <!-- Bounty status bar -->
-                                <div id="bounty-stats-bar" style="display:flex; gap:10px; margin-bottom:1rem;">
-                                    <span style="font-size:0.75rem; color:#888; font-family:'Share Tech Mono',monospace;">
-                                        <i class="fas fa-spinner fa-spin"></i> <?= __('Loading bounties...') ?>
-                                    </span>
-                                </div>
-
-                                <!-- Alert/success banner for bounty actions -->
-                                <div id="bounty-action-alert" style="display:none; padding:8px 12px; border-radius:6px; margin-bottom:12px; font-size:0.8rem; font-family:'Share Tech Mono',monospace;"></div>
-
-                                <!-- Bounty cards container -->
-                                <div id="bounty-cards-container" style="display:flex; flex-direction:column; gap:0.75rem;">
-                                    <div class="skeleton" style="height:100px; border-radius:8px;"></div>
-                                </div>
+                                <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom:15px;"><?= __('Accept unique custom personal bounties from the Hunters Guild Bounty Board to earn rare weapon packages, shield upgrades, and Meseta cash payouts!') ?></p>
+                                
+                                <a href="missions.php" class="dl-btn" style="display:block; text-align:center; text-decoration:none; border-color: #00ffff; background: rgba(0, 255, 255, 0.15); color: #00ffff; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size:0.9rem; padding:10px;">
+                                    <i class="fas fa-bullseye"></i> <?= __('Open Hunters Guild Board') ?>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -474,15 +402,10 @@ include 'includes/header.php';
                 <div id="tab-chat" class="dashboard-tab-pane">
                     <div style="border: 1px solid rgba(0, 255, 255, 0.2); background: rgba(0, 10, 20, 0.5); padding: 1.5rem; border-radius: 8px;">
                         <h3 style="color:#00ffff; font-family:'Share Tech Mono', monospace; margin-top:0; border-bottom:1px solid rgba(0,255,255,0.2); padding-bottom:8px; margin-bottom:12px;"><i class="fas fa-terminal animate-pulse" style="color:#00ffff; margin-right:8px;"></i><?= __('Web-to-Game Chat Console') ?></h3>
-                        <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom:15px;"><?= __('Send chat messages directly to your active in-game character\'s lobby or game block! Live lobby feed shows player joins, leaves, and room changes.') ?></p>
+                        <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom:15px;"><?= __('Send chat messages directly to your active in-game character\'s lobby or game block! Highly recommended QoL upgrade for players on Steam Deck or mobile devices.') ?></p>
                         
-                        <!-- Live Lobby Status Header -->
-                        <div id="chat-lobby-header" style="padding:10px 14px; margin-bottom:10px; background:rgba(0,20,40,0.6); border:1px solid rgba(0,255,255,0.15); border-radius:6px; font-family:'Share Tech Mono',monospace; font-size:0.85rem; color:rgba(255,255,255,0.6); min-height:30px;">
-                            <span style="color:#888;"><i class="fas fa-satellite-dish"></i> <?= __('Connecting to lobby feed...') ?></span>
-                        </div>
-
                         <div class="chat-messages-log" id="chat-messages-log" style="margin-bottom:15px;">
-                            <div class="chat-message-bubble system"><?= __('SYSTEM: Live lobby console active. Your messages appear in-game, and you\'ll see player joins/leaves here.') ?></div>
+                            <div class="chat-message-bubble system"><?= __('SYSTEM: Real-time texting console loaded. Log in-game first to broadcast messages.') ?></div>
                         </div>
                         
                         <div class="chat-input-row" style="flex-direction:column; gap:10px;">
@@ -565,100 +488,6 @@ include 'includes/header.php';
                                 <h4 style="margin-top: 15px; color: #ff4444; font-family:'Share Tech Mono',monospace;"><?= __('Danger Zone') ?></h4>
                                 <button onclick="requestDeleteAccount()" class="dl-btn" style="width:100%; border-color:#ff4444; color:#ff4444; background:rgba(255, 68, 68, 0.1); box-sizing: border-box;"><i class="fas fa-user-slash"></i> <?= __('Delete Account') ?></button>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab 6: LFG Terminal (Native) -->
-                <div id="tab-lfg" class="dashboard-tab-pane">
-                    <!-- Alert banner -->
-                    <div id="lfg-alert" style="display:none; padding:10px 15px; border-radius:6px; margin-bottom:1rem; font-size:0.85rem; font-family:'Share Tech Mono', monospace;"></div>
-
-                    <!-- Character sync + quick post (compact row) -->
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
-                        <!-- Character Status -->
-                        <div style="border:1px solid rgba(255,170,0,0.2); background:rgba(0,10,20,0.5); border-radius:8px; padding:1rem;">
-                            <h4 style="margin:0 0 8px; color:#ffaa00; font-family:'Share Tech Mono',monospace; font-size:0.85rem;"><i class="fas fa-satellite-dish"></i> <?= __('CHARACTER STATUS') ?></h4>
-                            <div id="lfg-char-sync" style="font-size:0.85rem; color:#888;"><?= __('Synchronizing...') ?></div>
-                        </div>
-                        <!-- Quick Post -->
-                        <div style="border:1px solid rgba(255,170,0,0.2); background:rgba(0,10,20,0.5); border-radius:8px; padding:1rem;">
-                            <h4 style="margin:0 0 8px; color:#ffaa00; font-family:'Share Tech Mono',monospace; font-size:0.85rem;"><i class="fas fa-plus-circle"></i> <?= __('QUICK POST') ?></h4>
-                            <div style="display:flex; gap:8px;">
-                                <input type="text" id="lfg-quick-desc" placeholder="<?= __('e.g. Running TTF Ultimate, need FO') ?>" maxlength="250" style="flex:1; padding:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,170,0,0.3); color:#fff; border-radius:4px; font-size:0.85rem;">
-                                <button id="lfg-quick-post-btn" onclick="window.portalLfgPost()" class="dl-btn" style="border-color:#ffaa00; color:#ffaa00; background:rgba(255,170,0,0.1); padding:8px 14px; white-space:nowrap; font-size:0.8rem;" disabled>
-                                    <i class="fas fa-lock"></i> <?= __('Post') ?>
-                                </button>
-                            </div>
-                            <div style="display:flex; gap:6px; margin-top:8px;">
-                                <label style="font-size:0.7rem; color:#aaa; display:flex; align-items:center; gap:3px; cursor:pointer;">
-                                    <input type="checkbox" class="lfg-seek-check" value="HU" checked style="accent-color:#ff4444;"> <span style="color:#ff6666;">HU</span>
-                                </label>
-                                <label style="font-size:0.7rem; color:#aaa; display:flex; align-items:center; gap:3px; cursor:pointer;">
-                                    <input type="checkbox" class="lfg-seek-check" value="RA" checked style="accent-color:#44ff44;"> <span style="color:#66ff66;">RA</span>
-                                </label>
-                                <label style="font-size:0.7rem; color:#aaa; display:flex; align-items:center; gap:3px; cursor:pointer;">
-                                    <input type="checkbox" class="lfg-seek-check" value="FO" checked style="accent-color:#4488ff;"> <span style="color:#6699ff;">FO</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Active Groups Feed -->
-                    <div style="border:1px solid rgba(255,170,0,0.2); background:rgba(0,10,20,0.4); border-radius:8px; padding:1rem;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                            <h3 style="margin:0; color:#ffaa00; font-family:'Share Tech Mono',monospace; font-size:0.95rem;"><i class="fas fa-users"></i> <?= __('ACTIVE GROUPS') ?> <span id="lfg-count-badge" style="display:inline-block; background:rgba(255,170,0,0.15); border:1px solid rgba(255,170,0,0.3); color:#ffaa00; padding:1px 8px; border-radius:10px; font-size:0.7rem; margin-left:6px;">0</span></h3>
-                            <button onclick="window.portalLfgRefresh()" class="dl-btn" style="padding:4px 10px; font-size:0.7rem; border-color:rgba(255,170,0,0.3); color:#ffaa00;"><i class="fas fa-sync-alt"></i></button>
-                        </div>
-                        <div id="lfg-listings-feed" style="display:flex; flex-direction:column; gap:0.75rem;">
-                            <div class="skeleton" style="height:80px; border-radius:8px;"></div>
-                            <div class="skeleton" style="height:80px; border-radius:8px;"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab 7: Drop Chart (Native) -->
-                <div id="tab-drops" class="dashboard-tab-pane">
-                    <div style="border:1px solid rgba(0,255,200,0.2); background:rgba(0,10,20,0.4); border-radius:8px; padding:1rem;">
-                        <h3 style="margin:0 0 12px; color:#00ffc8; font-family:'Share Tech Mono',monospace;"><i class="fas fa-dice-d20"></i> <?= __('Drop Chart') ?></h3>
-
-                        <!-- Filters row -->
-                        <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:1rem;">
-                            <select id="drops-episode" style="flex:1; min-width:120px; padding:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(0,255,200,0.3); color:#fff; border-radius:4px; font-family:'Share Tech Mono',monospace;">
-                                <option value="Episode_1"><?= __('Episode 1') ?></option>
-                                <option value="Episode_2"><?= __('Episode 2') ?></option>
-                                <option value="Episode_4"><?= __('Episode 4') ?></option>
-                            </select>
-                            <select id="drops-difficulty" style="flex:1; min-width:120px; padding:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(0,255,200,0.3); color:#fff; border-radius:4px; font-family:'Share Tech Mono',monospace;">
-                                <option value="Normal"><?= __('Normal') ?></option>
-                                <option value="Hard"><?= __('Hard') ?></option>
-                                <option value="VHard"><?= __('Very Hard') ?></option>
-                                <option value="Ultimate" selected><?= __('Ultimate') ?></option>
-                            </select>
-                            <select id="drops-section-id" style="flex:1; min-width:120px; padding:8px; background:rgba(0,0,0,0.5); border:1px solid rgba(0,255,200,0.3); color:#fff; border-radius:4px; font-family:'Share Tech Mono',monospace;">
-                                <option value="Viridia">Viridia</option>
-                                <option value="Greenill">Greenill</option>
-                                <option value="Skyly">Skyly</option>
-                                <option value="Bluefull">Bluefull</option>
-                                <option value="Purplenum">Purplenum</option>
-                                <option value="Pinkal">Pinkal</option>
-                                <option value="Redria">Redria</option>
-                                <option value="Oran">Oran</option>
-                                <option value="Yellowboze">Yellowboze</option>
-                                <option value="Whitill">Whitill</option>
-                            </select>
-                            <button onclick="window.portalLoadDrops()" class="dl-btn" style="padding:8px 16px; border-color:#00ffc8; color:#00ffc8; background:rgba(0,255,200,0.1); font-family:'Share Tech Mono',monospace;">
-                                <i class="fas fa-search"></i> <?= __('Search') ?>
-                            </button>
-                        </div>
-
-                        <!-- Active character section ID hint -->
-                        <div id="drops-char-hint" style="display:none; margin-bottom:12px; padding:8px 12px; background:rgba(0,255,200,0.06); border:1px solid rgba(0,255,200,0.15); border-radius:6px; font-size:0.8rem; color:#00ffc8;">
-                        </div>
-
-                        <!-- Drops table -->
-                        <div id="drops-table-container" style="overflow-x:auto;">
-                            <p style="color:#888; font-family:'Share Tech Mono',monospace; text-align:center; padding:2rem;"><?= __('Select filters and press Search to load drop tables.') ?></p>
                         </div>
                     </div>
                 </div>

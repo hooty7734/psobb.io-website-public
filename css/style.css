@@ -2451,258 +2451,402 @@ body.pwa-standalone .logo-text {
 }
 
 /* ==========================================================================
-   Mobile Bottom Navigation Bar (Player Portal Dashboard)
-   Only visible on mobile when the dashboard is active (post-login).
+   Character Page Overhaul — Hero Card, Paper Doll, Stat Bars
    ========================================================================== */
-.mobile-bottom-nav {
-    display: none; /* Hidden by default; shown on mobile via media query */
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 9000;
-    background: rgba(5, 8, 18, 0.92);
-    backdrop-filter: blur(20px) saturate(1.8);
-    -webkit-backdrop-filter: blur(20px) saturate(1.8);
-    border-top: 1px solid rgba(0, 255, 255, 0.15);
-    box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.6), 0 -1px 0 rgba(0, 255, 255, 0.08);
-    padding: 4px 0;
-    padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
-.mobile-bottom-nav::-webkit-scrollbar { display: none; }
 
-.mobile-bottom-nav-inner {
+/* ---- Hero Identity Card ---- */
+.char-hero-card {
     display: flex;
-    min-width: 100%;
-    justify-content: space-around;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(0, 20, 40, 0.8) 0%, rgba(0, 10, 20, 0.95) 100%);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+.char-hero-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00ffff, transparent);
+    animation: scanHero 3s ease-in-out infinite;
+}
+@keyframes scanHero {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+}
+.char-avatar-frame {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(0, 255, 255, 0.3);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+.char-avatar-frame img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.4));
+}
+.char-secid-badge {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+}
+.char-online-indicator {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    font-size: 0.65rem;
+    font-weight: bold;
+    font-family: 'Share Tech Mono', monospace;
+}
+.char-hero-right {
+    flex: 1;
+    min-width: 0;
+}
+.char-hero-name {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 6px 0;
+    text-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+    letter-spacing: 1px;
+}
+.char-hero-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+.char-class-badge {
+    background: rgba(0, 255, 255, 0.12);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    color: #00ffff;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+.char-level-badge {
+    background: rgba(255, 170, 0, 0.12);
+    border: 1px solid rgba(255, 170, 0, 0.3);
+    color: #ffaa00;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: bold;
+}
+.char-playtime-badge {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8rem;
+    font-family: 'Share Tech Mono', monospace;
+    padding: 2px 10px;
+}
+.char-hero-meseta {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1rem;
+    color: #ffaa00;
+    font-weight: bold;
 }
 
-.bottom-nav-item {
-    flex: 0 0 auto;
-    min-width: 64px;
+/* ---- Equipment + Stats Side-by-Side Grid ---- */
+.char-equip-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+@media (max-width: 900px) {
+    .char-equip-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ---- Panel Styling ---- */
+.paper-doll-panel, .char-stats-panel {
+    background: rgba(0, 10, 20, 0.5);
+    border: 1px solid rgba(0, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 1.25rem;
+}
+.panel-header {
+    margin: 0 0 1rem 0;
+    color: #00ffff;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1rem;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.15);
+    padding-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+/* ---- Paper Doll Equipment Layout ---- */
+.paper-doll-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+.pd-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+.pd-slot {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 6px 8px 4px;
-    color: rgba(255, 255, 255, 0.45);
-    text-decoration: none;
-    font-size: 0.62rem;
+    gap: 4px;
+}
+.pd-slot-label {
     font-family: 'Share Tech Mono', monospace;
-    font-weight: 600;
-    letter-spacing: 0.3px;
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.35);
     text-transform: uppercase;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 1px;
+}
+.pd-slot-box {
+    width: 64px;
+    height: 64px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: relative;
     cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    border: none;
-    background: none;
+    transition: all 0.25s ease;
 }
-
-.bottom-nav-item i {
-    font-size: 1.15rem;
-    margin-bottom: 3px;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+.pd-slot-box:hover {
+    border-color: var(--pso-blue);
+    box-shadow: 0 0 12px rgba(0, 255, 255, 0.25);
+    background: rgba(0, 255, 255, 0.05);
+    transform: translateY(-2px);
 }
-
-.bottom-nav-item span {
-    display: block;
-    line-height: 1;
-    white-space: nowrap;
+.pd-slot-box.pd-armor {
+    width: 72px;
+    height: 72px;
+    border-width: 2px;
+    border-color: rgba(0, 255, 255, 0.2);
 }
-
-.bottom-nav-item.active {
-    color: var(--pso-blue);
+.pd-slot-box img {
+    max-width: 80%;
+    max-height: 80%;
+    object-fit: contain;
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
 }
-
-.bottom-nav-item.active i {
-    text-shadow: 0 0 12px var(--pso-blue), 0 0 24px rgba(0, 255, 255, 0.3);
-    transform: scale(1.12);
-}
-
-.bottom-nav-item.active::before {
-    content: '';
+.pd-slot-box .pd-item-name {
     position: absolute;
-    top: 0;
+    bottom: -16px;
     left: 50%;
     transform: translateX(-50%);
-    width: 28px;
-    height: 2px;
-    background: var(--pso-blue);
-    border-radius: 0 0 2px 2px;
-    box-shadow: 0 0 8px var(--pso-blue);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.55rem;
+    color: rgba(255, 255, 255, 0.6);
+    white-space: nowrap;
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
 }
 
-.bottom-nav-item:hover {
-    color: rgba(0, 255, 255, 0.8);
-}
+/* Rarity glows on paper doll slots */
+.pd-slot-box.pd-rare-red { border-color: #ff4444; box-shadow: 0 0 8px rgba(255, 68, 68, 0.2), inset 0 0 6px rgba(255, 68, 68, 0.1); }
+.pd-slot-box.pd-rare-orange { border-color: #ffaa00; box-shadow: 0 0 8px rgba(255, 170, 0, 0.2), inset 0 0 6px rgba(255, 170, 0, 0.1); }
+.pd-slot-box.pd-rare-purple { border-color: #aa66cc; box-shadow: 0 0 8px rgba(170, 102, 204, 0.2), inset 0 0 6px rgba(170, 102, 204, 0.1); }
 
-/* Mobile: show bottom nav when dashboard is active */
-@media (max-width: 768px) {
-    body.dashboard-mode .mobile-bottom-nav {
-        display: flex;
-    }
-    
-    /* Hide the horizontal desktop tabs on mobile */
-    body.dashboard-mode .dashboard-tabs {
-        display: none !important;
-    }
-    
-    /* Add bottom padding to main content so it doesn't overlap the nav */
-    body.dashboard-mode main {
-        padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
-    }
-    
-    /* Reduce container padding on mobile */
-    body.dashboard-mode .container {
-        padding: 0 0.75rem 1rem;
-    }
-    
-    /* Dashboard header welcome bar - compact on mobile */
-    body.dashboard-mode #dashboard > div:first-child {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-        margin-bottom: 1rem !important;
-    }
-    
-    /* Full width login container on mobile */
-    body.dashboard-mode .login-container.dashboard-active {
-        margin: 1rem auto;
-        padding: 0.75rem;
-    }
-    
-    /* Hide the desktop header nav but keep logo */
-    body.dashboard-mode header nav {
-        display: none !important;
-    }
-    body.dashboard-mode header .menu-toggle {
-        display: none !important;
-    }
-    body.dashboard-mode header {
-        justify-content: center;
-        padding: 0.6rem 1rem;
-    }
-    
-    /* Dashboard tab pane transitions */
-    .dashboard-tab-pane {
-        animation: mobileTabSlideIn 0.3s ease forwards;
-    }
-    
-    /* Dashboard content grid - single column on mobile */
-    body.dashboard-mode .dashboard-content-grid,
-    body.dashboard-mode .char-banks-grid,
-    body.dashboard-mode .dashboard-grid-guild,
-    body.dashboard-mode .dashboard-grid-settings {
-        grid-template-columns: 1fr !important;
-    }
-    
-    /* Hunter's license card - full width on mobile */
-    body.dashboard-mode .hunters-license-card {
-        max-width: 100%;
-    }
-    
-    /* Material gauges - 2 across on mobile */
-    body.dashboard-mode .material-gauges-grid {
-        grid-template-columns: 1fr !important;
-    }
-    
-    /* Streak calendar responsive */
-    body.dashboard-mode .streak-calendar {
-        grid-template-columns: repeat(5, 1fr) !important;
-    }
-    
-    /* Chat log full height on mobile */
-    body.dashboard-mode .chat-messages-log {
-        height: 300px;
-    }
+/* Equipped item names list */
+.equipped-names-list {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
 }
-
-@keyframes mobileTabSlideIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Desktop: keep tabs as-is but polish them slightly */
-@media (min-width: 769px) {
-    .mobile-bottom-nav {
-        display: none !important;
-    }
-}
-
-/* ==========================================================================
-   Improved Glass Card Component
-   ========================================================================== */
-.glass-card {
-    background: rgba(10, 18, 30, 0.6);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(0, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 1.25rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.glass-card:hover {
-    border-color: rgba(0, 255, 255, 0.2);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 15px rgba(0, 255, 255, 0.06);
-}
-
-/* ==========================================================================
-   Skeleton Loading Placeholder
-   ========================================================================== */
-.skeleton {
-    background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
-    background-size: 200% 100%;
-    animation: skeletonShimmer 1.5s ease-in-out infinite;
+.equipped-names-list .eq-name-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    padding: 4px 8px;
     border-radius: 4px;
+    background: rgba(255, 255, 255, 0.02);
+}
+.eq-name-row .eq-slot-tag {
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+}
+.eq-name-row .eq-item-name {
+    color: rgba(255, 255, 255, 0.8);
+    text-align: right;
 }
 
-@keyframes skeletonShimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+/* ---- Animated Stat Bars ---- */
+.stat-bars-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.stat-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.stat-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    width: 32px;
+    text-align: right;
+    flex-shrink: 0;
+}
+.stat-bar {
+    flex: 1;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+}
+.stat-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 0%;
+    position: relative;
+}
+.stat-fill::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 20px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3));
+    border-radius: 0 5px 5px 0;
+}
+.stat-atp { background: linear-gradient(90deg, #ff4444, #ff6666); }
+.stat-dfp { background: linear-gradient(90deg, #3388ff, #55aaff); }
+.stat-mst { background: linear-gradient(90deg, #aa66cc, #cc88ee); }
+.stat-ata { background: linear-gradient(90deg, #00cc88, #22eebb); }
+.stat-evp { background: linear-gradient(90deg, #ffaa00, #ffcc44); }
+.stat-lck { background: linear-gradient(90deg, #00bbcc, #33ddee); }
+.stat-hp { background: linear-gradient(90deg, #00ff88, #66ffbb); }
+.stat-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #fff;
+    width: 42px;
+    text-align: left;
+    flex-shrink: 0;
 }
 
-/* ==========================================================================
-   Utility Display Classes
-   ========================================================================== */
-.mobile-only { display: none; }
-.desktop-only { display: block; }
+/* ---- Compact Material Grid ---- */
+.mat-compact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 6px;
+}
+.mat-compact-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.78rem;
+}
+.mat-icon {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.hp-icon { background: #ff4444; box-shadow: 0 0 4px rgba(255, 68, 68, 0.5); }
+.tp-icon { background: #aa66cc; box-shadow: 0 0 4px rgba(170, 102, 204, 0.5); }
+.pow-icon { background: #ff6644; box-shadow: 0 0 4px rgba(255, 102, 68, 0.5); }
+.mind-icon { background: #6688ff; box-shadow: 0 0 4px rgba(102, 136, 255, 0.5); }
+.evd-icon { background: #ffaa00; box-shadow: 0 0 4px rgba(255, 170, 0, 0.5); }
+.def-icon { background: #3388ff; box-shadow: 0 0 4px rgba(51, 136, 255, 0.5); }
+.lck-icon { background: #00ccbb; box-shadow: 0 0 4px rgba(0, 204, 187, 0.5); }
+.mat-name { color: rgba(255, 255, 255, 0.6); }
+.mat-val { color: #fff; font-weight: bold; }
+.mat-max { color: rgba(255, 255, 255, 0.3); font-size: 0.7rem; }
 
-@media (max-width: 768px) {
-    .mobile-only { display: block; }
-    .desktop-only { display: none; }
+/* ---- Danger Details Collapsible ---- */
+.danger-details {
+    margin-top: 1rem;
+}
+.danger-details summary {
+    cursor: pointer;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    color: #ff4444;
+    padding: 8px;
+    border: 1px solid rgba(255, 68, 68, 0.2);
+    border-radius: 6px;
+    background: rgba(255, 68, 68, 0.03);
+    list-style: none;
+    transition: all 0.2s;
+}
+.danger-details summary::-webkit-details-marker { display: none; }
+.danger-details summary:hover {
+    background: rgba(255, 68, 68, 0.08);
+    border-color: rgba(255, 68, 68, 0.4);
+}
+.danger-details[open] summary {
+    border-radius: 6px 6px 0 0;
+    border-bottom: none;
 }
 
-/* ==========================================================================
-   Improved Global Mobile Experience
-   ========================================================================== */
-@media (max-width: 768px) {
-    /* Smooth scrolling everywhere */
-    html { scroll-behavior: smooth; }
-    
-    /* Larger touch targets */
-    .dl-btn, button, a.dl-btn {
-        min-height: 44px;
+/* ---- Inventory Section Spacing ---- */
+.inventory-section {
+    margin-top: 1.5rem;
+}
+
+/* ---- Mobile Hero Card ---- */
+@media (max-width: 600px) {
+    .char-hero-card {
+        flex-direction: column;
+        text-align: center;
     }
-    
-    /* Better news cards on mobile */
-    .news-item {
-        border-radius: 10px;
-        padding: 1.25rem;
-        border-color: rgba(0, 255, 255, 0.15);
+    .char-hero-meta {
+        justify-content: center;
     }
-    
-    /* Sidebar as compact cards on mobile */
-    .sidebar .server-status-widget,
-    .sidebar .sidebar-widget {
-        border-radius: 10px;
+    .char-hero-name {
+        font-size: 1.3rem;
+    }
+    .pd-slot-box {
+        width: 52px;
+        height: 52px;
+    }
+    .pd-slot-box.pd-armor {
+        width: 60px;
+        height: 60px;
     }
 }

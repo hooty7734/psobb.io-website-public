@@ -196,7 +196,6 @@ function showDashboard(user) {
         dashboard.style.display = 'block';
         const mainBox = document.querySelector('.login-container');
         if (mainBox) mainBox.classList.add('dashboard-active');
-        document.body.classList.add('dashboard-mode');
 
         // Handle Discord Redirect Flags
         const urlParams = new URLSearchParams(window.location.search);
@@ -232,7 +231,6 @@ function showDashboard(user) {
         document.getElementById('dash-username-header').textContent = lastPlayer;
         document.getElementById('dash-username').textContent = lastPlayer;
         document.getElementById('dash-account-id').textContent = user.AccountID;
-        window._portalAccountId = parseInt(user.AccountID) || 0;
 
         document.getElementById('dash-team').textContent = user.BBTeamID ? 'Team #' + user.BBTeamID : 'None';
 
@@ -1035,24 +1033,15 @@ window.installPortalApp = async function() {
     }
 };
 
-// Switch Dashboard Tab Panes (supports both desktop tabs + mobile bottom nav)
-window.switchDashboardTab = function(tabId, clickedEl) {
+// Switch Dashboard Tab Panes
+window.switchDashboardTab = function(tabId) {
     document.querySelectorAll('.dashboard-tab-pane').forEach(pane => {
         pane.classList.remove('active');
     });
     const target = document.getElementById(tabId);
     if (target) target.classList.add('active');
 
-    // Update desktop tab buttons
     document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.getAttribute('data-tab') === tabId) {
-            btn.classList.add('active');
-        }
-    });
-
-    // Update mobile bottom nav buttons
-    document.querySelectorAll('.bottom-nav-item').forEach(btn => {
         btn.classList.remove('active');
         if (btn.getAttribute('data-tab') === tabId) {
             btn.classList.add('active');
@@ -1065,14 +1054,6 @@ window.switchDashboardTab = function(tabId, clickedEl) {
     } else if (tabId === 'tab-guild') {
         window.loadUnlocks();
         window.loadStreak();
-        // Load player bounties
-        if (window.portalLoadBounties) window.portalLoadBounties();
-    } else if (tabId === 'tab-lfg') {
-        // Initialize native LFG
-        if (window.portalLfgInit) window.portalLfgInit();
-    } else if (tabId === 'tab-drops') {
-        // Initialize native Drop Chart
-        if (window.portalDropsInit) window.portalDropsInit();
     }
 
     // Start/stop lobby feed polling based on chat tab visibility
@@ -1081,9 +1062,6 @@ window.switchDashboardTab = function(tabId, clickedEl) {
     } else {
         if (window.stopLobbyFeed) window.stopLobbyFeed();
     }
-
-    // Scroll to top on tab switch (mobile)
-    window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 // Switch Character Slot
@@ -1133,13 +1111,13 @@ window.loadCharSlot = async function(slotIndex) {
     }
 };
 
-// Render Character Stats & Material SVGs
+// Render Character Stats & Hero Card
 function renderCharacterProfile() {
     const c = window.activeCharData;
     if (!c) return;
 
     document.getElementById('char-profile-name').textContent = c.name;
-    document.getElementById('char-profile-level').textContent = `Lvl ${c.level}`;
+    document.getElementById('char-profile-level').textContent = c.level;
     document.getElementById('char-profile-playtime').textContent = `${c.play_time_hours} hrs`;
 
     const onlineBadge = document.getElementById('char-profile-online');
@@ -1164,49 +1142,43 @@ function renderCharacterProfile() {
     const secIdBadge = document.getElementById('char-profile-secid');
     if (secIdBadge) {
         secIdBadge.innerHTML = `
-            <img src="/img/section_ids/${c.section_id}.png" alt="${c.section_id}" style="width:20px; height:20px;">
-            <span class="section-id id-${c.section_id.toLowerCase()}" style="font-size:0.75rem; font-weight:bold; font-family:'Share Tech Mono',monospace;">${c.section_id}</span>
+            <img src="/img/section_ids/${c.section_id}.png" alt="${c.section_id}" style="width:18px; height:18px;">
+            <span class="section-id id-${c.section_id.toLowerCase()}" style="font-size:0.7rem; font-weight:bold; font-family:'Share Tech Mono',monospace;">${c.section_id}</span>
         `;
     }
 
-    // Populate stat rows
-    const stats = ['ATP', 'MST', 'EVP', 'HP', 'DFP', 'ATA', 'LCK'];
+    // Meseta display
+    const mesetaEl = document.getElementById('char-meseta-val');
+    if (mesetaEl) mesetaEl.textContent = parseInt(c.stats.Meseta || 0).toLocaleString();
+
+    // Animated stat bars
+    const statMaxes = { ATP: 2500, DFP: 1000, MST: 2500, ATA: 300, EVP: 1500, LCK: 200, HP: 2500 };
+    const stats = ['ATP', 'DFP', 'MST', 'ATA', 'EVP', 'LCK', 'HP'];
     stats.forEach(s => {
-        const el = document.getElementById(`stat-val-${s.toLowerCase()}`);
-        if (el) el.textContent = c.stats[s];
+        const valEl = document.getElementById(`stat-val-${s.toLowerCase()}`);
+        const barEl = document.getElementById(`bar-${s.toLowerCase()}`);
+        const val = parseInt(c.stats[s]) || 0;
+        if (valEl) valEl.textContent = val;
+        if (barEl) {
+            const pct = Math.min(100, (val / statMaxes[s]) * 100);
+            setTimeout(() => { barEl.style.width = pct + '%'; }, 100);
+        }
     });
 
-    // Material Gauges
-    const maxMats = (c.class.startsWith('HU') || c.class.startsWith('RA')) ? 250 : 150;
-    const hpMax = 125;
-    const tpMax = 125;
-
-    const setGaugeVal = (id, val, max) => {
-        const fill = document.getElementById(`gauge-fill-${id}`);
-        const text = document.getElementById(`gauge-val-${id}`);
-        if (fill) {
-            const pct = Math.min(100, (val / max) * 100);
-            const offset = 251.2 - (pct / 100) * 251.2;
-            fill.style.strokeDashoffset = offset;
-        }
-        if (text) text.textContent = val;
+    // Material values (compact grid)
+    const matVals = {
+        'mat-val-hp': c.mats.HP,
+        'mat-val-tp': c.mats.TP,
+        'mat-val-power': c.mats.Power,
+        'mat-val-mind': c.mats.Mind,
+        'mat-val-evade': c.mats.Evade,
+        'mat-val-def': c.mats.Def,
+        'mat-val-luck': c.mats.Luck
     };
-
-    setGaugeVal('hp', c.mats.HP, hpMax);
-    setGaugeVal('tp', c.mats.TP, tpMax);
-
-    const consumedStats = parseInt(c.mats.Power) + parseInt(c.mats.Mind) + parseInt(c.mats.Evade) + parseInt(c.mats.Def) + parseInt(c.mats.Luck);
-    setGaugeVal('stats', consumedStats, maxMats);
-
-    document.getElementById('mat-val-hp').textContent = `${c.mats.HP} / ${hpMax}`;
-    document.getElementById('mat-val-tp').textContent = `${c.mats.TP} / ${tpMax}`;
-    document.getElementById('mat-val-stats').textContent = `${consumedStats} / ${maxMats}`;
-
-    document.getElementById('mat-val-power').textContent = c.mats.Power;
-    document.getElementById('mat-val-mind').textContent = c.mats.Mind;
-    document.getElementById('mat-val-evade').textContent = c.mats.Evade;
-    document.getElementById('mat-val-def').textContent = c.mats.Def;
-    document.getElementById('mat-val-luck').textContent = `${c.mats.Luck} / 45`;
+    Object.keys(matVals).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = matVals[id];
+    });
 }
 
 // Render Backpack Inventory
@@ -1237,14 +1209,68 @@ function renderInventory() {
         }
     });
 
-    const equippedBox = document.getElementById('viewer-equipped-grid');
-    if (equippedBox) {
-        equippedBox.innerHTML = '';
-        Object.keys(gearSlots).forEach(key => {
-            equippedBox.appendChild(createItemSlotElement(gearSlots[key], key));
-        });
-    }
+    // --- Populate Paper Doll Slots ---
+    const slotNames = ['weapon', 'armor', 'shield', 'unit1', 'unit2', 'unit3', 'unit4', 'mag'];
+    const namesListEl = document.getElementById('equipped-item-names');
+    if (namesListEl) namesListEl.innerHTML = '';
 
+    slotNames.forEach(key => {
+        const slotBox = document.getElementById(`pd-slot-${key}`);
+        if (!slotBox) return;
+        slotBox.innerHTML = '';
+        slotBox.className = 'pd-slot-box' + (key === 'armor' ? ' pd-armor' : '');
+        slotBox.removeAttribute('data-hex');
+
+        const item = gearSlots[key];
+        if (item) {
+            slotBox.setAttribute('data-hex', item.hex);
+
+            // Icon
+            let iconCat = 'tool';
+            if (item.group === 0x00) iconCat = 'weapon';
+            else if (item.group === 0x01) {
+                if (item.name === 'Armor') iconCat = 'armor';
+                else if (item.name === 'Shield') iconCat = 'shield';
+                else iconCat = 'unit';
+            } else if (item.group === 0x02) iconCat = 'mag';
+
+            const img = document.createElement('img');
+            img.src = `/img/items/${iconCat}.png`;
+            img.onerror = () => { img.src = '/img/favicon.svg'; };
+            slotBox.appendChild(img);
+
+            // Rarity glow
+            const nameLower = (item.stats && item.stats.Name) ? item.stats.Name.toLowerCase() : item.name.toLowerCase();
+            if (nameLower.includes('psycho wand') || nameLower.includes('sealed j-sword') || nameLower.includes('sato')) {
+                slotBox.classList.add('pd-rare-red');
+            } else if (nameLower.includes('spread needle') || nameLower.includes('heaven punisher') || nameLower.includes('diwari')) {
+                slotBox.classList.add('pd-rare-orange');
+            } else if (nameLower.includes('luminous field') || nameLower.includes('stand still') || nameLower.includes('photon')) {
+                slotBox.classList.add('pd-rare-purple');
+            }
+
+            // Add to names list
+            if (namesListEl) {
+                const row = document.createElement('div');
+                row.className = 'eq-name-row';
+                const tag = document.createElement('span');
+                tag.className = 'eq-slot-tag';
+                tag.textContent = key.replace(/(\d)/, ' $1').toUpperCase();
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'eq-item-name';
+                nameSpan.textContent = item.name;
+                row.appendChild(tag);
+                row.appendChild(nameSpan);
+                namesListEl.appendChild(row);
+            }
+        }
+    });
+
+    // --- Legacy equipped grid (hidden, kept for tooltip compatibility) ---
+    const equippedBox = document.getElementById('viewer-equipped-grid');
+    if (equippedBox) equippedBox.style.display = 'none';
+
+    // --- Backpack Grid ---
     const backpackGrid = document.getElementById('viewer-backpack-grid');
     if (backpackGrid) {
         backpackGrid.innerHTML = '';
@@ -1525,7 +1551,7 @@ function setupTooltipTriggers() {
         document.body.appendChild(tooltip);
     }
 
-    document.querySelectorAll('.item-slot').forEach(slot => {
+    document.querySelectorAll('.item-slot, .pd-slot-box').forEach(slot => {
         const hex = slot.getAttribute('data-hex');
         if (!hex) return;
 
@@ -1684,7 +1710,6 @@ function appendChatBubble(type, text) {
     bubble.className = `chat-message-bubble ${type}`;
     bubble.textContent = text;
     log.appendChild(bubble);
-    // Keep only last 200 messages in DOM
     while (log.children.length > 200) {
         log.removeChild(log.firstChild);
     }
@@ -1740,7 +1765,6 @@ async function pollLobbyFeed() {
 
         const currentPlayers = new Set((data.players || []).map(p => p.name));
 
-        // Detect state changes (lobby switch)
         const currentLobbyId = data.lobby?.id;
         if (window._lobbyFeedLastState !== null && window._lobbyFeedLastState !== currentLobbyId) {
             window._lobbyFeedPlayers.clear();
@@ -1749,7 +1773,6 @@ async function pollLobbyFeed() {
         }
         window._lobbyFeedLastState = currentLobbyId;
 
-        // Detect joins
         if (window._lobbyFeedPlayers.size > 0) {
             for (const name of currentPlayers) {
                 if (!window._lobbyFeedPlayers.has(name)) {
@@ -1758,27 +1781,25 @@ async function pollLobbyFeed() {
                     appendChatBubble('system', `▶ ${name}${cls} joined`);
                 }
             }
-            // Detect leaves
             for (const name of window._lobbyFeedPlayers) {
                 if (!currentPlayers.has(name)) {
                     appendChatBubble('system', `◀ ${name} left`);
                 }
             }
         } else if (currentPlayers.size > 0) {
-            // First load — show current lobby members
             const names = (data.players || []).map(p => `${p.name} (Lv${p.level})`).join(', ');
             appendChatBubble('system', `LOBBY: ${names}`);
         }
 
         window._lobbyFeedPlayers = currentPlayers;
     } catch (e) {
-        // Silent fail — don't spam errors
+        // Silent fail
     }
 }
 
 window.startLobbyFeed = function() {
     if (window._lobbyFeedInterval) return;
-    pollLobbyFeed(); // immediate first poll
+    pollLobbyFeed();
     window._lobbyFeedInterval = setInterval(pollLobbyFeed, 5000);
 };
 
@@ -1946,13 +1967,11 @@ function renderMilestones(milestones, inGame) {
         return;
     }
 
-    // Separate unclaimed vs claimed
     const unclaimed = milestones.filter(m => !m.claimed);
     const claimed = milestones.filter(m => m.claimed);
 
     container.innerHTML = '';
 
-    // Summary bar
     const summaryBar = document.createElement('div');
     summaryBar.style.cssText = 'display:flex; gap:12px; margin-bottom:1rem; flex-wrap:wrap;';
     summaryBar.innerHTML = `
@@ -1965,7 +1984,6 @@ function renderMilestones(milestones, inGame) {
     `;
     container.appendChild(summaryBar);
 
-    // Render UNCLAIMED milestones first (these are the important ones)
     if (unclaimed.length > 0) {
         unclaimed.forEach(m => {
             const card = document.createElement('div');
@@ -1987,7 +2005,6 @@ function renderMilestones(milestones, inGame) {
         container.appendChild(allDone);
     }
 
-    // Render CLAIMED milestones in a collapsible section
     if (claimed.length > 0) {
         const toggle = document.createElement('button');
         toggle.style.cssText = 'background:rgba(170,102,204,0.1); border:1px solid rgba(170,102,204,0.3); color:#aa66cc; padding:8px 16px; border-radius:6px; font-family:"Share Tech Mono",monospace; font-size:0.8rem; cursor:pointer; width:100%; margin-top:1rem; transition:all 0.3s;';
@@ -2022,7 +2039,6 @@ function renderMilestones(milestones, inGame) {
         container.appendChild(claimedContainer);
     }
 
-    // Attach claim button listeners
     document.querySelectorAll('.open-claim-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             if (!inGame) return;
