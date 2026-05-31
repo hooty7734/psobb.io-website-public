@@ -1620,17 +1620,65 @@ function setupTooltipTriggers() {
             const item = findItemByHex(hex);
             if (!item) return;
 
-            let statsHtml = '';
-            if (item.stats) {
+            let detailsHtml = '';
+
+            // Weapon details
+            if (item.group === 0x00) {
+                if (item.grind > 0) {
+                    detailsHtml += `<div class="tooltip-stat-row"><span>Grind:</span><span class="tooltip-stat-val" style="color:#ffcc00;">+${item.grind}</span></div>`;
+                }
+                if (item.attrs && item.attrs.length > 0) {
+                    item.attrs.forEach(a => {
+                        const color = a.value >= 0 ? '#00ff88' : '#ff4444';
+                        detailsHtml += `<div class="tooltip-stat-row"><span>${a.type}:</span><span class="tooltip-stat-val" style="color:${color};">${a.value > 0 ? '+' : ''}${a.value}%</span></div>`;
+                    });
+                }
+                if (item.unidentified) {
+                    detailsHtml += `<div style="color:#ff8800; font-size:0.7rem; margin-top:4px;">⚠ Unidentified</div>`;
+                }
+            }
+
+            // Armor details
+            if (item.group === 0x01 && item.type1 === 1) {
+                if (item.slots !== undefined) detailsHtml += `<div class="tooltip-stat-row"><span>Slots:</span><span class="tooltip-stat-val" style="color:#00ccff;">${item.slots}</span></div>`;
+                if (item.def_bonus) detailsHtml += `<div class="tooltip-stat-row"><span>DEF:</span><span class="tooltip-stat-val" style="color:#00ff88;">+${item.def_bonus}</span></div>`;
+                if (item.evp_bonus) detailsHtml += `<div class="tooltip-stat-row"><span>EVP:</span><span class="tooltip-stat-val" style="color:#00ff88;">+${item.evp_bonus}</span></div>`;
+            }
+
+            // Shield details
+            if (item.group === 0x01 && item.type1 === 2) {
+                if (item.def_bonus) detailsHtml += `<div class="tooltip-stat-row"><span>DEF:</span><span class="tooltip-stat-val" style="color:#00ff88;">+${item.def_bonus}</span></div>`;
+                if (item.evp_bonus) detailsHtml += `<div class="tooltip-stat-row"><span>EVP:</span><span class="tooltip-stat-val" style="color:#00ff88;">+${item.evp_bonus}</span></div>`;
+            }
+
+            // Unit details
+            if (item.group === 0x01 && item.type1 === 3 && item.modifier) {
+                detailsHtml += `<div class="tooltip-stat-row"><span>Modifier:</span><span class="tooltip-stat-val" style="color:#cc88ff;">+${item.modifier}</span></div>`;
+            }
+
+            // MAG details
+            if (item.group === 0x02 && item.mag_stats) {
+                const ms = item.mag_stats;
+                detailsHtml += `<div class="tooltip-stat-row"><span>Level:</span><span class="tooltip-stat-val" style="color:#ffcc00;">${ms.level}</span></div>`;
+                detailsHtml += `<div class="tooltip-stat-row"><span>DEF/POW/DEX/MIND:</span><span class="tooltip-stat-val">${ms.def.toFixed(0)}/${ms.pow.toFixed(0)}/${ms.dex.toFixed(0)}/${ms.mind.toFixed(0)}</span></div>`;
+                detailsHtml += `<div class="tooltip-stat-row"><span>Synchro / IQ:</span><span class="tooltip-stat-val">${ms.synchro}% / ${ms.iq}</span></div>`;
+            }
+
+            // Tool count
+            if (item.group === 0x03 && item.count && item.count > 1) {
+                detailsHtml += `<div class="tooltip-stat-row"><span>Quantity:</span><span class="tooltip-stat-val" style="color:#00ccff;">x${item.count}</span></div>`;
+            }
+
+            // Legacy stats fallback
+            if (!detailsHtml && item.stats) {
                 Object.keys(item.stats).forEach(s => {
-                    statsHtml += `<div class="tooltip-stat-row"><span>${s}:</span><span class="tooltip-stat-val">${item.stats[s]}</span></div>`;
+                    detailsHtml += `<div class="tooltip-stat-row"><span>${s}:</span><span class="tooltip-stat-val">${item.stats[s]}</span></div>`;
                 });
             }
 
             tooltip.innerHTML = `
                 <div class="tooltip-title">${item.name}</div>
-                ${statsHtml}
-                <div style="font-size:0.65rem; color:#666; margin-top:6px; font-family:monospace;">HEX: ${item.hex}</div>
+                ${detailsHtml}
             `;
             tooltip.style.display = 'block';
         };
