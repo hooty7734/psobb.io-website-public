@@ -3178,6 +3178,23 @@ body.pwa-standalone .logo-text {
     .dashboard-grid-guild > div {
         min-width: 0;
     }
+
+    /* Hub tab: stack two-column grid to single column on tablets/phones */
+    .dashboard-content-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+
+    /* Ensure all dashboard pane content respects mobile width */
+    .dashboard-tab-pane {
+        overflow-x: hidden;
+        max-width: 100%;
+    }
+
+    /* Hunters License card: don't float, full width */
+    .hunters-license-card {
+        max-width: 100%;
+    }
 }
 
 /* ---- Small screens (phones) ---- */
@@ -3190,6 +3207,22 @@ body.pwa-standalone .logo-text {
     .tab-btn i {
         font-size: 1.1rem;
         margin-right: 0;
+    }
+
+    /* Server telemetry: 2x2 is fine, but reduce padding */
+    .server-telemetry-stats {
+        gap: 6px !important;
+    }
+    .server-telemetry-stats > div {
+        padding: 8px !important;
+    }
+    .server-telemetry-stats span[style*="font-size:1.5rem"] {
+        font-size: 1.2rem !important;
+    }
+
+    /* Login container: tighter padding on phones */
+    .login-container {
+        padding: 0.5rem !important;
     }
 
     /* Hero card: full stack */
