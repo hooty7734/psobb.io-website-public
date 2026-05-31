@@ -1019,29 +1019,20 @@ window.addEventListener('beforeinstallprompt', (e) => {
     }
 });
 
-// Show install card for all platforms after login
+// Show install card for iOS after login (no beforeinstallprompt on Safari)
 document.addEventListener('DOMContentLoaded', () => {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    if (isStandalone) return; // Already installed
+    if (isStandalone) return;
     
-    // Wait briefly for beforeinstallprompt to fire first
-    setTimeout(() => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (isIOS && sessionStorage.getItem('psobb_user')) {
         const installCard = document.getElementById('pwa-install-card');
-        if (!installCard || installCard.style.display === 'block') return;
-        if (!sessionStorage.getItem('psobb_user')) return;
-
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-        if (isIOS) {
-            const iosDiv = document.getElementById('pwa-install-ios');
-            if (iosDiv) iosDiv.style.display = 'block';
+        const iosDiv = document.getElementById('pwa-install-ios');
+        if (installCard && iosDiv) {
             installCard.style.display = 'block';
-        } else if (!window.deferredPrompt) {
-            // Desktop browser without PWA prompt — show Android button as fallback
-            const androidDiv = document.getElementById('pwa-install-android');
-            if (androidDiv) androidDiv.style.display = 'block';
-            installCard.style.display = 'block';
+            iosDiv.style.display = 'block';
         }
-    }, 1500);
+    }
 });
 
 // Trigger App Installation
