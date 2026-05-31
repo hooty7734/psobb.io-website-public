@@ -1354,7 +1354,17 @@ function renderActiveBank() {
     if (!c) return;
 
     const currentBank = window.activeBankIndex === -1 ? c.shared_bank : c.bank;
-    document.getElementById('viewer-bank-meseta').textContent = parseInt(currentBank.meseta).toLocaleString() + ' Meseta';
+    if (!currentBank || !currentBank.items) {
+        // Show empty state
+        document.getElementById('viewer-bank-meseta').textContent = '0 Meseta';
+        for (let i = 0; i < 200; i++) {
+            grid.appendChild(createItemSlotElement(null));
+        }
+        setupTooltipTriggers();
+        return;
+    }
+
+    document.getElementById('viewer-bank-meseta').textContent = parseInt(currentBank.meseta || 0).toLocaleString() + ' Meseta';
 
     for (let i = 0; i < 200; i++) {
         const item = currentBank.items[i] || null;
@@ -1783,8 +1793,17 @@ function findItemByHex(hex) {
     if (found) return found;
 
     const currentBank = window.activeBankIndex === -1 ? window.activeCharData.shared_bank : window.activeCharData.bank;
-    found = currentBank.items.find(i => i && i.hex === hex);
-    return found;
+    if (currentBank && currentBank.items) {
+        found = currentBank.items.find(i => i && i.hex === hex);
+    }
+    if (found) return found;
+
+    // Also search the other bank as fallback
+    const otherBank = window.activeBankIndex === -1 ? window.activeCharData.bank : window.activeCharData.shared_bank;
+    if (otherBank && otherBank.items) {
+        found = otherBank.items.find(i => i && i.hex === hex);
+    }
+    return found || null;
 }
 
 function filterBankGrid(query) {
