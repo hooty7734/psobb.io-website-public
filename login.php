@@ -390,7 +390,7 @@ include 'includes/header.php';
                                 <h3 style="margin-top:0; color:#00ffc8; font-family:'Share Tech Mono', monospace;"><i class="fas fa-dice" style="color:#00ffc8; margin-right:8px;"></i><?= __('Daily Reward Box') ?></h3>
                                 <div class="streak-container" style="background: rgba(0, 10, 20, 0.4); border-color: rgba(0, 255, 200, 0.3);">
                                     <p style="color: rgba(255,255,255,0.85); margin-bottom: 0.5rem; font-size:0.85rem;"><?= __('Claim a free random item every day just for playing!') ?></p>
-                                    <button id="daily-claim-btn" class="streak-claim-btn" style="width: 100%; padding: 0.8rem; font-size: 1rem; border-color:#00ff88; background:rgba(0,255,136,0.1);">
+                                    <button id="daily-claim-btn" class="dl-btn" style="width: 100%; padding: 0.8rem; font-size: 1rem; font-weight: bold; font-family: 'Share Tech Mono', monospace; border: 2px solid #00ff88; background: rgba(0,255,136,0.15); color: #00ff88; cursor: pointer; border-radius: 6px; letter-spacing: 1px; text-shadow: 0 0 8px rgba(0,255,136,0.3);">
                                         🎲 <?= __('Claim Daily Reward') ?>
                                     </button>
                                     <div id="daily-result" style="margin-top: 1rem; display: none; text-align: center; color: #00ff88; font-family: 'Share Tech Mono', monospace;"></div>
