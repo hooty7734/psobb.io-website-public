@@ -344,16 +344,13 @@ if (file_exists($psocharPath)) {
             if ($offset + 24 <= strlen($bankBlock)) {
                 $itemBytes = substr($bankBlock, $offset, 20);
                 $amount = unpack('v', substr($bankBlock, $offset + 20, 2))[1];
-                $present = unpack('v', substr($bankBlock, $offset + 22, 2))[1];
                 
-                if ($present) {
-                    $item = parse_item_data($itemBytes);
-                    if ($item) {
-                        if ($item['group'] === 0x03 && $item['name'] !== 'Disk') {
-                            $item['count'] = $amount;
-                        }
-                        $bankItems[] = $item;
+                $item = parse_item_data($itemBytes);
+                if ($item && $item['group'] <= 0x04) {
+                    if ($item['group'] === 0x03 && $item['name'] !== 'Disk') {
+                        $item['count'] = $amount;
                     }
+                    $bankItems[] = $item;
                 }
             }
         }
@@ -373,15 +370,13 @@ if (file_exists($psocharPath)) {
                 if ($offset + 24 <= strlen($sharedData)) {
                     $itemBytes = substr($sharedData, $offset, 20);
                     $amount = unpack('v', substr($sharedData, $offset + 20, 2))[1];
-                    $present = unpack('v', substr($sharedData, $offset + 22, 2))[1];
-                    if ($present) {
-                        $item = parse_item_data($itemBytes);
-                        if ($item) {
-                            if ($item['group'] === 0x03 && $item['name'] !== 'Disk') {
-                                $item['count'] = $amount;
-                            }
-                            $sharedBankItems[] = $item;
+                    
+                    $item = parse_item_data($itemBytes);
+                    if ($item && $item['group'] <= 0x04) {
+                        if ($item['group'] === 0x03 && $item['name'] !== 'Disk') {
+                            $item['count'] = $amount;
                         }
+                        $sharedBankItems[] = $item;
                     }
                 }
             }
