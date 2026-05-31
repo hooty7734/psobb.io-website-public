@@ -1713,12 +1713,37 @@ function setupTooltipTriggers() {
                 detailsHtml += `<div class="tooltip-stat-row"><span>Modifier:</span><span class="tooltip-stat-val" style="color:#cc88ff;">+${item.modifier}</span></div>`;
             }
 
-            // MAG details
+            // MAG details with stat bars
             if (item.group === 0x02 && item.mag_stats) {
                 const ms = item.mag_stats;
+                const maxStat = Math.max(ms.def, ms.pow, ms.dex, ms.mind, 1);
+                const barMax = ms.level || maxStat;
+
                 detailsHtml += `<div class="tooltip-stat-row"><span>Level:</span><span class="tooltip-stat-val" style="color:#ffcc00;">${ms.level}</span></div>`;
-                detailsHtml += `<div class="tooltip-stat-row"><span>DEF/POW/DEX/MIND:</span><span class="tooltip-stat-val">${ms.def.toFixed(0)}/${ms.pow.toFixed(0)}/${ms.dex.toFixed(0)}/${ms.mind.toFixed(0)}</span></div>`;
-                detailsHtml += `<div class="tooltip-stat-row"><span>Synchro / IQ:</span><span class="tooltip-stat-val">${ms.synchro}% / ${ms.iq}</span></div>`;
+                
+                const magStats = [
+                    { label: 'DEF',  val: ms.def,  color: '#4ecdc4' },
+                    { label: 'POW',  val: ms.pow,  color: '#ff6b6b' },
+                    { label: 'DEX',  val: ms.dex,  color: '#a78bfa' },
+                    { label: 'MIND', val: ms.mind, color: '#60a5fa' }
+                ];
+
+                magStats.forEach(s => {
+                    const pct = barMax > 0 ? Math.min((s.val / barMax) * 100, 100) : 0;
+                    detailsHtml += `
+                        <div style="display:flex; align-items:center; gap:6px; margin:3px 0;">
+                            <span style="width:36px; font-size:0.65rem; color:#aaa; text-align:right;">${s.label}</span>
+                            <div style="flex:1; height:10px; background:rgba(255,255,255,0.08); border-radius:5px; overflow:hidden; min-width:80px;">
+                                <div style="height:100%; width:${pct}%; background:linear-gradient(90deg, ${s.color}88, ${s.color}); border-radius:5px; transition:width 0.3s;"></div>
+                            </div>
+                            <span style="width:24px; font-size:0.65rem; color:${s.color}; text-align:right; font-weight:600;">${Math.floor(s.val)}</span>
+                        </div>`;
+                });
+
+                detailsHtml += `<div style="display:flex; justify-content:space-between; margin-top:5px; font-size:0.6rem; color:#888;">
+                    <span>Synchro: <span style="color:#fbbf24;">${ms.synchro}%</span></span>
+                    <span>IQ: <span style="color:#34d399;">${ms.iq}</span></span>
+                </div>`;
             }
 
             // Tool count
