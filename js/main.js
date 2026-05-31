@@ -1553,6 +1553,74 @@ window.triggerMaterialReset = async function() {
 };
 
 // Helper: item slot element creation
+function getItemCategoryIcon(item) {
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const size = 32;
+
+    // Determine category and color
+    let iconCat = 'tool';
+    if (item.group === 0x00) iconCat = 'weapon';
+    else if (item.group === 0x01) {
+        if (item.type1 === 1) iconCat = 'armor';
+        else if (item.type1 === 2) iconCat = 'shield';
+        else iconCat = 'unit';
+    } else if (item.group === 0x02) iconCat = 'mag';
+    else if (item.group === 0x04) iconCat = 'meseta';
+
+    const colors = {
+        weapon: '#ff6b6b',
+        armor: '#4ecdc4',
+        shield: '#45b7d1',
+        unit: '#c084fc',
+        mag: '#fbbf24',
+        tool: '#a3e635',
+        meseta: '#fcd34d'
+    };
+    const color = colors[iconCat] || '#8899aa';
+
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('viewBox', '0 0 32 32');
+    svg.setAttribute('width', size);
+    svg.setAttribute('height', size);
+    svg.style.filter = `drop-shadow(0 0 3px ${color}44)`;
+
+    let paths = '';
+    switch (iconCat) {
+        case 'weapon': // Sword
+            paths = `<path d="M22 4L26 8L14 20L10 22L12 18Z" fill="${color}" opacity="0.9"/>
+                     <path d="M8 24L12 18L14 20Z" fill="${color}" opacity="0.7"/>
+                     <line x1="6" y1="26" x2="10" y2="22" stroke="${color}" stroke-width="2" stroke-linecap="round"/>`;
+            break;
+        case 'armor': // Chestplate
+            paths = `<path d="M10 8C10 8 13 6 16 6C19 6 22 8 22 8L24 14L22 22L16 26L10 22L8 14Z" fill="${color}" opacity="0.85"/>
+                     <path d="M16 6V16M12 10H20" stroke="${color}" stroke-width="1" opacity="0.4"/>`;
+            break;
+        case 'shield': // Shield
+            paths = `<path d="M16 5L26 10L24 22L16 28L8 22L6 10Z" fill="${color}" opacity="0.85"/>
+                     <path d="M16 10L16 22M11 14H21" stroke="${color}" stroke-width="1.5" opacity="0.3"/>`;
+            break;
+        case 'unit': // Diamond/gem
+            paths = `<path d="M16 6L24 14L16 26L8 14Z" fill="${color}" opacity="0.85"/>
+                     <path d="M10 14H22L16 6Z" fill="${color}" opacity="0.5"/>`;
+            break;
+        case 'mag': // Crescent/orb
+            paths = `<circle cx="16" cy="16" r="8" fill="${color}" opacity="0.85"/>
+                     <circle cx="13" cy="13" r="5" fill="#111" opacity="0.3"/>
+                     <circle cx="18" cy="12" r="2" fill="white" opacity="0.5"/>`;
+            break;
+        case 'tool': // Capsule/flask
+            paths = `<rect x="12" y="6" width="8" height="4" rx="1" fill="${color}" opacity="0.7"/>
+                     <path d="M12 10L10 24C10 26 12 28 16 28C20 28 22 26 22 24L20 10Z" fill="${color}" opacity="0.85"/>`;
+            break;
+        case 'meseta': // Coin
+            paths = `<circle cx="16" cy="16" r="9" fill="${color}" opacity="0.85"/>
+                     <text x="16" y="20" text-anchor="middle" font-size="11" font-weight="bold" fill="#000" opacity="0.5">$</text>`;
+            break;
+    }
+    svg.innerHTML = paths;
+    return svg;
+}
+
 function createItemSlotElement(item, label = '') {
     const slotEl = document.createElement('div');
     slotEl.className = 'item-slot';
@@ -1569,20 +1637,9 @@ function createItemSlotElement(item, label = '') {
             slotEl.classList.add('rare-purple');
         }
 
-        const imgEl = document.createElement('img');
-        imgEl.className = 'item-slot-icon';
-
-        let iconCat = 'tool';
-        if (item.group === 0x00) iconCat = 'weapon';
-        else if (item.group === 0x01) {
-            if (item.type1 === 1) iconCat = 'armor';
-            else if (item.type1 === 2) iconCat = 'shield';
-            else iconCat = 'unit';
-        } else if (item.group === 0x02) iconCat = 'mag';
-
-        imgEl.src = `/img/items/${iconCat}.png`;
-        imgEl.onerror = () => { imgEl.src = '/img/favicon.svg'; };
-        slotEl.appendChild(imgEl);
+        const iconSvg = getItemCategoryIcon(item);
+        iconSvg.classList.add('item-slot-icon');
+        slotEl.appendChild(iconSvg);
 
         if (item.equipped) {
             const eqBadge = document.createElement('span');
