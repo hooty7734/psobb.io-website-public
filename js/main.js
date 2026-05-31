@@ -2381,7 +2381,7 @@ window.loadMyBounties = async function() {
         }
 
         // --- Bounties ---
-        const completed = data.bounties.filter(b => b.status === 'completed');
+        const completed = data.bounties.filter(b => b.status === 'ready_to_redeem');
         const inProgress = data.bounties.filter(b => b.status === 'in_progress');
 
         // Claimable bounties

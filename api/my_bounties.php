@@ -32,7 +32,8 @@ if (!$account_id) {
 try {
     $db = get_db();
     
-    // All bounties for this player (in_progress + completed but not yet redeemed)
+    // All bounties for this player (in_progress + ready_to_redeem but not yet redeemed)
+    // Status lifecycle: in_progress -> ready_to_redeem -> completed (redeemed)
     $stmt = $db->prepare("
         SELECT pm.id AS player_mission_id, pm.mission_id, pm.character_name, pm.status,
                pm.accepted_at, pm.completed_at,
@@ -40,8 +41,8 @@ try {
         FROM player_missions pm
         JOIN missions m ON pm.mission_id = m.id
         WHERE pm.account_id = :accId 
-          AND pm.status IN ('in_progress', 'completed')
-        ORDER BY CASE pm.status WHEN 'completed' THEN 0 ELSE 1 END, pm.accepted_at DESC
+          AND pm.status IN ('in_progress', 'ready_to_redeem')
+        ORDER BY CASE pm.status WHEN 'ready_to_redeem' THEN 0 ELSE 1 END, pm.accepted_at DESC
     ");
     $stmt->bindValue(':accId', $account_id, SQLITE3_INTEGER);
     $res = $stmt->execute();
