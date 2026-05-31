@@ -1909,6 +1909,19 @@ window.sendWebToGameMessage = async function() {
     }
 };
 
+// Enter key to send chat message
+document.addEventListener('DOMContentLoaded', () => {
+    const chatInput = document.getElementById('chat-message-input');
+    if (chatInput) {
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                window.sendWebToGameMessage();
+            }
+        });
+    }
+});
+
 // ---- Live Lobby Feed for Chat Console ----
 window._lobbyFeedInterval = null;
 window._lobbyFeedPlayers = new Set();
