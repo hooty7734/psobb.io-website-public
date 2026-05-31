@@ -148,7 +148,7 @@ async function handleLogin(e) {
         if (response.ok) {
             // Login Success
             sessionStorage.setItem('psobb_user', JSON.stringify(data));
-            showDashboard(data);
+            window.location.reload();
         } else {
             // Login Failed
             // Check for CAPTCHA requirement

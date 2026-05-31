@@ -60,7 +60,7 @@ if (!is_array($clientsData)) {
 
 $foundClient = null;
 foreach ($clientsData as $client) {
-    if (isset($client['Account']['AccountID']) && (int)$client['Account']['AccountID'] === $accountId) {
+    if (isset($client['Account']) && $client['Account']['AccountID'] == $accountId) {
         $foundClient = $client;
         break;
     }
