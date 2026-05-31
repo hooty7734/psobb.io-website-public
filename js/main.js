@@ -2859,47 +2859,47 @@ window.loadStreak = function() {
                     daysArray.push(i);
                 }
                 daysArray.forEach(m => {
-                    let rewardName = 'Monogrinder';
+                    let rewardName = 'Mono';
                     let tierClass = 'tier-mono';
                     
                     if (m === 365) {
-                        rewardName = data.has_claimed_yahoo ? 'Rare Drop' : 'Yahoo! Mag';
+                        rewardName = data.has_claimed_yahoo ? 'Rare' : 'Yahoo!';
                         tierClass = 'tier-yahoo';
                     } else if (m === 7 || m === 30 || m === 90 || m === 180 || m === 270) {
-                        rewardName = 'Random Mat';
+                        rewardName = 'Mat';
                         tierClass = 'tier-stat';
                     } else if (m <= 30) {
                         if (m % 5 === 0) {
-                            rewardName = 'Random Mat';
+                            rewardName = 'Mat';
                             tierClass = 'tier-stat';
                         } else if (m % 3 === 0) {
-                            rewardName = 'Digrinder';
+                            rewardName = 'Dig';
                             tierClass = 'tier-dig';
                         } else {
-                            rewardName = 'Monogrinder';
+                            rewardName = 'Mono';
                             tierClass = 'tier-mono';
                         }
                     } else if (m <= 90) {
                         if (m % 5 === 0) {
-                            rewardName = 'Random Mat';
+                            rewardName = 'Mat';
                             tierClass = 'tier-stat';
                         } else if (m % 3 === 0) {
-                            rewardName = 'Trigrinder';
+                            rewardName = 'Tri';
                             tierClass = 'tier-tri';
                         } else {
-                            rewardName = 'Digrinder';
+                            rewardName = 'Dig';
                             tierClass = 'tier-dig';
                         }
                     } else if (m <= 180) {
                         if (m % 4 === 0) {
-                            rewardName = 'Random Mat';
+                            rewardName = 'Mat';
                             tierClass = 'tier-stat';
                         } else {
-                            rewardName = 'Trigrinder';
+                            rewardName = 'Tri';
                             tierClass = 'tier-tri';
                         }
                     } else {
-                        rewardName = 'Random Mat';
+                        rewardName = 'Mat';
                         tierClass = 'tier-stat';
                     }
 
