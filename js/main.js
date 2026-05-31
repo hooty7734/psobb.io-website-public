@@ -2352,14 +2352,18 @@ window.loadMyBounties = async function() {
         }
 
         // --- Claimable Community Events ---
+        // Clear the claim list first to prevent duplication on re-renders
+        const claimSection = document.getElementById('claimable-bounties-section');
+        const claimList = document.getElementById('claimable-bounties-list');
+        if (claimSection && claimList) {
+            claimList.innerHTML = '';
+        }
+
         if (data.claimable_events && data.claimable_events.length > 0) {
-            const claimSection = document.getElementById('claimable-bounties-section');
-            const claimList = document.getElementById('claimable-bounties-list');
             if (claimSection && claimList) {
-                ceSection && (ceSection.style.display = 'block');
-                // Prepend claimable event cards to claimable bounties
-                const eventCards = data.claimable_events.map(ce => {
-                    const rewardStr = ce.reward_item_string || 'Community Event Reward';
+                claimSection.style.display = 'block';
+                claimList.innerHTML = data.claimable_events.map(ce => {
+                    const rewardStr = ce.reward_decoded || ce.reward_item_string || 'Community Event Reward';
                     return `
                     <div style="border: 1px solid rgba(0,255,136,0.4); background: rgba(0,255,136,0.05); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
@@ -2371,8 +2375,6 @@ window.loadMyBounties = async function() {
                         </div>
                     </div>`;
                 }).join('');
-                claimList.innerHTML = eventCards + (claimList.innerHTML || '');
-                claimSection.style.display = 'block';
             }
         }
 
@@ -2382,12 +2384,10 @@ window.loadMyBounties = async function() {
 
         // Claimable bounties
         if (completed.length > 0) {
-            const claimSection = document.getElementById('claimable-bounties-section');
-            const claimList = document.getElementById('claimable-bounties-list');
             if (claimSection && claimList) {
                 claimSection.style.display = 'block';
                 claimList.innerHTML += completed.map(b => {
-                    const rewardStr = b.reward_item_string || 'Mystery Reward';
+                    const rewardStr = b.reward_decoded || b.reward_item_string || 'Mystery Reward';
                     return `
                     <div style="border: 1px solid rgba(0,255,136,0.4); background: rgba(0,255,136,0.05); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
@@ -2412,15 +2412,12 @@ window.loadMyBounties = async function() {
                 activeList.innerHTML = inProgress.map(b => {
                     const reward = b.reward_decoded || b.reward_item_string || '';
                     const objective = describeBountyObjective(b.goal_type, b.goal_target);
-                    const desc = b.description || '';
-                    const truncDesc = desc.length > 120 ? desc.substring(0, 120) + '…' : desc;
                     return `
                     <div style="border: 1px solid rgba(0,255,255,0.2); background: rgba(0,10,20,0.4); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
                         <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
                             <div style="flex:1; min-width:0;">
                                 <span style="color:#00ffff; font-weight:bold; font-family:'Share Tech Mono',monospace;">${b.title}</span>
                                 <div style="color:rgba(255,255,255,0.7); font-size:0.75rem; margin-top:6px;">📋 <strong>Objective:</strong> ${objective}</div>
-                                ${truncDesc ? `<div style="color:rgba(255,255,255,0.35); font-size:0.7rem; margin-top:4px; font-style:italic;">📜 Directive: ${truncDesc}</div>` : ''}
                                 <div style="color:rgba(255,255,255,0.3); font-size:0.65rem; margin-top:4px;">Character: ${b.character_name || 'Unknown'}</div>
                                 ${reward ? `<div style="color:#fbbf24; font-size:0.75rem; margin-top:6px; font-family:'Share Tech Mono',monospace;">🎁 ${reward}</div>` : ''}
                             </div>

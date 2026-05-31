@@ -87,6 +87,9 @@ try {
     $cl_exec = $cl_res->execute();
     if ($cl_exec) {
         while ($row = $cl_exec->fetchArray(SQLITE3_ASSOC)) {
+            if (!empty($row['reward_item_string'])) {
+                $row['reward_decoded'] = renderRewardString($row['reward_item_string']);
+            }
             $claimable_events[] = $row;
         }
     }
