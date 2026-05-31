@@ -132,16 +132,15 @@ function parse_item_data($bytes) {
     // Convert to 6-char hex lookup key (primary_identifier >> 8, zero-padded)
     $lookupKey = strtolower(substr(sprintf('%08X', $primaryId), 0, 6));
     
-    // ---- Load reversed item_map.json (code -> name) ----
+    // ---- Load names-v4.json (primary_identifier code -> name, direct from newserv) ----
     static $codeToName = null;
     if ($codeToName === null) {
         $codeToName = [];
-        $mapPath = __DIR__ . '/../api/item_map.json';
-        if (!file_exists($mapPath)) $mapPath = __DIR__ . '/item_map.json';
+        $mapPath = __DIR__ . '/names-v4.json';
         if (file_exists($mapPath)) {
             $map = json_decode(file_get_contents($mapPath), true);
             if ($map) {
-                foreach ($map as $name => $code) {
+                foreach ($map as $code => $name) {
                     $codeToName[strtolower($code)] = $name;
                 }
             }
