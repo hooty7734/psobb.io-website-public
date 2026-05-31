@@ -105,54 +105,94 @@ function parse_item_data($bytes) {
         'attrs' => []
     ];
     
-    // Resolve basic names using generic map (fallback helper)
-    $weaponNames = [
-        0 => 'Saber', 1 => 'Brand', 2 => 'Buster', 3 => 'Pallasch', 4 => 'Gladius',
-        5 => 'Sword', 6 => 'Gigush', 7 => 'Breaker', 8 => 'Claymore', 9 => 'Calibur',
-        10 => 'Dagger', 11 => 'Knife', 12 => 'Blade', 13 => 'Edge', 14 => 'Ripper',
-        15 => 'Partisan', 16 => 'Halbert', 17 => 'Glaive', 18 => 'Berdys', 19 => 'Gungnir',
-        20 => 'Slicer', 21 => 'Spinner', 22 => 'Cutter', 23 => 'Sawcer', 24 => 'Diska',
-        25 => 'Handgun', 26 => 'Autogun', 27 => 'Lockgun', 28 => 'Railgun', 29 => 'Raygun',
-        30 => 'Rifle', 31 => 'Sniper', 32 => 'Blaster', 33 => 'Beam', 34 => 'Laser',
-        35 => 'Mechgun', 36 => 'Assault', 37 => 'Repeater', 38 => 'Gatling', 39 => 'Vulcan',
-        40 => 'Shot', 41 => 'Spread', 42 => 'Cannon', 43 => 'Launcher', 44 => 'Arms',
-        45 => 'Cane', 46 => 'Stick', 47 => 'Mace', 48 => 'Club',
-        49 => 'Rod', 50 => 'Pole', 51 => 'Pillar', 52 => 'Striker',
-        53 => 'Wand', 54 => 'Staff', 55 => 'Baton', 56 => 'Scepter',
-        70 => 'Talis', 71 => 'Mahu', 72 => 'Hitogata'
-    ];
+    // ---- Compute primary_identifier (same algorithm as newserv ItemData::primary_identifier) ----
+    $isSRank = false;
+    if ($group === 0x00) {
+        $isSRank = ($type1 > 0x6F && $type1 < 0x89) || ($type1 > 0xA4 && $type1 < 0xAA);
+    }
     
+    if ($group === 0x04) {
+        $primaryId = 0x04000000;
+    } elseif ($group === 0x03 && $type1 === 0x02) {
+        // Tech disk: tech number is in data1[4], level in data1[2]
+        $techNum = ord($data1[4]);
+        $techLvl = ord($data1[2]);
+        $primaryId = 0x03020000 | ($techNum << 8) | $techLvl;
+    } elseif ($group === 0x02) {
+        // Mag: only uses data1[1]
+        $primaryId = 0x02000000 | ($type1 << 16);
+    } elseif ($isSRank) {
+        // S-rank weapon: no subtype
+        $primaryId = ($group << 24) | ($type1 << 16);
+    } else {
+        // Normal weapon, armor, tool
+        $primaryId = ($group << 24) | ($type1 << 16) | ($type2 << 8);
+    }
+    
+    // Convert to 6-char hex lookup key (primary_identifier >> 8, zero-padded)
+    $lookupKey = strtolower(substr(sprintf('%08X', $primaryId), 0, 6));
+    
+    // ---- Load reversed item_map.json (code -> name) ----
+    static $codeToName = null;
+    if ($codeToName === null) {
+        $codeToName = [];
+        $mapPath = __DIR__ . '/../api/item_map.json';
+        if (!file_exists($mapPath)) $mapPath = __DIR__ . '/item_map.json';
+        if (file_exists($mapPath)) {
+            $map = json_decode(file_get_contents($mapPath), true);
+            if ($map) {
+                foreach ($map as $name => $code) {
+                    $codeToName[strtolower($code)] = $name;
+                }
+            }
+        }
+    }
+    
+    // ---- Parse group-specific data ----
     if ($group === 0x00) {
         // Weapon
-        $wId = $type1;
-        $wName = $weaponNames[$wId] ?? 'Weapon';
         $grind = ord($data1[3]);
-        $specialId = ord($data1[4]) & 0x3F;
-        
-        $item['name'] = $wName . ($grind > 0 ? " +$grind" : "");
         $item['grind'] = $grind;
         
         // Unidentified flag
-        if (ord($data1[4]) & 0x80) {
-            $item['name'] = "???? " . $wName;
-            $item['unidentified'] = true;
-        }
+        $isUnid = (ord($data1[4]) & 0x80) !== 0;
+        if ($isUnid) $item['unidentified'] = true;
         
-        // Attributes (Up to 3 attributes: native, beast, machine, dark, hit)
+        // Look up name
+        $wName = $codeToName[$lookupKey] ?? null;
+        if (!$wName) {
+            // Fallback: try without subtype for S-rank
+            $fallbackKey = strtolower(sprintf('%02X%02X00', $group, $type1));
+            $wName = $codeToName[$fallbackKey] ?? 'Weapon';
+        }
+        $wName = ucwords($wName);
+        
+        $item['name'] = ($isUnid ? '???? ' : '') . $wName . ($grind > 0 ? " +$grind" : "");
+        
+        // Attributes (Native, A.Beast, Machine, Dark, Hit)
         $attrMap = [1 => 'Native', 2 => 'A.Beast', 3 => 'Machine', 4 => 'Dark', 5 => 'Hit'];
         for ($a = 0; $a < 3; $a++) {
             $aType = ord($data1[6 + $a * 2]);
             $aVal = ord($data1[7 + $a * 2]);
             if ($aType > 0 && isset($attrMap[$aType])) {
-                // Convert to signed 8-bit byte
                 if ($aVal > 127) $aVal -= 256;
                 $item['attrs'][] = ['type' => $attrMap[$aType], 'value' => $aVal];
             }
         }
     } elseif ($group === 0x01) {
-        // Armor, Shield or Unit
-        if ($type1 === 0x01) {
+        // Armor, Shield, Unit
+        $aName = $codeToName[$lookupKey] ?? null;
+        if ($aName) {
+            $item['name'] = ucwords($aName);
+        } elseif ($type1 === 0x01) {
             $item['name'] = 'Armor';
+        } elseif ($type1 === 0x02) {
+            $item['name'] = 'Shield';
+        } elseif ($type1 === 0x03) {
+            $item['name'] = 'Unit';
+        }
+        
+        if ($type1 === 0x01) {
             $slots = ord($data1[5]);
             $defBonus = unpack('s', substr($data1, 6, 2))[1];
             $evpBonus = unpack('s', substr($data1, 8, 2))[1];
@@ -160,13 +200,11 @@ function parse_item_data($bytes) {
             $item['def_bonus'] = $defBonus;
             $item['evp_bonus'] = $evpBonus;
         } elseif ($type1 === 0x02) {
-            $item['name'] = 'Shield';
             $defBonus = unpack('s', substr($data1, 6, 2))[1];
             $evpBonus = unpack('s', substr($data1, 8, 2))[1];
             $item['def_bonus'] = $defBonus;
             $item['evp_bonus'] = $evpBonus;
         } elseif ($type1 === 0x03) {
-            $item['name'] = 'Unit';
             $modifier = unpack('s', substr($data1, 6, 2))[1];
             $item['modifier'] = $modifier;
         }
@@ -181,7 +219,8 @@ function parse_item_data($bytes) {
         $synchro = ord($data2[0]);
         $iq = ord($data2[1]);
         
-        $item['name'] = 'MAG';
+        $magName = $codeToName[$lookupKey] ?? 'MAG';
+        $item['name'] = ucwords($magName);
         $item['mag_stats'] = [
             'level' => $level,
             'def' => $def,
@@ -195,50 +234,22 @@ function parse_item_data($bytes) {
     } elseif ($group === 0x03) {
         // Tool / Tech Disk
         if ($type1 === 0x02) {
-            // Disk
             $techLvl = ord($data1[2]) + 1;
             $techNum = ord($data1[4]);
             $techs = ['Foie', 'Gifoie', 'Rafoie', 'Barta', 'Gibarta', 'Rabarta', 'Zonde', 'Gizonde', 'Razonde', 'Grants', 'Deband', 'Jellen', 'Zalure', 'Shifta', 'Ryuker', 'Resta', 'Anti', 'Reverser', 'Megid'];
             $techName = $techs[$techNum] ?? 'Technique';
             $item['name'] = "Disk: $techName Lv.$techLvl";
         } else {
-            $item['name'] = 'Consumable';
+            $tName = $codeToName[$lookupKey] ?? 'Consumable';
+            $item['name'] = ucwords($tName);
             $count = ord($data1[5]);
             if ($count === 0) $count = 1;
             $item['count'] = $count;
         }
     } elseif ($group === 0x04) {
-        // Meseta
         $amount = unpack('V', $data2)[1];
         $item['name'] = 'Meseta';
         $item['count'] = $amount;
-    }
-    
-    // Reverse Map from local item_hex.txt if available to make it super accurate!
-    $itemHexPath = __DIR__ . '/../item_hex.txt';
-    if (file_exists($itemHexPath)) {
-        $searchPrefix = substr($item['hex'], 0, 6);
-        $lines = file($itemHexPath);
-        foreach ($lines as $line) {
-            if (strpos(trim($line), $searchPrefix) === 0) {
-                $parts = preg_split('/\s{2,}/', trim($line));
-                $fullName = end($parts);
-                $fullName = preg_replace('/\s+x1$/', '', $fullName);
-                
-                // Add details
-                if ($group === 0x00) {
-                    $item['name'] = $fullName . ($grind > 0 ? " +$grind" : "");
-                    if (isset($item['unidentified'])) $item['name'] = "???? " . $fullName;
-                } else if ($group === 0x01) {
-                    $item['name'] = $fullName;
-                } else if ($group === 0x02) {
-                    $item['name'] = $fullName;
-                } else if ($group === 0x03 && $type1 !== 0x02) {
-                    $item['name'] = $fullName;
-                }
-                break;
-            }
-        }
     }
     
     return $item;
