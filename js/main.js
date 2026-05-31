@@ -1657,14 +1657,15 @@ function filterBankGrid(query) {
     document.querySelectorAll('#viewer-bank-grid .item-slot').forEach(slot => {
         const hex = slot.getAttribute('data-hex');
         if (!hex) {
-            slot.style.opacity = '0.1';
+            // Empty slot: hide when searching, show when cleared
+            slot.style.display = query ? 'none' : '';
             return;
         }
         const item = findItemByHex(hex);
-        if (item && item.name.toLowerCase().includes(query)) {
-            slot.style.opacity = '1';
+        if (!query || (item && item.name.toLowerCase().includes(query))) {
+            slot.style.display = '';
         } else {
-            slot.style.opacity = '0.1';
+            slot.style.display = 'none';
         }
     });
 }
