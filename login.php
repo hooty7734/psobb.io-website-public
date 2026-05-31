@@ -447,7 +447,7 @@ include 'includes/header.php';
                             </div>
                             
                             <div style="display:flex; gap:10px;">
-                                <input type="text" id="chat-message-input" placeholder="<?= __('Type message to game (max 200 chars)...') ?>" maxlength="200" style="flex:1; padding: 10px; background: rgba(0,0,0,0.8); border: 1px solid rgba(0,255,255,0.3); color:#fff; border-radius:4px; font-size:0.95rem;">
+                                <input type="text" id="chat-message-input" placeholder="<?= __('Type message to game (max 64 chars)...') ?>" maxlength="64" style="flex:1; padding: 10px; background: rgba(0,0,0,0.8); border: 1px solid rgba(0,255,255,0.3); color:#fff; border-radius:4px; font-size:0.95rem;">
                                 <button onclick="sendWebToGameMessage()" id="chat-send-btn" class="dl-btn chat-send-btn"><i class="fas fa-paper-plane"></i> <?= __('Send') ?></button>
                             </div>
                             

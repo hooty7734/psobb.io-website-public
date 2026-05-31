@@ -34,10 +34,10 @@ if (empty($characterName) || empty($messageText)) {
     exit;
 }
 
-// Enforce message length restriction for standard chat formatting
-if (mb_strlen($messageText) > 200) {
+// Enforce message length restriction for in-game chat buffer
+if (mb_strlen($messageText) > 64) {
     http_response_code(400);
-    echo json_encode(["success" => false, "error" => "Message exceeds the maximum limit of 200 characters."]);
+    echo json_encode(["success" => false, "error" => "Message exceeds the in-game limit of 64 characters."]);
     exit;
 }
 
