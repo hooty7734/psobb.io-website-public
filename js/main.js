@@ -1255,8 +1255,8 @@ function renderInventory() {
                 slotBox.classList.add('pd-rare-purple');
             }
 
-            // Add to names list
-            if (namesListEl) {
+            // Add to names list (skip MAG — it has its own card)
+            if (namesListEl && key !== 'mag') {
                 const row = document.createElement('div');
                 row.className = 'eq-name-row';
                 const tag = document.createElement('span');
