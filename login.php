@@ -13,7 +13,7 @@ include 'includes/header.php';
 
     <main class="container">
         <div class="login-container">
-            <h1><?= __('Hunter\'s License Login') ?></h1>
+            <h1><?= __('Player Portal') ?></h1>
             
             <div class="login-container-form">
                 <p><?= __('Access your account data, character stats, and bank.') ?></p>
@@ -397,11 +397,27 @@ include 'includes/header.php';
                                 </div>
                             </div>
 
-                            <!-- Bounty board link and quick review -->
+                            <!-- Community Event Status -->
+                            <div id="community-event-section" style="margin-bottom: 2rem; display:none;">
+                                <h3 style="color:#ffaa00; font-family:'Share Tech Mono', monospace; margin-top:0;"><i class="fas fa-globe animate-pulse" style="color:#ffaa00; margin-right:8px;"></i><?= __('Active Community Event') ?></h3>
+                                <div id="community-event-cards"></div>
+                            </div>
+
+                            <!-- Claimable Bounties -->
+                            <div id="claimable-bounties-section" style="margin-bottom: 2rem; display:none;">
+                                <h3 style="color:#00ff88; font-family:'Share Tech Mono', monospace; margin-top:0;"><i class="fas fa-trophy" style="color:#00ff88; margin-right:8px;"></i><?= __('Bounties Ready to Claim') ?></h3>
+                                <div id="claimable-bounties-list"></div>
+                            </div>
+
+                            <!-- Active Bounties (in progress) -->
+                            <div id="active-bounties-section" style="margin-bottom: 2rem; display:none;">
+                                <h3 style="color:#00ffff; font-family:'Share Tech Mono', monospace; margin-top:0;"><i class="fas fa-crosshairs animate-pulse" style="color:#00ffff; margin-right:8px;"></i><?= __('Active Bounties') ?></h3>
+                                <div id="active-bounties-list"></div>
+                            </div>
+
+                            <!-- Bounty board link -->
                             <div style="border: 1px solid rgba(0, 255, 255, 0.2); background: rgba(0, 10, 20, 0.4); padding: 1.5rem; border-radius: 8px; margin-bottom:2rem;">
-                                <h3 style="color:#00ffff; font-family:'Share Tech Mono', monospace; margin-top:0; border-bottom:1px solid rgba(0,255,255,0.2); padding-bottom:8px; margin-bottom:12px;"><i class="fas fa-crosshairs animate-pulse" style="color:#00ffff; margin-right:8px;"></i><?= __('Hunter\'s Guild Bounties') ?></h3>
-                                
-                                <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom:15px;"><?= __('Accept unique custom personal bounties from the Hunters Guild Bounty Board to earn rare weapon packages, shield upgrades, and Meseta cash payouts!') ?></p>
+                                <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom:15px; margin-top:0;"><?= __('Accept unique custom personal bounties from the Hunters Guild Bounty Board to earn rare weapon packages, shield upgrades, and Meseta cash payouts!') ?></p>
                                 
                                 <a href="missions.php" class="dl-btn" style="display:block; text-align:center; text-decoration:none; border-color: #00ffff; background: rgba(0, 255, 255, 0.15); color: #00ffff; font-weight: bold; font-family: 'Share Tech Mono', monospace; font-size:0.9rem; padding:10px;">
                                     <i class="fas fa-bullseye"></i> <?= __('Open Hunters Guild Board') ?>

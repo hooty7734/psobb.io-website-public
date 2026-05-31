@@ -1058,6 +1058,7 @@ window.switchDashboardTab = function(tabId) {
     } else if (tabId === 'tab-guild') {
         window.loadUnlocks();
         window.loadStreak();
+        window.loadMyBounties();
     }
 
     // Start/stop lobby feed polling based on chat tab visibility
@@ -1955,6 +1956,111 @@ window.toggleDiscordStreakPref = async function() {
     } catch (e) {
         console.error('Discord streak alerts preferences update failed:', e);
         checkbox.checked = !enabled;
+    }
+};
+
+// Load bounties & community events for Guild tab
+window.loadMyBounties = async function() {
+    try {
+        const res = await fetch('/api/my_bounties.php', { credentials: 'same-origin' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data.success) return;
+
+        // --- Community Events ---
+        const ceSection = document.getElementById('community-event-section');
+        const ceCards = document.getElementById('community-event-cards');
+        if (ceSection && ceCards && data.community_events && data.community_events.length > 0) {
+            ceSection.style.display = 'block';
+            ceCards.innerHTML = data.community_events.map(ce => {
+                const pct = Math.min(100, ce.progress_pct);
+                return `
+                <div style="border: 1px solid rgba(255,170,0,0.3); background: rgba(0,10,20,0.5); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <strong style="color:#ffaa00; font-family:'Share Tech Mono',monospace; font-size:0.95rem;">${ce.title}</strong>
+                        <span style="color:#fff; font-size:0.8rem; font-family:'Share Tech Mono',monospace;">${pct}%</span>
+                    </div>
+                    <p style="color:rgba(255,255,255,0.65); font-size:0.8rem; margin:0 0 10px 0;">${ce.description || ''}</p>
+                    <div style="background:rgba(255,255,255,0.06); border-radius:4px; height:10px; overflow:hidden; margin-bottom:8px;">
+                        <div style="height:100%; background: linear-gradient(90deg, #ffaa00, #ff6600); border-radius:4px; transition: width 0.8s ease; width:${pct}%;"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:rgba(255,255,255,0.5); font-family:'Share Tech Mono',monospace;">
+                        <span>Progress: ${Number(ce.current_progress).toLocaleString()} / ${Number(ce.target_amount).toLocaleString()}</span>
+                        <span>Your Contribution: <strong style="color:#ffaa00;">${ce.user_contribution || 0}</strong></span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // --- Claimable Community Events ---
+        if (data.claimable_events && data.claimable_events.length > 0) {
+            const claimSection = document.getElementById('claimable-bounties-section');
+            const claimList = document.getElementById('claimable-bounties-list');
+            if (claimSection && claimList) {
+                ceSection && (ceSection.style.display = 'block');
+                // Prepend claimable event cards to claimable bounties
+                const eventCards = data.claimable_events.map(ce => `
+                    <div style="border: 1px solid rgba(0,255,136,0.4); background: rgba(0,255,136,0.05); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <span style="color:#00ff88; font-weight:bold; font-family:'Share Tech Mono',monospace;">🏆 ${ce.title}</span>
+                                <div style="color:rgba(255,255,255,0.5); font-size:0.75rem; margin-top:4px;">Community Event Reward</div>
+                            </div>
+                            <a href="missions.php" class="dl-btn" style="text-decoration:none; border-color:#00ff88; color:#00ff88; background:rgba(0,255,136,0.15); font-size:0.8rem; padding:6px 14px;">Claim →</a>
+                        </div>
+                    </div>
+                `).join('');
+                claimList.innerHTML = eventCards + (claimList.innerHTML || '');
+                claimSection.style.display = 'block';
+            }
+        }
+
+        // --- Bounties ---
+        const completed = data.bounties.filter(b => b.status === 'completed');
+        const inProgress = data.bounties.filter(b => b.status === 'in_progress');
+
+        // Claimable bounties
+        if (completed.length > 0) {
+            const claimSection = document.getElementById('claimable-bounties-section');
+            const claimList = document.getElementById('claimable-bounties-list');
+            if (claimSection && claimList) {
+                claimSection.style.display = 'block';
+                claimList.innerHTML += completed.map(b => `
+                    <div style="border: 1px solid rgba(0,255,136,0.4); background: rgba(0,255,136,0.05); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <span style="color:#00ff88; font-weight:bold; font-family:'Share Tech Mono',monospace;">✅ ${b.title}</span>
+                                <div style="color:rgba(255,255,255,0.5); font-size:0.75rem; margin-top:4px;">${b.character_name || 'Unknown'} · ${b.goal_type}</div>
+                            </div>
+                            <a href="missions.php" class="dl-btn" style="text-decoration:none; border-color:#00ff88; color:#00ff88; background:rgba(0,255,136,0.15); font-size:0.8rem; padding:6px 14px;">Claim →</a>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Active in-progress bounties
+        if (inProgress.length > 0) {
+            const activeSection = document.getElementById('active-bounties-section');
+            const activeList = document.getElementById('active-bounties-list');
+            if (activeSection && activeList) {
+                activeSection.style.display = 'block';
+                activeList.innerHTML = inProgress.map(b => `
+                    <div style="border: 1px solid rgba(0,255,255,0.2); background: rgba(0,10,20,0.4); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <span style="color:#00ffff; font-weight:bold; font-family:'Share Tech Mono',monospace;">${b.title}</span>
+                                <div style="color:rgba(255,255,255,0.5); font-size:0.75rem; margin-top:4px;">${b.character_name || 'Unknown'} · ${b.goal_type} · ${b.goal_target || ''}</div>
+                            </div>
+                            <span style="color:#ffaa00; font-size:0.75rem; font-family:'Share Tech Mono',monospace;">IN PROGRESS</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+    } catch (e) {
+        console.error('Failed to load bounties:', e);
     }
 };
 
