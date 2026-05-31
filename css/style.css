@@ -2185,6 +2185,143 @@ body.pwa-standalone .logo-text {
 }
 
 /* ==========================================================================
+   Drop Animation Overlay (Countdown + 3D Box + Fireworks)
+   ========================================================================== */
+.drop-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1000px;
+}
+.countdown-text {
+    position: absolute;
+    top: 40%;
+    width: 100%;
+    text-align: center;
+    font-family: 'Share Tech Mono', 'Segoe UI', monospace;
+    font-size: 8rem;
+    color: #fff;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 1);
+    z-index: 10001;
+    transition: transform 0.2s ease;
+    pointer-events: none;
+}
+.thank-you-text {
+    position: absolute;
+    top: 20%;
+    width: 100%;
+    text-align: center;
+    font-family: 'Share Tech Mono', 'Segoe UI', monospace;
+    font-size: 4rem;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(0, 255, 255, 1), 0 0 40px rgba(0, 255, 255, 0.8);
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+}
+.drop-item-box {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    transform-style: preserve-3d;
+    animation: dropIn 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+.drop-box-core {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateX(-30deg) rotateY(45deg);
+    animation: spinBox 3s linear infinite;
+}
+.drop-box-core .face {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 42, 42, 0.8);
+    border: 2px solid #ffaaaa;
+    box-shadow: inset 0 0 15px rgba(255,255,255,0.5);
+    backface-visibility: inherit;
+}
+.drop-box-core .face.front  { transform: rotateY(  0deg) translateZ(30px); }
+.drop-box-core .face.right  { transform: rotateY( 90deg) translateZ(30px); }
+.drop-box-core .face.back   { transform: rotateY(180deg) translateZ(30px); }
+.drop-box-core .face.left   { transform: rotateY(-90deg) translateZ(30px); }
+.drop-box-core .face.top    { transform: rotateX( 90deg) translateZ(30px); }
+.drop-box-core .face.bottom { transform: rotateX(-90deg) translateZ(30px); }
+.drop-box-glow {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(255, 42, 42, 0.8) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    animation: glowBurst 1.5s 0.8s forwards;
+}
+
+@keyframes dropIn {
+    0% { transform: translateY(-300px) scale(0.5); opacity: 0; }
+    60% { transform: translateY(20px) scale(1.1); opacity: 1; }
+    80% { transform: translateY(-10px) scale(0.95); }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes textDrop {
+    0% { transform: translateY(-100px) scale(0.8); opacity: 0; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes spinBox {
+    from { transform: rotateX(-20deg) rotateY(0deg); }
+    to { transform: rotateX(-20deg) rotateY(360deg); }
+}
+@keyframes glowBurst {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(2); }
+}
+
+/* Green box variations */
+.drop-item-box.green-box .drop-box-core .face {
+    background: rgba(42, 255, 42, 0.8);
+    border-color: #aaffaa;
+}
+.drop-item-box.green-box .drop-box-glow {
+    background: radial-gradient(circle, rgba(42, 255, 42, 0.8) 0%, transparent 70%);
+}
+/* Orange box */
+.drop-item-box.orange-box .drop-box-core .face {
+    background: rgba(255, 128, 0, 0.8);
+    border-color: #ffcc99;
+}
+.drop-item-box.orange-box .drop-box-glow {
+    background: radial-gradient(circle, rgba(255, 128, 0, 0.8) 0%, transparent 70%);
+}
+/* Blue box */
+.drop-item-box.blue-box .drop-box-core .face {
+    background: rgba(42, 117, 255, 0.8);
+    border-color: #aaccff;
+}
+.drop-item-box.blue-box .drop-box-glow {
+    background: radial-gradient(circle, rgba(42, 117, 255, 0.8) 0%, transparent 70%);
+}
+/* Teal box */
+.drop-item-box.teal-box .drop-box-core .face {
+    background: rgba(0, 200, 200, 0.8);
+    border-color: #80f0f0;
+}
+.drop-item-box.teal-box .drop-box-glow {
+    background: radial-gradient(circle, rgba(0, 200, 200, 0.8) 0%, transparent 70%);
+}
+
+@media (max-width: 480px) {
+    .countdown-text { font-size: 5rem; }
+    .thank-you-text { font-size: 2rem; }
+}
+
+/* ==========================================================================
    Daily Login Streak Styles (Missing in Player Portal)
    ========================================================================== */
 .streak-container {
