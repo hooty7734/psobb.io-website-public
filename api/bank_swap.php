@@ -61,10 +61,8 @@ if (!is_array($clientsData)) {
 $foundClient = null;
 foreach ($clientsData as $client) {
     if (isset($client['Account']['AccountID']) && (int)$client['Account']['AccountID'] === $accountId) {
-        if (isset($client['Name']) && $client['Name'] === $characterName) {
-            $foundClient = $client;
-            break;
-        }
+        $foundClient = $client;
+        break;
     }
 }
 

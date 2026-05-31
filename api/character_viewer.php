@@ -34,7 +34,7 @@ if (empty($username)) {
 }
 
 $username = strtolower(trim($username));
-$slot = isset($_GET['slot']) ? clamp((int)$_GET['slot'], 0, 3) : 0;
+$slot = isset($_GET['slot']) ? clamp((int)$_GET['slot'], 0, 19) : 0;
 
 // Path definition to players folder (checks production /opt first, falls back to local dev)
 $playersDir = '/opt/newserv/system/players/';

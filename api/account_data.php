@@ -77,7 +77,7 @@ if ($foundAccount) {
         $u = strtolower(trim($u));
         if (empty($u)) continue;
         
-        for ($slot = 0; $slot < 4; $slot++) {
+        for ($slot = 0; $slot < 20; $slot++) {
             $charFilename = "player_{$u}_{$slot}.psochar";
             $charPath = $playersDir . $charFilename;
             if (!file_exists($charPath)) {

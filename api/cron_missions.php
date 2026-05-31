@@ -1143,7 +1143,8 @@ CRITICAL RULE: Return ONLY valid JSON properly formatted with double quotes stri
                         $is_challenge = ($selected_goal === 'CHALLENGE_STAGES');
                         if ($category === 'Weapon') {
                             $stats = [0, 0, 0, 0]; // [Native, A.Beast, Machine, Dark]
-                            $numStatsToAssign = $is_challenge ? rand(2, 3) : rand(1, 3);
+                            // Challenge Mode weapons get guaranteed hit%, so they can only get at most 2 other stats (since max total stats is 3).
+                            $numStatsToAssign = $is_challenge ? rand(1, 2) : rand(1, 3);
                             $availableIndices = [0, 1, 2, 3];
                             shuffle($availableIndices);
                             for ($i = 0; $i < $numStatsToAssign; $i++) {
@@ -1151,8 +1152,8 @@ CRITICAL RULE: Return ONLY valid JSON properly formatted with double quotes stri
                                 $amount = $is_challenge ? rand(3, 10) * 5 : rand(1, 10) * 5;
                                 $stats[$index] = $amount;
                             }
-                            // Challenge Mode weapons get guaranteed hit%
-                            $hit = $is_challenge ? rand(5, 10) * 5 : 0;
+                            // Challenge Mode weapons get guaranteed hit% capped at 20%
+                            $hit = $is_challenge ? rand(1, 4) * 5 : 0;
                             $single_item_string .= " " . implode("/", $stats) . ($hit > 0 ? "/$hit" : "");
                         } else if ($category === 'Armor' || $category === 'Shield') {
                             $defBonus = $is_challenge ? rand(2, 5) * 5 : rand(0, 5) * 5;

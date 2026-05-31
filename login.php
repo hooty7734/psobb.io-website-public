@@ -158,10 +158,9 @@ include 'includes/header.php';
                 <div id="tab-banks" class="dashboard-tab-pane">
                     <!-- Character Slots selector -->
                     <div class="character-slots-bar">
-                        <button class="dl-btn slot-btn active" onclick="switchCharSlot(0)" data-slot="0">Character 1</button>
-                        <button class="dl-btn slot-btn" onclick="switchCharSlot(1)" data-slot="1">Character 2</button>
-                        <button class="dl-btn slot-btn" onclick="switchCharSlot(2)" data-slot="2">Character 3</button>
-                        <button class="dl-btn slot-btn" onclick="switchCharSlot(3)" data-slot="3">Character 4</button>
+                        <?php for ($slot = 0; $slot < 20; $slot++): ?>
+                            <button class="dl-btn slot-btn<?= $slot === 0 ? ' active' : '' ?>" onclick="switchCharSlot(<?= $slot ?>)" data-slot="<?= $slot ?>"><?= sprintf(__('Character %d'), $slot + 1) ?></button>
+                        <?php endfor; ?>
                     </div>
 
                     <div id="viewer-loader" style="text-align: center; padding: 2rem; display: none;">
@@ -297,10 +296,9 @@ include 'includes/header.php';
                 <!-- Tab: Bank Vault -->
                 <div id="tab-bank" class="dashboard-tab-pane">
                     <div class="character-slots-bar">
-                        <button class="dl-btn slot-btn active" onclick="switchCharSlot(0)" data-slot="0">Character 1</button>
-                        <button class="dl-btn slot-btn" onclick="switchCharSlot(1)" data-slot="1">Character 2</button>
-                        <button class="dl-btn slot-btn" onclick="switchCharSlot(2)" data-slot="2">Character 3</button>
-                        <button class="dl-btn slot-btn" onclick="switchCharSlot(3)" data-slot="3">Character 4</button>
+                        <?php for ($slot = 0; $slot < 20; $slot++): ?>
+                            <button class="dl-btn slot-btn<?= $slot === 0 ? ' active' : '' ?>" onclick="switchCharSlot(<?= $slot ?>)" data-slot="<?= $slot ?>"><?= sprintf(__('Character %d'), $slot + 1) ?></button>
+                        <?php endfor; ?>
                     </div>
                     <div style="border: 1px solid rgba(0, 255, 255, 0.15); background: rgba(0, 10, 20, 0.5); padding: 1.5rem; border-radius: 10px;">
                         <div class="item-grid-title" style="flex-wrap:wrap; gap:10px; margin-bottom:1rem;">
@@ -309,7 +307,9 @@ include 'includes/header.php';
                         </div>
                         <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
                             <select id="viewer-bank-select" style="flex:1; min-width:180px; padding: 10px; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(0,255,255,0.3); border-radius: 4px; font-family:'Share Tech Mono', monospace; box-sizing: border-box;">
-                                <option value="0"><?= __('Character Bank') ?></option>
+                                <?php for ($i = 0; $i < 20; $i++): ?>
+                                    <option value="<?= $i ?>"><?= sprintf(__('Slot %d Character Bank'), $i + 1) ?></option>
+                                <?php endfor; ?>
                                 <option value="-1"><?= __('Shared Bank') ?></option>
                             </select>
                             <button id="viewer-btn-swap-bank" onclick="triggerBankSwap()" class="dl-btn" style="border-color:#00ffff; background:rgba(0,255,255,0.1); color:#00ffff; font-family:'Share Tech Mono', monospace; font-weight:bold; padding:10px 20px;"><i class="fas fa-arrows-rotate"></i> <?= __('Swap Bank in Game') ?></button>
