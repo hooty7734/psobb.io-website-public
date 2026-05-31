@@ -300,16 +300,11 @@ if (file_exists($psocharPath)) {
     $sectionId = $SECID_MAP[$sectionIdVal] ?? 'Viridia';
     
     // UTF-16LE name starts at offset 116 (size 32)
-    // BB uses UTF16_ALWAYS_MARKED encoding: first 2 bytes are a language prefix char
-    // (J=Japanese, E=English, G=German, F=French, S=Spanish, B=SimpChinese, T=TradChinese, K=Korean)
-    // We must skip the first 2 bytes (one UTF-16LE char) to get the actual player name.
-    $nameBytes = substr($dispBlock, 116, 32);
+    // BB uses UTF16_ALWAYS_MARKED encoding: first chars are \t + language marker (J/E/B/T/K)
+    // That's 2 UTF-16LE characters = 4 bytes. Skip them to get the actual player name.
+    $nameBytes = substr($dispBlock, 116 + 4, 28);
     $charName = mb_convert_encoding($nameBytes, 'UTF-8', 'UTF-16LE');
     $charName = trim(str_replace("\x00", "", $charName));
-    // Strip language prefix character (J/E/G/F/S/B/T/K) from BB names
-    if (preg_match('/^[JEGFSBTKC]/', $charName)) {
-        $charName = substr($charName, 1);
-    }
     
     // Material stats from extensions striped across items
     $powerMats = ord($invBlock[4 + 8 * 28 + 3]);
@@ -429,17 +424,10 @@ if (file_exists($psocharPath)) {
             foreach ($clients as $c) {
                 if (isset($c['Account']['AccountID']) && (int)$c['Account']['AccountID'] === $accountId) {
                     $accountOnline = true;
+                    // newserv's decode() already strips the \t+language prefix
                     $onlineCharName = $c['Name'] ?? '';
-                    // Strip language prefix from online name for comparison and display
-                    $cleanOnlineName = $onlineCharName;
-                    if (preg_match('/^\t[JEGFSBTKC]/', $cleanOnlineName)) {
-                        $cleanOnlineName = substr($cleanOnlineName, 2);
-                    } elseif (preg_match('/^[JEGFSBTKC]/', $cleanOnlineName)) {
-                        $cleanOnlineName = substr($cleanOnlineName, 1);
-                    }
-                    $onlineCharName = $cleanOnlineName;
                     
-                    if ($cleanOnlineName === $charName) {
+                    if ($onlineCharName === $charName) {
                         $character['online'] = true;
                         $character['lobby_id'] = $c['LobbyID'] ?? null;
                         
@@ -452,9 +440,18 @@ if (file_exists($psocharPath)) {
                         $character['mats']['Evade'] = (int)($c['NumEvadeMaterialsUsed'] ?? $character['mats']['Evade']);
                         $character['mats']['Luck'] = (int)($c['NumLuckMaterialsUsed'] ?? $character['mats']['Luck']);
                         
-                        if (isset($c['Level'])) {
-                            $character['level'] = (int)$c['Level'];
-                        }
+                        // Live stats directly from newserv memory
+                        if (isset($c['ATP'])) $character['stats']['ATP'] = (int)$c['ATP'];
+                        if (isset($c['DFP'])) $character['stats']['DFP'] = (int)$c['DFP'];
+                        if (isset($c['MST'])) $character['stats']['MST'] = (int)$c['MST'];
+                        if (isset($c['ATA'])) $character['stats']['ATA'] = (int)$c['ATA'];
+                        if (isset($c['EVP'])) $character['stats']['EVP'] = (int)$c['EVP'];
+                        if (isset($c['LCK'])) $character['stats']['LCK'] = (int)$c['LCK'];
+                        if (isset($c['HP'])) $character['stats']['HP'] = (int)$c['HP'];
+                        if (isset($c['Meseta'])) $character['stats']['Meseta'] = (int)$c['Meseta'];
+                        if (isset($c['Level'])) $character['level'] = (int)$c['Level'];
+                        if (isset($c['SectionID'])) $character['section_id'] = $c['SectionID'];
+                        if (isset($c['CharClass'])) $character['class'] = $c['CharClass'];
                         
                         // Direct override of inventory items with memory allocation mapping
                         if (isset($c['InventoryItems']) && is_array($c['InventoryItems'])) {
