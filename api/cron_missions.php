@@ -584,6 +584,7 @@ foreach ($clients as $client) {
                             
                             // Notify the mentee in-game via personal mail
                             send_personal_mail($m_acc, "Hunters Guild", "You survived a Hardcore Carry! Check psobb.io to claim your rare reward.");
+                            @touch(__DIR__ . '/../db/.bounty_' . $m_acc);
                         }
                     }
                 // =====================================================================
@@ -677,6 +678,7 @@ foreach ($clients as $client) {
                             
                             // Notify the party member in-game
                             send_personal_mail($m_acc, "Hunters Guild", "You completed a Team Bounty! Check psobb.io to claim your rare reward.");
+                            @touch(__DIR__ . '/../db/.bounty_' . $m_acc);
                         }
                     }
                 } else {
@@ -821,6 +823,9 @@ foreach ($clients as $client) {
             $upd = $db->prepare("UPDATE player_missions SET status = 'ready_to_redeem' WHERE id = :id");
             $upd->bindValue(':id', $m['id'], SQLITE3_INTEGER);
             $upd->execute();
+
+            // Touch marker file to notify the web portal of the change (lightweight polling)
+            @touch(__DIR__ . '/../db/.bounty_' . $accId);
 
             if ($user_lang === 'jp') {
                 $completion_msg = "ミッション「" . ($m['mission_title'] ?? '') . "」を達成しました！\n報酬はpsobb.ioで受け取ってください。";
@@ -1237,6 +1242,11 @@ CRITICAL RULE: Return ONLY valid JSON properly formatted with double quotes stri
                     if ($level >= 80) $num_items_to_reward = rand(2, 3);
                     elseif ($level >= 40) $num_items_to_reward = rand(1, 2);
 
+                    // Challenge Mode bounties get bonus items (+1) as incentive
+                    if ($selected_goal === 'CHALLENGE_STAGES') {
+                        $num_items_to_reward += 1;
+                    }
+
                     $reward_items_array = [];
                     $rare_count = 0;
                     for ($item_idx = 0; $item_idx < $num_items_to_reward; $item_idx++) {
@@ -1254,10 +1264,14 @@ CRITICAL RULE: Return ONLY valid JSON properly formatted with double quotes stri
                             elseif ($level >= 20) $rareChance = 5;  // Hard
                         }
                         
-                        // Hex always gives out pure rare loot!
+                        // Hex, team bounties always give out pure rare loot!
                         if ($quest_giver === 'Hex (the PSOBB.io AI Assistant)' || $selected_goal === 'HARDCORE_MENTOR' || $selected_goal === 'DIVERSE_PARTY_BOSS') {
                             $rareChance = 100;
                             $rare_count = 0; // Bypass the 1-rare limit
+                        }
+                        // Challenge Mode gets a flat 75% rare chance
+                        if ($selected_goal === 'CHALLENGE_STAGES') {
+                            $rareChance = 75;
                         }
                         
                         $rawCharClass = isset($class_map[$class_id]) ? explode(' ', $class_map[$class_id])[0] : 'HUmar';
@@ -1280,20 +1294,23 @@ CRITICAL RULE: Return ONLY valid JSON properly formatted with double quotes stri
                         $single_item_string = $base_reward;
 
                         // Procedural Stat Generation
+                        $is_challenge = ($selected_goal === 'CHALLENGE_STAGES');
                         if ($category === 'Weapon') {
                             $stats = [0, 0, 0, 0]; // [Native, A.Beast, Machine, Dark]
-                            $numStatsToAssign = rand(1, 3);
+                            $numStatsToAssign = $is_challenge ? rand(2, 3) : rand(1, 3);
                             $availableIndices = [0, 1, 2, 3];
                             shuffle($availableIndices);
                             for ($i = 0; $i < $numStatsToAssign; $i++) {
                                 $index = $availableIndices[$i];
-                                $amount = rand(1, 10) * 5; 
+                                $amount = $is_challenge ? rand(3, 10) * 5 : rand(1, 10) * 5;
                                 $stats[$index] = $amount;
                             }
-                            $single_item_string .= " " . implode("/", $stats);
+                            // Challenge Mode weapons get guaranteed hit%
+                            $hit = $is_challenge ? rand(5, 10) * 5 : 0;
+                            $single_item_string .= " " . implode("/", $stats) . ($hit > 0 ? "/$hit" : "");
                         } else if ($category === 'Armor' || $category === 'Shield') {
-                            $defBonus = rand(0, 5) * 5;
-                            $evpBonus = rand(0, 5) * 5;
+                            $defBonus = $is_challenge ? rand(2, 5) * 5 : rand(0, 5) * 5;
+                            $evpBonus = $is_challenge ? rand(2, 5) * 5 : rand(0, 5) * 5;
                             
                             if ($defBonus > 0) $single_item_string .= " +" . $defBonus . "def";
                             if ($evpBonus > 0) $single_item_string .= " +" . $evpBonus . "evp";
@@ -1309,8 +1326,9 @@ CRITICAL RULE: Return ONLY valid JSON properly formatted with double quotes stri
                     }
                     $reward_item_string = implode(", ", $reward_items_array);
 
-                    // Add Meseta to reward
-                    $meseta_reward = rand(1, 5) * 1000 * ($level >= 80 ? 10 : ($level >= 40 ? 5 : ($level >= 20 ? 2 : 1)));
+                    // Add Meseta to reward (Challenge Mode gets 3x Meseta)
+                    $meseta_multiplier = ($selected_goal === 'CHALLENGE_STAGES') ? 3 : 1;
+                    $meseta_reward = rand(1, 5) * 1000 * ($level >= 80 ? 10 : ($level >= 40 ? 5 : ($level >= 20 ? 2 : 1))) * $meseta_multiplier;
                     $reward_item_string .= ", " . $meseta_reward . " Meseta";
 
                     $ins = $db->prepare("INSERT INTO missions (title, description, goal_type, goal_target, reward_item_string) VALUES (:t, :d, :gt, :gta, :ri)");

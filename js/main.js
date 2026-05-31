@@ -1081,6 +1081,28 @@ window.switchDashboardTab = function(tabId) {
         window.loadLfgFeed();
     }
 
+    // Start/stop bounty change-detection polling based on guild tab visibility
+    if (tabId === 'tab-guild') {
+        if (!window._bountyPollInterval) {
+            window._lastBountyTs = 0;
+            window._bountyPollInterval = setInterval(async () => {
+                try {
+                    const res = await fetch('/api/bounty_check.php', { credentials: 'same-origin' });
+                    const data = await res.json();
+                    if (data.ts && data.ts !== window._lastBountyTs) {
+                        window._lastBountyTs = data.ts;
+                        window.loadMyBounties();
+                    }
+                } catch (e) { /* silent */ }
+            }, 10000); // Check every 10 seconds
+        }
+    } else {
+        if (window._bountyPollInterval) {
+            clearInterval(window._bountyPollInterval);
+            window._bountyPollInterval = null;
+        }
+    }
+
     // Start/stop lobby feed polling based on chat tab visibility
     if (tabId === 'tab-chat') {
         if (window.startLobbyFeed) window.startLobbyFeed();
@@ -2296,28 +2318,66 @@ window.toggleDiscordStreakPref = async function() {
 // Translate raw goal_type + goal_target into human-readable bounty objectives
 function describeBountyObjective(goalType, goalTarget) {
     const target = goalTarget || '';
-    const goalMap = {
-        'LEVEL':        `Reach Level ${target}`,
-        'BOSS_ARENA':   `Defeat ${target} boss${parseInt(target) !== 1 ? 'es' : ''} in the Boss Arena`,
-        'BOSS_KILL':    `Defeat ${target || 'the target boss'}`,
-        'KILL_ENEMIES': `Defeat ${target} enemies`,
-        'KILL_BOSS':    `Defeat ${target || 'the target boss'}`,
-        'MAT_HP':       `Use ${target} HP Material${parseInt(target) !== 1 ? 's' : ''}`,
-        'MAT_TP':       `Use ${target} TP Material${parseInt(target) !== 1 ? 's' : ''}`,
-        'MAT_POWER':    `Use ${target} Power Material${parseInt(target) !== 1 ? 's' : ''}`,
-        'MAT_MIND':     `Use ${target} Mind Material${parseInt(target) !== 1 ? 's' : ''}`,
-        'MAT_DEF':      `Use ${target} Def Material${parseInt(target) !== 1 ? 's' : ''}`,
-        'MAT_EVP':      `Use ${target} Evade Material${parseInt(target) !== 1 ? 's' : ''}`,
-        'MAT_LUCK':     `Use ${target} Luck Material${parseInt(target) !== 1 ? 's' : ''}`,
-        'COMPLETE_QUEST': `Complete ${target} quest${parseInt(target) !== 1 ? 's' : ''}`,
-        'QUEST':        `Complete the quest: ${target}`,
-        'TIME_ATTACK':  `Complete a Time Attack in ${target}`,
-        'MESETA':       `Earn ${Number(target).toLocaleString()} Meseta`,
-        'COLLECT_ITEM': `Collect: ${target}`,
-        'PLAY_TIME':    `Play for ${target} hours`,
-        'LOGIN_STREAK': `Maintain a ${target}-day login streak`,
+
+    // Floor ID -> Boss Name mapping (matches cron_missions.php floor reference)
+    const bossFloorMap = {
+        '11': 'Dragon', '12': 'De Rol Le', '13': 'Vol Opt', '14': 'Dark Falz',
+        '15': 'Gol Dragon', '9': 'Saint-Milion',
+        'ANY_DRAGON': 'a Dragon-type boss'
     };
-    return goalMap[goalType] || `${goalType}: ${target}`;
+
+    // Floor ID -> Area Name mapping for PATROL/EXPLORATION
+    const areaFloorMap = {
+        '0': 'Pioneer 2', '1': 'Forest 1', '2': 'Forest 2',
+        '3': 'Cave 1', '4': 'Cave 2', '5': 'Cave 3',
+        '6': 'Mine 1', '7': 'Mine 2', '8': 'Ruins 1',
+        '9': 'Ruins 2', '10': 'Ruins 3',
+        '11': 'Dragon Arena', '12': 'De Rol Le Arena',
+        '13': 'Vol Opt Arena', '14': 'Dark Falz Arena'
+    };
+
+    switch (goalType) {
+        case 'LEVEL': return `Reach Level ${target}`;
+        case 'MESETA': return `Accumulate ${Number(target).toLocaleString()} Meseta`;
+        case 'PLAYTIME': return `Accumulate ${Number(target).toLocaleString()} seconds of play time`;
+        case 'BOSS_ARENA':
+        case 'MENTOR_BOSS':
+        case 'HARDCORE_MENTOR':
+        case 'DIVERSE_PARTY_BOSS': {
+            const bossName = bossFloorMap[target] || `Boss (Floor ${target})`;
+            const prefix = goalType === 'MENTOR_BOSS' ? 'Mentor a rookie and defeat '
+                         : goalType === 'HARDCORE_MENTOR' ? 'Carry 3+ rookies and defeat '
+                         : goalType === 'DIVERSE_PARTY_BOSS' ? 'Defeat with a diverse party: '
+                         : 'Defeat ';
+            return prefix + bossName;
+        }
+        case 'SPEEDRUN_BOSS': {
+            const parts = target.split('_');
+            const bossName = bossFloorMap[parts[0]] || `Boss (Floor ${parts[0]})`;
+            const timeLimit = parts[1] ? ` in under ${Math.floor(parts[1]/60)}m ${parts[1]%60}s` : '';
+            return `Speedrun ${bossName}${timeLimit}`;
+        }
+        case 'SPEEDRUN_FLOOR': {
+            const parts = target.split('_');
+            const areaName = areaFloorMap[parts[0]] || `Area ${parts[0]}`;
+            const timeLimit = parts[1] ? ` in under ${Math.floor(parts[1]/60)}m ${parts[1]%60}s` : '';
+            return `Speedrun ${areaName}${timeLimit}`;
+        }
+        case 'PATROL': return `Patrol ${areaFloorMap[target] || 'Area ' + target} (10 ticks)`;
+        case 'EXPLORATION': return `Explore ${areaFloorMap[target] || 'Area ' + target}`;
+        case 'ITEM': return `Obtain the target item`;
+        case 'TECHNIQUE': return `Learn technique: ${target}`;
+        case 'BATTLE_WINS': return `Win ${target} Battle Mode match${parseInt(target) !== 1 ? 'es' : ''}`;
+        case 'CHALLENGE_STAGES': return `Complete ${target} Challenge Mode stage${parseInt(target) !== 1 ? 's' : ''}`;
+        case 'MAT_HP': return `Use ${target} HP Material${parseInt(target) !== 1 ? 's' : ''}`;
+        case 'MAT_TP': return `Use ${target} TP Material${parseInt(target) !== 1 ? 's' : ''}`;
+        case 'MAT_POWER': return `Use ${target} Power Material${parseInt(target) !== 1 ? 's' : ''}`;
+        case 'MAT_MIND': return `Use ${target} Mind Material${parseInt(target) !== 1 ? 's' : ''}`;
+        case 'MAT_DEF': return `Use ${target} Def Material${parseInt(target) !== 1 ? 's' : ''}`;
+        case 'MAT_EVADE': return `Use ${target} Evade Material${parseInt(target) !== 1 ? 's' : ''}`;
+        case 'MAT_LUCK': return `Use ${target} Luck Material${parseInt(target) !== 1 ? 's' : ''}`;
+        default: return `${goalType}: ${target}`;
+    }
 }
 
 // Load bounties & community events for Guild tab
