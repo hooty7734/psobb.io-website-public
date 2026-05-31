@@ -1010,12 +1010,28 @@ window.currentClaimLevel = 0;
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     window.deferredPrompt = e;
-    // Show install card in Home/Hub if authenticated
+    // Show install card with Android/Chrome button
     const installCard = document.getElementById('pwa-install-card');
+    const androidDiv = document.getElementById('pwa-install-android');
     if (installCard && sessionStorage.getItem('psobb_user')) {
         installCard.style.display = 'block';
+        if (androidDiv) androidDiv.style.display = 'block';
     }
 });
+
+// iOS detection: show Add to Home Screen instructions
+(function() {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if (isIOS && !isStandalone) {
+        const installCard = document.getElementById('pwa-install-card');
+        const iosDiv = document.getElementById('pwa-install-ios');
+        if (installCard && iosDiv) {
+            installCard.style.display = 'block';
+            iosDiv.style.display = 'block';
+        }
+    }
+})();
 
 // Trigger App Installation
 window.installPortalApp = async function() {
@@ -1059,6 +1075,8 @@ window.switchDashboardTab = function(tabId) {
         window.loadUnlocks();
         window.loadStreak();
         window.loadMyBounties();
+    } else if (tabId === 'tab-lfg') {
+        window.loadLfgFeed();
     }
 
     // Start/stop lobby feed polling based on chat tab visibility
@@ -1922,6 +1940,155 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// ---- LFG Feed for Dashboard Tab ----
+window._lfgFeedInterval = null;
+
+window.loadLfgFeed = async function() {
+    const container = document.getElementById('lfg-feed-container');
+    if (!container) return;
+
+    // Start auto-refresh if not already running
+    if (!window._lfgFeedInterval) {
+        window._lfgFeedInterval = setInterval(() => {
+            const lfgPane = document.getElementById('tab-lfg');
+            if (lfgPane && lfgPane.classList.contains('active')) {
+                window.loadLfgFeed();
+            } else {
+                clearInterval(window._lfgFeedInterval);
+                window._lfgFeedInterval = null;
+            }
+        }, 15000);
+    }
+
+    try {
+        const [listingsRes, gamesRes] = await Promise.all([
+            fetch('/api/lfg_requests.php', { credentials: 'same-origin' }),
+            fetch('/api/lfg_games.php', { credentials: 'same-origin' })
+        ]);
+        const listingsData = await listingsRes.json();
+        const gamesData = await gamesRes.json();
+
+        const listings = (listingsData.success && listingsData.listings) ? listingsData.listings : [];
+        const games = (gamesData.success && gamesData.games) ? gamesData.games : [];
+
+        if (listings.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center; color:#888; padding:3rem; border:1px dashed rgba(255,255,255,0.1); border-radius:8px;">
+                    <i class="fas fa-clipboard-list" style="font-size:2.5rem; margin-bottom:10px; color:#ffaa00;"></i><br>
+                    No active LFG posts found.<br>
+                    <a href="lfg.php" style="color:#ffaa00; font-size:0.85rem;">Create one from the full LFG Terminal →</a>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = listings.map(l => {
+            const arch = _lfgGetArchetype(l.class);
+            const timeAgo = _lfgTimeAgo(l.created_at);
+
+            // Seeking badges
+            let seekHtml = '';
+            if (l.looking_for) {
+                seekHtml = l.looking_for.split(',').map(a =>
+                    `<span style="display:inline-block; padding:1px 6px; border-radius:3px; font-size:0.6rem; font-weight:bold; font-family:'Share Tech Mono',monospace; margin-right:3px; border:1px solid; ${
+                        a === 'HU' ? 'color:#ff6666; border-color:#ff4444; background:rgba(255,68,68,0.1);' :
+                        a === 'RA' ? 'color:#66ccff; border-color:#33b5e5; background:rgba(51,181,229,0.1);' :
+                        'color:#88ff88; border-color:#00c851; background:rgba(0,200,81,0.1);'
+                    }">${a}</span>`
+                ).join('');
+            }
+
+            // Game details
+            let gameHtml = '';
+            if (l.game_id !== null) {
+                const game = games.find(g => parseInt(g.ID) === parseInt(l.game_id));
+                if (game) {
+                    const slots = [];
+                    for (let i = 0; i < game.MaxClients; i++) {
+                        const cc = game.ClientClasses[i];
+                        if (cc) {
+                            const sa = _lfgGetArchetype(cc);
+                            slots.push(`<span style="color:${sa === 'HU' ? '#ff6666' : sa === 'RA' ? '#66ccff' : '#88ff88'}; font-size:0.65rem; font-family:'Share Tech Mono',monospace;">${sa}</span>`);
+                        } else {
+                            slots.push(`<span style="color:#555; font-size:0.65rem;">--</span>`);
+                        }
+                    }
+                    gameHtml = `
+                        <div style="background:rgba(0,255,255,0.03); border:1px solid rgba(0,255,255,0.12); border-radius:6px; padding:8px 10px; margin-top:8px; font-size:0.75rem;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                <span style="color:#00ffc8; font-family:'Share Tech Mono',monospace;"><i class="fas fa-gamepad"></i> ${_lfgEsc(game.Name)}</span>
+                                <span style="color:#aaa;">${game.Players}/${game.MaxClients}</span>
+                            </div>
+                            <div style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">
+                                <span style="color:#d288ff; font-size:0.65rem;">${game.Difficulty}</span>
+                                <span style="color:#888;">·</span>
+                                <span style="color:#aaa; font-size:0.65rem;">${game.Episode}</span>
+                                <span style="color:#888;">·</span>
+                                <span style="color:#aaa; font-size:0.65rem;">Lv. ${game.MinLevel}-${game.MaxLevel}</span>
+                                <span style="color:#888;">·</span>
+                                ${slots.join(' ')}
+                            </div>
+                        </div>`;
+                }
+            }
+
+            // Bounty info
+            let bountyHtml = '';
+            if (l.bounty_id && l.bounty_title) {
+                bountyHtml = `<div style="font-size:0.7rem; color:#ffaa00; margin-top:6px; padding:4px 8px; background:rgba(255,170,0,0.05); border:1px solid rgba(255,170,0,0.15); border-radius:4px;">
+                    <i class="fas fa-crosshairs"></i> Bounty: ${_lfgEsc(l.bounty_title)} ${l.bounty_reward ? `· <span style="color:#fbbf24;">${_lfgEsc(l.bounty_reward)}</span>` : ''}
+                </div>`;
+            }
+
+            return `
+            <div style="border:1px solid rgba(255,170,0,0.2); background:rgba(0,10,20,0.5); border-radius:8px; padding:1rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="color:#ffaa00; font-weight:bold; font-family:'Share Tech Mono',monospace;">${_lfgEsc(l.character_name)}</span>
+                        <span style="font-size:0.7rem; color:#aaa;">Lv.${l.level}</span>
+                        <span style="display:inline-block; padding:1px 5px; border-radius:3px; font-size:0.6rem; font-weight:bold; font-family:'Share Tech Mono',monospace; border:1px solid; ${
+                            arch === 'HU' ? 'color:#ff6666; border-color:#ff4444; background:rgba(255,68,68,0.15);' :
+                            arch === 'RA' ? 'color:#66ccff; border-color:#33b5e5; background:rgba(51,181,229,0.15);' :
+                            'color:#88ff88; border-color:#00c851; background:rgba(0,200,81,0.15);'
+                        }">${arch}</span>
+                    </div>
+                    <span style="font-size:0.65rem; color:#888;"><i class="far fa-clock"></i> ${timeAgo}</span>
+                </div>
+                <p style="color:rgba(255,255,255,0.9); font-size:0.85rem; margin:0 0 6px; font-style:italic; padding:6px 10px; background:rgba(0,0,0,0.25); border-radius:4px; border-left:2px solid #ffaa00;">"${_lfgEsc(l.description)}"</p>
+                ${seekHtml ? `<div style="margin-top:6px;"><span style="font-size:0.6rem; color:#888; margin-right:4px;">SEEKING:</span>${seekHtml}</div>` : ''}
+                ${bountyHtml}
+                ${gameHtml}
+            </div>`;
+        }).join('');
+
+    } catch (e) {
+        container.innerHTML = `<div style="text-align:center; color:#ff4444; padding:2rem;">
+            <i class="fas fa-exclamation-triangle"></i> Failed to load LFG feed.
+        </div>`;
+    }
+};
+
+function _lfgGetArchetype(charClass) {
+    if (!charClass) return '';
+    const u = charClass.toUpperCase();
+    if (u.startsWith('HU')) return 'HU';
+    if (u.startsWith('RA')) return 'RA';
+    if (u.startsWith('FO')) return 'FO';
+    return '';
+}
+
+function _lfgTimeAgo(dbTimeStr) {
+    if (!dbTimeStr) return '';
+    const utcStr = dbTimeStr.replace(' ', 'T') + 'Z';
+    const diffMs = Date.now() - new Date(utcStr).getTime();
+    const mins = Math.max(1, Math.floor(diffMs / 60000));
+    return mins < 60 ? `${mins}m ago` : `${Math.floor(mins / 60)}h ago`;
+}
+
+function _lfgEsc(text) {
+    if (!text) return '';
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 // ---- Live Lobby Feed for Chat Console ----
 window._lobbyFeedInterval = null;
 window._lobbyFeedPlayers = new Set();
@@ -2243,20 +2410,24 @@ window.loadMyBounties = async function() {
             if (activeSection && activeList) {
                 activeSection.style.display = 'block';
                 activeList.innerHTML = inProgress.map(b => {
-                    const rewardStr = b.reward_item_string || '';
+                    const reward = b.reward_decoded || b.reward_item_string || '';
                     const objective = describeBountyObjective(b.goal_type, b.goal_target);
                     const desc = b.description || '';
+                    const truncDesc = desc.length > 120 ? desc.substring(0, 120) + '…' : desc;
                     return `
                     <div style="border: 1px solid rgba(0,255,255,0.2); background: rgba(0,10,20,0.4); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
                             <div style="flex:1; min-width:0;">
                                 <span style="color:#00ffff; font-weight:bold; font-family:'Share Tech Mono',monospace;">${b.title}</span>
-                                <div style="color:rgba(255,255,255,0.7); font-size:0.75rem; margin-top:6px;">📋 ${objective}</div>
-                                ${desc ? `<div style="color:rgba(255,255,255,0.4); font-size:0.7rem; margin-top:3px; font-style:italic;">${desc}</div>` : ''}
-                                <div style="color:rgba(255,255,255,0.35); font-size:0.65rem; margin-top:4px;">Character: ${b.character_name || 'Unknown'}</div>
-                                ${rewardStr ? `<div style="color:rgba(251,191,36,0.6); font-size:0.7rem; margin-top:4px; font-family:'Share Tech Mono',monospace;">🎁 ${rewardStr}</div>` : ''}
+                                <div style="color:rgba(255,255,255,0.7); font-size:0.75rem; margin-top:6px;">📋 <strong>Objective:</strong> ${objective}</div>
+                                ${truncDesc ? `<div style="color:rgba(255,255,255,0.35); font-size:0.7rem; margin-top:4px; font-style:italic;">📜 Directive: ${truncDesc}</div>` : ''}
+                                <div style="color:rgba(255,255,255,0.3); font-size:0.65rem; margin-top:4px;">Character: ${b.character_name || 'Unknown'}</div>
+                                ${reward ? `<div style="color:#fbbf24; font-size:0.75rem; margin-top:6px; font-family:'Share Tech Mono',monospace;">🎁 ${reward}</div>` : ''}
                             </div>
-                            <span style="color:#ffaa00; font-size:0.75rem; font-family:'Share Tech Mono',monospace; white-space:nowrap;">IN PROGRESS</span>
+                            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+                                <span style="color:#ffaa00; font-size:0.7rem; font-family:'Share Tech Mono',monospace; white-space:nowrap;">IN PROGRESS</span>
+                                <button onclick="window.abandonBounty(${b.player_mission_id})" style="background:rgba(255,68,68,0.1); border:1px solid rgba(255,68,68,0.3); color:#ff6666; font-size:0.65rem; padding:3px 10px; border-radius:4px; cursor:pointer; font-family:'Share Tech Mono',monospace; white-space:nowrap;">✕ Abandon</button>
+                            </div>
                         </div>
                     </div>`;
                 }).join('');
@@ -2265,6 +2436,30 @@ window.loadMyBounties = async function() {
 
     } catch (e) {
         console.error('Failed to load bounties:', e);
+    }
+};
+
+// Abandon a bounty mission
+window.abandonBounty = async function(playerMissionId) {
+    if (!confirm('Are you sure you want to abandon this bounty? Progress will be lost.')) return;
+    try {
+        const res = await fetch('/api/abandon_bounty.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': window.getCSRFToken()
+            },
+            body: JSON.stringify({ player_mission_id: playerMissionId })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            window.loadMyBounties();
+        } else {
+            alert(data.error || 'Failed to abandon bounty.');
+        }
+    } catch (e) {
+        alert('Connection error: ' + e.message);
     }
 };
 

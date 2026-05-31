@@ -47,6 +47,10 @@ try {
     
     $bounties = [];
     while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
+        // Decode reward_item_string hex into readable item name
+        if (!empty($row['reward_item_string'])) {
+            $row['reward_decoded'] = decode_reward_string($row['reward_item_string']);
+        }
         $bounties[] = $row;
     }
     
@@ -95,5 +99,81 @@ try {
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(["error" => "Database error: " . $e->getMessage()]);
+}
+
+/**
+ * Decode reward_item_string hex into readable item name.
+ * Format: "HEXHEXHEX... +stats, XXXX Meseta"
+ */
+function decode_reward_string($rewardStr) {
+    static $nameMap = null;
+    if ($nameMap === null) {
+        $mapPath = __DIR__ . '/names-v4.json';
+        if (file_exists($mapPath)) {
+            $raw = file_get_contents($mapPath);
+            $raw = preg_replace('/^\xEF\xBB\xBF/', '', $raw);
+            $nameMap = json_decode($raw, true) ?: [];
+        } else {
+            $nameMap = [];
+        }
+    }
+
+    // Split on comma to separate item parts from meseta
+    $parts = array_map('trim', explode(',', $rewardStr));
+    $decoded = [];
+
+    foreach ($parts as $part) {
+        // Check if this part is just meseta
+        if (preg_match('/^(\d+)\s*Meseta$/i', $part, $m)) {
+            $decoded[] = number_format((int)$m[1]) . ' Meseta';
+            continue;
+        }
+
+        // Try to extract hex item code (32 hex chars = 16 bytes)
+        if (preg_match('/^([0-9A-Fa-f]{32})\s*(.*)$/', $part, $m)) {
+            $hex = $m[1];
+            $extraStats = trim($m[2]);
+            $bytes = hex2bin($hex);
+
+            if ($bytes && strlen($bytes) >= 3) {
+                $b0 = ord($bytes[0]); // group
+                $b1 = ord($bytes[1]);
+                $b2 = ord($bytes[2]);
+
+                // Compute primary_identifier same as character_viewer.php
+                if ($b0 === 0x00) {
+                    $primaryId = ($b2 << 16) | ($b1 << 8) | $b0;
+                } elseif ($b0 === 0x01) {
+                    $primaryId = ($b2 << 16) | ($b1 << 8) | $b0;
+                } else {
+                    $primaryId = ($b2 << 16) | ($b1 << 8) | $b0;
+                }
+
+                $lookupKey = strtolower(substr(sprintf('%08X', $primaryId), 0, 6));
+                $itemName = $nameMap[$lookupKey] ?? null;
+
+                if ($itemName) {
+                    $itemName = ucwords($itemName);
+                    // Append grind if weapon (group 0x00) and grind byte exists
+                    if ($b0 === 0x00 && strlen($bytes) >= 4) {
+                        $grind = ord($bytes[3]);
+                        if ($grind > 0) $itemName .= " +$grind";
+                    }
+                    $result = $itemName;
+                    if ($extraStats) $result .= " ($extraStats)";
+                    $decoded[] = $result;
+                } else {
+                    // Fallback: show raw with stats
+                    $decoded[] = $extraStats ? "Item ($extraStats)" : "Item";
+                }
+            } else {
+                $decoded[] = $part;
+            }
+        } else {
+            $decoded[] = $part;
+        }
+    }
+
+    return implode(', ', $decoded);
 }
 ?>

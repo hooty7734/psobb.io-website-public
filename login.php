@@ -62,6 +62,7 @@ include 'includes/header.php';
                     <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-banks')" data-tab="tab-banks"><i class="fas fa-user-astronaut"></i> <?= __('Character') ?></button>
                     <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-bank')" data-tab="tab-bank"><i class="fas fa-vault"></i> <?= __('Bank') ?></button>
                     <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-guild')" data-tab="tab-guild"><i class="fas fa-crosshairs"></i> <?= __('Hunters Guild') ?></button>
+                    <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-lfg')" data-tab="tab-lfg"><i class="fas fa-satellite"></i> <?= __('LFG') ?></button>
                     <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-chat')" data-tab="tab-chat"><i class="fas fa-terminal"></i> <?= __('Ragol Chat') ?></button>
                     <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-settings')" data-tab="tab-settings"><i class="fas fa-cog"></i> <?= __('Settings') ?></button>
                 </div>
@@ -104,7 +105,14 @@ include 'includes/header.php';
                             <div id="pwa-install-card" class="pwa-install-card" style="display: none;">
                                 <h3 style="color:#00ffff; font-family:'Share Tech Mono',monospace; margin-top:0; margin-bottom:10px;"><i class="fas fa-mobile-alt animate-pulse"></i> <?= __('Companion App Available') ?></h3>
                                 <p style="font-size:0.85rem; color:rgba(255,255,255,0.7); margin-bottom:15px;"><?= __('Install the PSOBB.io Companion App directly on your mobile screen or desktop for instant access!') ?></p>
-                                <button onclick="installPortalApp()" class="dl-btn pwa-install-btn"><i class="fas fa-download"></i> <?= __('Install PSOBB.io Companion App') ?></button>
+                                <div id="pwa-install-android" style="display:none;">
+                                    <button onclick="installPortalApp()" class="dl-btn pwa-install-btn"><i class="fas fa-download"></i> <?= __('Install PSOBB.io Companion App') ?></button>
+                                </div>
+                                <div id="pwa-install-ios" style="display:none;">
+                                    <p style="font-size:0.8rem; color:#ffaa00; margin:0; line-height:1.6;">
+                                        <i class="fas fa-arrow-up"></i> <?= __('Tap the <strong>Share</strong> button (box with arrow) in Safari, then tap <strong>"Add to Home Screen"</strong>.') ?>
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
@@ -423,6 +431,24 @@ include 'includes/header.php';
                                     <i class="fas fa-bullseye"></i> <?= __('Open Hunters Guild Board') ?>
                                 </a>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: LFG Terminal -->
+                <div id="tab-lfg" class="dashboard-tab-pane">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:10px;">
+                        <div>
+                            <h3 style="color:#ffaa00; font-family:'Share Tech Mono',monospace; margin:0;"><i class="fas fa-satellite-dish"></i> <?= __('LFG Coordination Feed') ?></h3>
+                            <p style="color:rgba(255,255,255,0.5); font-size:0.75rem; margin:4px 0 0;"><?= __('Live postings from online hunters. Warp directly into active parties.') ?></p>
+                        </div>
+                        <a href="lfg.php" class="dl-btn" style="text-decoration:none; border-color:#ffaa00; color:#ffaa00; background:rgba(255,170,0,0.1); font-size:0.8rem; padding:8px 16px; white-space:nowrap;">
+                            <i class="fas fa-plus-circle"></i> <?= __('Create LFG Post') ?>
+                        </a>
+                    </div>
+                    <div id="lfg-feed-container" style="display:flex; flex-direction:column; gap:0.75rem;">
+                        <div style="text-align:center; color:#888; padding:2rem; font-size:0.9rem;">
+                            <i class="fas fa-spinner fa-spin"></i> <?= __('Loading LFG feed...') ?>
                         </div>
                     </div>
                 </div>
