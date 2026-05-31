@@ -231,6 +231,8 @@ include 'includes/header.php';
                                 </div>
                                 <!-- Equipped item names list -->
                                 <div id="equipped-item-names" class="equipped-names-list"></div>
+                                <!-- MAG Stats Card -->
+                                <div id="mag-stats-card" class="mag-stats-card" style="display:none;"></div>
                             </div>
 
                             <!-- Right: Stats & Materials -->

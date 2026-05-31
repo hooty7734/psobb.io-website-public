@@ -1049,8 +1049,12 @@ window.switchDashboardTab = function(tabId) {
     });
 
     // Lazy load tab data
-    if (tabId === 'tab-banks') {
-        window.loadCharSlot(window.activeSlot || 0);
+    if (tabId === 'tab-banks' || tabId === 'tab-bank') {
+        if (window.activeCharData) {
+            if (tabId === 'tab-bank') renderActiveBank();
+        } else {
+            window.loadCharSlot(window.activeSlot || 0);
+        }
     } else if (tabId === 'tab-guild') {
         window.loadUnlocks();
         window.loadStreak();
@@ -1282,6 +1286,58 @@ function renderInventory() {
             backpackGrid.appendChild(createItemSlotElement(item));
         }
         document.getElementById('viewer-backpack-count').textContent = `${count} / 30`;
+    }
+
+    // --- MAG Stats Card ---
+    const magCard = document.getElementById('mag-stats-card');
+    if (magCard) {
+        const magItem = gearSlots['mag'];
+        if (magItem && magItem.name) {
+            magCard.style.display = 'block';
+            // Parse MAG description: "Kalki LV26 9.83/9.56/8.02/0.58 52% 114IQ PB:E (black)"
+            const desc = magItem.name;
+            const lvMatch = desc.match(/LV(\d+)/i);
+            const statMatch = desc.match(/([\d.]+)\/([\d.]+)\/([\d.]+)\/([\d.]+)/);
+            const synchMatch = desc.match(/(\d+)%/);
+            const iqMatch = desc.match(/(\d+)IQ/i);
+            const pbMatch = desc.match(/PB:(\S+)/i);
+            const colorMatch = desc.match(/\((\w+)\)/);
+            const magName = desc.split(/\s+LV/i)[0] || 'MAG';
+            const magLv = lvMatch ? lvMatch[1] : '?';
+            const defVal = statMatch ? parseFloat(statMatch[1]) : 0;
+            const powVal = statMatch ? parseFloat(statMatch[2]) : 0;
+            const dexVal = statMatch ? parseFloat(statMatch[3]) : 0;
+            const mindVal = statMatch ? parseFloat(statMatch[4]) : 0;
+            const synchro = synchMatch ? synchMatch[1] : '?';
+            const iq = iqMatch ? iqMatch[1] : '?';
+            const pb = pbMatch ? pbMatch[1] : '--';
+            const color = colorMatch ? colorMatch[1] : '';
+
+            const maxStat = 200;
+            const pct = v => Math.min(100, (v / maxStat) * 100);
+
+            magCard.innerHTML = `
+                <div class="mag-header">
+                    <div class="mag-icon"><img src="/img/items/mag.png" onerror="this.src='/img/favicon.svg'"></div>
+                    <div class="mag-name">${magName}</div>
+                    <div class="mag-level">LV ${magLv}</div>
+                </div>
+                <div class="mag-stat-bars">
+                    <div class="mag-stat-item"><span class="ms-label">DEF</span><div class="ms-bar"><div class="ms-fill ms-def" style="width:${pct(defVal)}%"></div></div><span class="ms-val">${defVal}</span></div>
+                    <div class="mag-stat-item"><span class="ms-label">POW</span><div class="ms-bar"><div class="ms-fill ms-pow" style="width:${pct(powVal)}%"></div></div><span class="ms-val">${powVal}</span></div>
+                    <div class="mag-stat-item"><span class="ms-label">DEX</span><div class="ms-bar"><div class="ms-fill ms-dex" style="width:${pct(dexVal)}%"></div></div><span class="ms-val">${dexVal}</span></div>
+                    <div class="mag-stat-item"><span class="ms-label">MIND</span><div class="ms-bar"><div class="ms-fill ms-mind" style="width:${pct(mindVal)}%"></div></div><span class="ms-val">${mindVal}</span></div>
+                </div>
+                <div class="mag-info-row">
+                    <span>Synchro: <span class="mi-val">${synchro}%</span></span>
+                    <span>IQ: <span class="mi-val">${iq}</span></span>
+                    <span>PB: <span class="mi-pb">${pb}</span></span>
+                    ${color ? `<span>Color: <span class="mi-val">${color}</span></span>` : ''}
+                </div>
+            `;
+        } else {
+            magCard.style.display = 'none';
+        }
     }
 
     setupTooltipTriggers();
