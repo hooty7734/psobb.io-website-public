@@ -1448,12 +1448,15 @@ function renderActiveCharacterSectionId(character) {
     html += `
         <div style="border: 1px solid rgba(0,255,255,0.2); background: rgba(0,0,0,0.5); padding: 12px; border-radius: 6px;">
             <h4 style="margin-top: 0; margin-bottom:10px; color: #00ffff; font-family:'Share Tech Mono',monospace; font-size:0.95rem;"><i class="fas fa-arrows-spin"></i> Select New Section ID</h4>
-            <div class="section-id-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 12px;">
+            <div class="section-id-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 12px;">
                 ${secIds.map((id) => `
-                    <label class="secid-option-lbl" style="cursor: pointer; text-align: center; display: flex; flex-direction: column; align-items: center; border: 1px solid ${id === character.section_id ? '#00ffff' : 'rgba(0,255,255,0.1)'}; padding: 4px 2px; border-radius: 4px; background: ${id === character.section_id ? 'rgba(0,255,255,0.1)' : 'transparent'}; transition: all 0.2s;" onclick="document.querySelectorAll('.secid-option-lbl').forEach(el=>{el.style.background='transparent';el.style.borderColor='rgba(0,255,255,0.1)'});this.style.background='rgba(0,255,255,0.1)';this.style.borderColor='#00ffff';">
+                    <label class="secid-option-lbl" style="cursor: pointer; display: flex; align-items: center; gap: 8px; border: 1px solid ${id === character.section_id ? '#00ffff' : 'rgba(0,255,255,0.1)'}; padding: 8px 10px; border-radius: 6px; background: ${id === character.section_id ? 'rgba(0,255,255,0.1)' : 'transparent'}; transition: all 0.2s;" onclick="document.querySelectorAll('.secid-option-lbl').forEach(el=>{el.style.background='transparent';el.style.borderColor='rgba(0,255,255,0.1)'});this.style.background='rgba(0,255,255,0.1)';this.style.borderColor='#00ffff';">
                         <input type="radio" name="new-section-id" value="${id}" style="display: none;" ${id === character.section_id ? 'checked' : ''}>
-                        <img src="/img/section_ids/${id}.png" alt="${id}" style="width: 20px; height: 20px; margin-bottom: 2px;">
-                        <span style="font-size: 0.65rem; font-weight: bold; color: #eee; font-family:'Share Tech Mono',monospace;">${id.substring(0,6)}</span>
+                        <img src="/img/section_ids/${id}.png" alt="${id}" style="width: 22px; height: 22px; flex-shrink:0;">
+                        <div style="min-width:0;">
+                            <div style="font-size: 0.8rem; font-weight: bold; color: #eee; font-family:'Share Tech Mono',monospace;">${id}</div>
+                            <div style="font-size: 0.6rem; color: #999; font-family:'Share Tech Mono',monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${secIdInfo[id]}</div>
+                        </div>
                     </label>
                 `).join('')}
             </div>

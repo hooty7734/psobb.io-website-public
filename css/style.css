@@ -2954,3 +2954,226 @@ body.pwa-standalone .logo-text {
     color: #00ffcc;
     font-weight: bold;
 }
+
+/* ==========================================================================
+   Mobile-First Responsive Overhaul
+   ========================================================================== */
+
+/* ---- Medium screens (tablets, small laptops) ---- */
+@media (max-width: 768px) {
+    /* Tab bar: compact with smaller text */
+    .dashboard-tabs {
+        gap: 4px;
+        margin-bottom: 1rem;
+        padding-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .tab-btn {
+        padding: 8px 12px;
+        font-size: 0.78rem;
+    }
+    .tab-btn i {
+        margin-right: 4px;
+    }
+
+    /* Hero card: tighter */
+    .char-hero-card {
+        padding: 1rem;
+        gap: 12px;
+    }
+    .char-hero-avatar {
+        width: 64px;
+        height: 64px;
+    }
+
+    /* Paper doll grid: smaller slots */
+    .paper-doll-grid {
+        gap: 6px;
+    }
+    .pd-slot-label {
+        font-size: 0.55rem;
+    }
+
+    /* Equipped names list */
+    .equipped-names-list {
+        font-size: 0.8rem;
+    }
+
+    /* Stats panel */
+    .stat-bar-row {
+        font-size: 0.8rem;
+    }
+
+    /* Panels: tighter padding */
+    .paper-doll-panel, .char-stats-panel {
+        padding: 0.75rem;
+    }
+
+    /* MAG card: single column stats */
+    .mag-stat-bars {
+        grid-template-columns: 1fr;
+    }
+
+    /* Streak nodes: horizontal scroll */
+    .streak-nodes {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
+    }
+
+    /* Guild bounty/event cards */
+    .dashboard-grid-guild > div {
+        min-width: 0;
+    }
+}
+
+/* ---- Small screens (phones) ---- */
+@media (max-width: 480px) {
+    /* Tab bar: icon-only with text hidden */
+    .tab-btn {
+        padding: 8px 10px;
+        font-size: 0;
+    }
+    .tab-btn i {
+        font-size: 1.1rem;
+        margin-right: 0;
+    }
+
+    /* Hero card: full stack */
+    .char-hero-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 0.75rem;
+    }
+    .char-hero-meta {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .char-hero-name {
+        font-size: 1.1rem;
+    }
+    .char-hero-class, .char-hero-meta span {
+        font-size: 0.7rem;
+    }
+
+    /* Slot switcher: smaller */
+    .slot-btn {
+        padding: 6px 10px;
+        font-size: 0.75rem;
+    }
+
+    /* Paper doll: shrink slot boxes */
+    .pd-slot-box {
+        width: 44px;
+        height: 44px;
+    }
+    .pd-slot-box.pd-armor {
+        width: 50px;
+        height: 50px;
+    }
+    .pd-slot-label {
+        font-size: 0.5rem;
+    }
+    .paper-doll-grid {
+        gap: 4px;
+    }
+
+    /* Equipped names */
+    .equipped-names-list {
+        font-size: 0.72rem;
+    }
+
+    /* Stat bars: compact */
+    .stat-bar-row {
+        gap: 4px;
+    }
+    .stat-label {
+        font-size: 0.7rem;
+        min-width: 28px;
+    }
+    .stat-value {
+        font-size: 0.7rem;
+        min-width: 30px;
+    }
+
+    /* Materials grid: 2 columns on phone */
+    .materials-grid {
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    /* MAG card */
+    .mag-stats-card {
+        padding: 0.75rem;
+    }
+    .mag-header {
+        gap: 8px;
+    }
+    .mag-name {
+        font-size: 0.85rem;
+    }
+    .mag-info-row {
+        gap: 6px;
+        font-size: 0.7rem;
+    }
+
+    /* Bank: compact search */
+    #viewer-bank-search {
+        font-size: 0.8rem;
+        padding: 8px !important;
+    }
+
+    /* Panels */
+    .paper-doll-panel, .char-stats-panel {
+        padding: 0.5rem;
+        border-radius: 6px;
+    }
+    .panel-header {
+        font-size: 0.85rem;
+    }
+
+    /* Chat: stack better */
+    .chat-messages-log {
+        max-height: 200px;
+    }
+
+    /* Streak container */
+    .streak-container {
+        padding: 0.75rem;
+    }
+    .streak-number {
+        font-size: 2rem;
+    }
+
+    /* General container */
+    .container {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+    .login-container {
+        padding: 0.75rem;
+    }
+}
+
+/* ---- Very small screens (< 360px) ---- */
+@media (max-width: 360px) {
+    .tab-btn {
+        padding: 6px 8px;
+    }
+    .tab-btn i {
+        font-size: 1rem;
+    }
+    .pd-slot-box {
+        width: 38px;
+        height: 38px;
+    }
+    .pd-slot-box.pd-armor {
+        width: 44px;
+        height: 44px;
+    }
+    .char-hero-name {
+        font-size: 1rem;
+    }
+    .backpack-grid-box, .bank-grid-box {
+        grid-template-columns: repeat(4, 1fr) !important;
+    }
+}
