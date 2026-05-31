@@ -125,7 +125,7 @@ while (time() - $script_start < 55) {
                 'pre_boss_floor' => $pre_boss,
                 'in_boss' => true,
             ];
-            echo "[TRACKER] {$charName} entered boss floor {$curr_floor}\n";
+
             continue;
         }
 
@@ -144,7 +144,7 @@ while (time() - $script_start < 55) {
                 $pre_boss = $prev['pre_boss_floor'] ?? -1;
                 $time_in_arena = time() - $entry_time;
 
-                echo "[TRACKER] KILL! {$charName} on floor {$curr_floor} (EXP +{$exp_delta}, items +{$item_delta}, {$time_in_arena}s)\n";
+                echo "[TRACKER] KILL! {$charName} (Acc {$accId}) on floor {$curr_floor} | entered " . date('H:i:s', $entry_time) . " | killed " . date('H:i:s') . " | {$time_in_arena}s in arena | EXP +{$exp_delta} items +{$item_delta}\n";
 
                 $kill_events[$key][] = [
                     'floor' => $curr_floor,
@@ -191,7 +191,7 @@ while (time() - $script_start < 55) {
                 $time_in_arena = time() - $entry_time;
                 $boss_floor = $prev_floor;
 
-                echo "[TRACKER] EXIT KILL! {$charName} floor {$boss_floor} (EXP +{$exp_delta}, {$time_in_arena}s)\n";
+                echo "[TRACKER] EXIT KILL! {$charName} (Acc {$accId}) floor {$boss_floor} | entered " . date('H:i:s', $entry_time) . " | exited " . date('H:i:s') . " | {$time_in_arena}s in arena | EXP +{$exp_delta}\n";
 
                 $kill_events[$key][] = [
                     'floor' => $boss_floor,
@@ -252,5 +252,5 @@ while (time() - $script_start < 55) {
     sleep(5);
 }
 
-echo "[TRACKER] Run complete.\n";
+
 ?>
