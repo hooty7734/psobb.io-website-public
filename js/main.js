@@ -1197,9 +1197,10 @@ function renderInventory() {
             if (item.group === 0x00) {
                 gearSlots['weapon'] = item;
             } else if (item.group === 0x01) {
-                if (item.name === 'Armor') gearSlots['armor'] = item;
-                else if (item.name === 'Shield') gearSlots['shield'] = item;
-                else if (item.name === 'Unit' && unitCount <= 4) {
+                // type1: 1=Armor, 2=Shield, 3=Unit
+                if (item.type1 === 1) gearSlots['armor'] = item;
+                else if (item.type1 === 2) gearSlots['shield'] = item;
+                else if (item.type1 === 3 && unitCount <= 4) {
                     gearSlots[`unit${unitCount}`] = item;
                     unitCount++;
                 }
@@ -1229,8 +1230,8 @@ function renderInventory() {
             let iconCat = 'tool';
             if (item.group === 0x00) iconCat = 'weapon';
             else if (item.group === 0x01) {
-                if (item.name === 'Armor') iconCat = 'armor';
-                else if (item.name === 'Shield') iconCat = 'shield';
+                if (item.type1 === 1) iconCat = 'armor';
+                else if (item.type1 === 2) iconCat = 'shield';
                 else iconCat = 'unit';
             } else if (item.group === 0x02) iconCat = 'mag';
 
@@ -1514,8 +1515,8 @@ function createItemSlotElement(item, label = '') {
         let iconCat = 'tool';
         if (item.group === 0x00) iconCat = 'weapon';
         else if (item.group === 0x01) {
-            if (item.name === 'Armor') iconCat = 'armor';
-            else if (item.name === 'Shield') iconCat = 'shield';
+            if (item.type1 === 1) iconCat = 'armor';
+            else if (item.type1 === 2) iconCat = 'shield';
             else iconCat = 'unit';
         } else if (item.group === 0x02) iconCat = 'mag';
 

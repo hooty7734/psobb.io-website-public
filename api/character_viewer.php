@@ -98,6 +98,8 @@ function parse_item_data($bytes) {
         'hex' => strtoupper($hex),
         'item_id' => $id,
         'group' => $group,
+        'type1' => $type1,
+        'type2' => $type2,
         'equipped' => false,
         'name' => 'Unknown Item',
         'attrs' => []
@@ -301,9 +303,13 @@ if (file_exists($psocharPath)) {
     // BB uses UTF16_ALWAYS_MARKED encoding: first 2 bytes are a language prefix char
     // (J=Japanese, E=English, G=German, F=French, S=Spanish, B=SimpChinese, T=TradChinese, K=Korean)
     // We must skip the first 2 bytes (one UTF-16LE char) to get the actual player name.
-    $nameBytes = substr($dispBlock, 116 + 2, 30);
+    $nameBytes = substr($dispBlock, 116, 32);
     $charName = mb_convert_encoding($nameBytes, 'UTF-8', 'UTF-16LE');
     $charName = trim(str_replace("\x00", "", $charName));
+    // Strip language prefix character (J/E/G/F/S/B/T/K) from BB names
+    if (preg_match('/^[JEGFSBTKC]/', $charName)) {
+        $charName = substr($charName, 1);
+    }
     
     // Material stats from extensions striped across items
     $powerMats = ord($invBlock[4 + 8 * 28 + 3]);
@@ -424,8 +430,16 @@ if (file_exists($psocharPath)) {
                 if (isset($c['Account']['AccountID']) && (int)$c['Account']['AccountID'] === $accountId) {
                     $accountOnline = true;
                     $onlineCharName = $c['Name'] ?? '';
+                    // Strip language prefix from online name for comparison and display
+                    $cleanOnlineName = $onlineCharName;
+                    if (preg_match('/^\t[JEGFSBTKC]/', $cleanOnlineName)) {
+                        $cleanOnlineName = substr($cleanOnlineName, 2);
+                    } elseif (preg_match('/^[JEGFSBTKC]/', $cleanOnlineName)) {
+                        $cleanOnlineName = substr($cleanOnlineName, 1);
+                    }
+                    $onlineCharName = $cleanOnlineName;
                     
-                    if (isset($c['Name']) && $c['Name'] === $charName) {
+                    if ($cleanOnlineName === $charName) {
                         $character['online'] = true;
                         $character['lobby_id'] = $c['LobbyID'] ?? null;
                         

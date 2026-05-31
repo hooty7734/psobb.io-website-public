@@ -60,6 +60,7 @@ include 'includes/header.php';
                 <div class="dashboard-tabs">
                     <button class="dl-btn tab-btn active" onclick="switchDashboardTab('tab-hub')" data-tab="tab-hub"><i class="fas fa-home"></i> <?= __('Hub') ?></button>
                     <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-banks')" data-tab="tab-banks"><i class="fas fa-user-astronaut"></i> <?= __('Character') ?></button>
+                    <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-bank')" data-tab="tab-bank"><i class="fas fa-vault"></i> <?= __('Bank') ?></button>
                     <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-guild')" data-tab="tab-guild"><i class="fas fa-crosshairs"></i> <?= __('Hunters Guild') ?></button>
                     <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-chat')" data-tab="tab-chat"><i class="fas fa-terminal"></i> <?= __('Ragol Chat') ?></button>
                     <button class="dl-btn tab-btn" onclick="switchDashboardTab('tab-settings')" data-tab="tab-settings"><i class="fas fa-cog"></i> <?= __('Settings') ?></button>
@@ -257,8 +258,7 @@ include 'includes/header.php';
                                     <div class="mat-compact-item"><div class="mat-icon lck-icon"></div><span class="mat-name">Luck</span><span class="mat-val" id="mat-val-luck">0</span><span class="mat-max">/45</span></div>
                                 </div>
 
-                                <!-- Section ID change & Material reset (collapsed) -->
-                                <div id="section-id-change-container" style="margin-top:1rem;"></div>
+                                <!-- Material Recalibration (right after Materials Used) -->
                                 <details class="danger-details">
                                     <summary><i class="fas fa-exclamation-triangle" style="color:#ff4444;"></i> <?= __('Material Recalibration') ?></summary>
                                     <div class="mat-reset-box" style="margin-top:0.5rem;">
@@ -267,6 +267,9 @@ include 'includes/header.php';
                                         <div id="reset-mat-message" style="margin-top:10px; font-weight:bold; display:none; font-size:0.85rem;"></div>
                                     </div>
                                 </details>
+
+                                <!-- Section ID change -->
+                                <div id="section-id-change-container" style="margin-top:1rem;"></div>
                             </div>
                         </div>
 
@@ -278,26 +281,34 @@ include 'includes/header.php';
                             </div>
                             <div class="backpack-grid-box" id="viewer-backpack-grid"></div>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- ===== BANK VAULT (200 slots) ===== -->
-                        <div class="inventory-section" style="border-top: 1px solid rgba(255,255,255,0.08); padding-top:1.5rem;">
-                            <div class="item-grid-title" style="flex-wrap:wrap; gap:10px;">
-                                <span>🏦 <?= __('Bank Vault') ?></span>
-                                <span style="font-size:0.9rem; color:#ffaa00; font-family:'Share Tech Mono', monospace;" id="viewer-bank-meseta">0 Meseta</span>
-                            </div>
-                            <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
-                                <select id="viewer-bank-select" style="flex:1; min-width:180px; padding: 10px; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(0,255,255,0.3); border-radius: 4px; font-family:'Share Tech Mono', monospace; box-sizing: border-box;">
-                                    <option value="0"><?= __('Character Bank') ?></option>
-                                    <option value="-1"><?= __('Shared Bank') ?></option>
-                                </select>
-                                <button id="viewer-btn-swap-bank" onclick="triggerBankSwap()" class="dl-btn" style="border-color:#00ffff; background:rgba(0,255,255,0.1); color:#00ffff; font-family:'Share Tech Mono', monospace; font-weight:bold; padding:10px 20px;"><i class="fas fa-arrows-rotate"></i> <?= __('Swap Bank in Game') ?></button>
-                            </div>
-                            <div id="bank-swap-result-msg" style="margin-bottom:12px; font-weight:bold; display:none; font-size:0.85rem;"></div>
-                            <div style="margin-bottom:15px;">
-                                <input type="text" id="viewer-bank-search" placeholder="<?= __('Search bank items...') ?>" style="width:100%; padding:10px; background:rgba(0,0,0,0.5); border:1px solid rgba(0,255,255,0.3); color:#fff; border-radius:4px; font-size:0.9rem; box-sizing:border-box;">
-                            </div>
-                            <div class="bank-grid-box" id="viewer-bank-grid"></div>
+                <!-- Tab: Bank Vault -->
+                <div id="tab-bank" class="dashboard-tab-pane">
+                    <div class="character-slots-bar">
+                        <button class="dl-btn slot-btn active" onclick="switchCharSlot(0)" data-slot="0">Character 1</button>
+                        <button class="dl-btn slot-btn" onclick="switchCharSlot(1)" data-slot="1">Character 2</button>
+                        <button class="dl-btn slot-btn" onclick="switchCharSlot(2)" data-slot="2">Character 3</button>
+                        <button class="dl-btn slot-btn" onclick="switchCharSlot(3)" data-slot="3">Character 4</button>
+                    </div>
+                    <div style="border: 1px solid rgba(0, 255, 255, 0.15); background: rgba(0, 10, 20, 0.5); padding: 1.5rem; border-radius: 10px;">
+                        <div class="item-grid-title" style="flex-wrap:wrap; gap:10px; margin-bottom:1rem;">
+                            <span>🏦 <?= __('Bank Vault') ?></span>
+                            <span style="font-size:0.9rem; color:#ffaa00; font-family:'Share Tech Mono', monospace;" id="viewer-bank-meseta">0 Meseta</span>
                         </div>
+                        <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
+                            <select id="viewer-bank-select" style="flex:1; min-width:180px; padding: 10px; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(0,255,255,0.3); border-radius: 4px; font-family:'Share Tech Mono', monospace; box-sizing: border-box;">
+                                <option value="0"><?= __('Character Bank') ?></option>
+                                <option value="-1"><?= __('Shared Bank') ?></option>
+                            </select>
+                            <button id="viewer-btn-swap-bank" onclick="triggerBankSwap()" class="dl-btn" style="border-color:#00ffff; background:rgba(0,255,255,0.1); color:#00ffff; font-family:'Share Tech Mono', monospace; font-weight:bold; padding:10px 20px;"><i class="fas fa-arrows-rotate"></i> <?= __('Swap Bank in Game') ?></button>
+                        </div>
+                        <div id="bank-swap-result-msg" style="margin-bottom:12px; font-weight:bold; display:none; font-size:0.85rem;"></div>
+                        <div style="margin-bottom:15px;">
+                            <input type="text" id="viewer-bank-search" placeholder="<?= __('Search bank items...') ?>" style="width:100%; padding:10px; background:rgba(0,0,0,0.5); border:1px solid rgba(0,255,255,0.3); color:#fff; border-radius:4px; font-size:0.9rem; box-sizing:border-box;">
+                        </div>
+                        <div class="bank-grid-box" id="viewer-bank-grid"></div>
                     </div>
                 </div>
 
