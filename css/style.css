@@ -2099,10 +2099,18 @@ input:checked + .slider:before {
     padding: 10px;
     max-height: 450px;
     overflow-y: auto;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+.backpack-grid-box {
+    box-sizing: border-box;
+    max-width: 100%;
 }
 @media (max-width: 600px) {
     .backpack-grid-box, .bank-grid-box {
         grid-template-columns: repeat(5, 1fr);
+        gap: 4px;
+        padding: 6px;
     }
 }
 
@@ -2288,6 +2296,8 @@ body.pwa-standalone .logo-text {
     display: grid;
     grid-template-columns: repeat(10, 1fr);
     gap: 6px;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 .streak-day {
     position: relative;
@@ -3021,6 +3031,12 @@ body.pwa-standalone .logo-text {
         padding-bottom: 4px;
     }
 
+    /* Streak calendar: 6 cols on tablets */
+    .streak-calendar {
+        grid-template-columns: repeat(6, 1fr) !important;
+        gap: 4px;
+    }
+
     /* Guild bounty/event cards */
     .dashboard-grid-guild > div {
         min-width: 0;
@@ -3143,6 +3159,27 @@ body.pwa-standalone .logo-text {
     .streak-number {
         font-size: 2rem;
     }
+    /* Streak calendar: 5 cols on phones */
+    .streak-calendar {
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 3px;
+    }
+    .streak-day {
+        padding: 6px 3px;
+        border-radius: 6px;
+    }
+    .streak-day .day-num {
+        font-size: 0.55rem;
+    }
+    .streak-day .day-reward {
+        font-size: 0.5rem;
+    }
+    .streak-day.day-claimed .day-check {
+        font-size: 0.7rem;
+    }
+    .streak-day.day-claimable .claim-label {
+        font-size: 0.5rem;
+    }
 
     /* General container */
     .container {
@@ -3175,5 +3212,33 @@ body.pwa-standalone .logo-text {
     }
     .backpack-grid-box, .bank-grid-box {
         grid-template-columns: repeat(4, 1fr) !important;
+        gap: 3px !important;
+        padding: 4px !important;
+    }
+    .item-slot {
+        min-width: 0;
+    }
+}
+
+/* Global mobile overflow containment */
+@media (max-width: 768px) {
+    .hl-body,
+    .container,
+    [class*="grid"],
+    [class*="card"],
+    [class*="panel"] {
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+    select, input, button, textarea {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    .item-tooltip {
+        max-width: calc(100vw - 30px);
+    }
+    .bank-grid-box {
+        max-height: 350px;
     }
 }

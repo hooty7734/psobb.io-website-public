@@ -2111,6 +2111,33 @@ window.toggleDiscordStreakPref = async function() {
     }
 };
 
+// Translate raw goal_type + goal_target into human-readable bounty objectives
+function describeBountyObjective(goalType, goalTarget) {
+    const target = goalTarget || '';
+    const goalMap = {
+        'LEVEL':        `Reach Level ${target}`,
+        'BOSS_ARENA':   `Defeat ${target} boss${parseInt(target) !== 1 ? 'es' : ''} in the Boss Arena`,
+        'BOSS_KILL':    `Defeat ${target || 'the target boss'}`,
+        'KILL_ENEMIES': `Defeat ${target} enemies`,
+        'KILL_BOSS':    `Defeat ${target || 'the target boss'}`,
+        'MAT_HP':       `Use ${target} HP Material${parseInt(target) !== 1 ? 's' : ''}`,
+        'MAT_TP':       `Use ${target} TP Material${parseInt(target) !== 1 ? 's' : ''}`,
+        'MAT_POWER':    `Use ${target} Power Material${parseInt(target) !== 1 ? 's' : ''}`,
+        'MAT_MIND':     `Use ${target} Mind Material${parseInt(target) !== 1 ? 's' : ''}`,
+        'MAT_DEF':      `Use ${target} Def Material${parseInt(target) !== 1 ? 's' : ''}`,
+        'MAT_EVP':      `Use ${target} Evade Material${parseInt(target) !== 1 ? 's' : ''}`,
+        'MAT_LUCK':     `Use ${target} Luck Material${parseInt(target) !== 1 ? 's' : ''}`,
+        'COMPLETE_QUEST': `Complete ${target} quest${parseInt(target) !== 1 ? 's' : ''}`,
+        'QUEST':        `Complete the quest: ${target}`,
+        'TIME_ATTACK':  `Complete a Time Attack in ${target}`,
+        'MESETA':       `Earn ${Number(target).toLocaleString()} Meseta`,
+        'COLLECT_ITEM': `Collect: ${target}`,
+        'PLAY_TIME':    `Play for ${target} hours`,
+        'LOGIN_STREAK': `Maintain a ${target}-day login streak`,
+    };
+    return goalMap[goalType] || `${goalType}: ${target}`;
+}
+
 // Load bounties & community events for Guild tab
 window.loadMyBounties = async function() {
     try {
@@ -2151,17 +2178,19 @@ window.loadMyBounties = async function() {
             if (claimSection && claimList) {
                 ceSection && (ceSection.style.display = 'block');
                 // Prepend claimable event cards to claimable bounties
-                const eventCards = data.claimable_events.map(ce => `
+                const eventCards = data.claimable_events.map(ce => {
+                    const rewardStr = ce.reward_item_string || 'Community Event Reward';
+                    return `
                     <div style="border: 1px solid rgba(0,255,136,0.4); background: rgba(0,255,136,0.05); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                            <div style="flex:1; min-width:0;">
                                 <span style="color:#00ff88; font-weight:bold; font-family:'Share Tech Mono',monospace;">🏆 ${ce.title}</span>
-                                <div style="color:rgba(255,255,255,0.5); font-size:0.75rem; margin-top:4px;">Community Event Reward</div>
+                                <div style="color:#fbbf24; font-size:0.75rem; margin-top:4px; font-family:'Share Tech Mono',monospace;">🎁 ${rewardStr}</div>
                             </div>
-                            <a href="missions.php" class="dl-btn" style="text-decoration:none; border-color:#00ff88; color:#00ff88; background:rgba(0,255,136,0.15); font-size:0.8rem; padding:6px 14px;">Claim →</a>
+                            <a href="missions.php" class="dl-btn" style="text-decoration:none; border-color:#00ff88; color:#00ff88; background:rgba(0,255,136,0.15); font-size:0.8rem; padding:6px 14px; white-space:nowrap;">Claim →</a>
                         </div>
-                    </div>
-                `).join('');
+                    </div>`;
+                }).join('');
                 claimList.innerHTML = eventCards + (claimList.innerHTML || '');
                 claimSection.style.display = 'block';
             }
@@ -2177,17 +2206,20 @@ window.loadMyBounties = async function() {
             const claimList = document.getElementById('claimable-bounties-list');
             if (claimSection && claimList) {
                 claimSection.style.display = 'block';
-                claimList.innerHTML += completed.map(b => `
+                claimList.innerHTML += completed.map(b => {
+                    const rewardStr = b.reward_item_string || 'Mystery Reward';
+                    return `
                     <div style="border: 1px solid rgba(0,255,136,0.4); background: rgba(0,255,136,0.05); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                            <div style="flex:1; min-width:0;">
                                 <span style="color:#00ff88; font-weight:bold; font-family:'Share Tech Mono',monospace;">✅ ${b.title}</span>
                                 <div style="color:rgba(255,255,255,0.5); font-size:0.75rem; margin-top:4px;">${b.character_name || 'Unknown'} · ${b.goal_type}</div>
+                                <div style="color:#fbbf24; font-size:0.75rem; margin-top:4px; font-family:'Share Tech Mono',monospace;">🎁 ${rewardStr}</div>
                             </div>
-                            <a href="missions.php" class="dl-btn" style="text-decoration:none; border-color:#00ff88; color:#00ff88; background:rgba(0,255,136,0.15); font-size:0.8rem; padding:6px 14px;">Claim →</a>
+                            <a href="missions.php" class="dl-btn" style="text-decoration:none; border-color:#00ff88; color:#00ff88; background:rgba(0,255,136,0.15); font-size:0.8rem; padding:6px 14px; white-space:nowrap;">Claim →</a>
                         </div>
-                    </div>
-                `).join('');
+                    </div>`;
+                }).join('');
             }
         }
 
@@ -2197,17 +2229,24 @@ window.loadMyBounties = async function() {
             const activeList = document.getElementById('active-bounties-list');
             if (activeSection && activeList) {
                 activeSection.style.display = 'block';
-                activeList.innerHTML = inProgress.map(b => `
+                activeList.innerHTML = inProgress.map(b => {
+                    const rewardStr = b.reward_item_string || '';
+                    const objective = describeBountyObjective(b.goal_type, b.goal_target);
+                    const desc = b.description || '';
+                    return `
                     <div style="border: 1px solid rgba(0,255,255,0.2); background: rgba(0,10,20,0.4); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                            <div style="flex:1; min-width:0;">
                                 <span style="color:#00ffff; font-weight:bold; font-family:'Share Tech Mono',monospace;">${b.title}</span>
-                                <div style="color:rgba(255,255,255,0.5); font-size:0.75rem; margin-top:4px;">${b.character_name || 'Unknown'} · ${b.goal_type} · ${b.goal_target || ''}</div>
+                                <div style="color:rgba(255,255,255,0.7); font-size:0.75rem; margin-top:6px;">📋 ${objective}</div>
+                                ${desc ? `<div style="color:rgba(255,255,255,0.4); font-size:0.7rem; margin-top:3px; font-style:italic;">${desc}</div>` : ''}
+                                <div style="color:rgba(255,255,255,0.35); font-size:0.65rem; margin-top:4px;">Character: ${b.character_name || 'Unknown'}</div>
+                                ${rewardStr ? `<div style="color:rgba(251,191,36,0.6); font-size:0.7rem; margin-top:4px; font-family:'Share Tech Mono',monospace;">🎁 ${rewardStr}</div>` : ''}
                             </div>
-                            <span style="color:#ffaa00; font-size:0.75rem; font-family:'Share Tech Mono',monospace;">IN PROGRESS</span>
+                            <span style="color:#ffaa00; font-size:0.75rem; font-family:'Share Tech Mono',monospace; white-space:nowrap;">IN PROGRESS</span>
                         </div>
-                    </div>
-                `).join('');
+                    </div>`;
+                }).join('');
             }
         }
 
