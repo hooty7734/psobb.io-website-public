@@ -451,7 +451,7 @@ include 'includes/header.php';
                     </div>
                 </div>
                 <p class="crew-bio">
-                    <?= __('Pixelated is our resident vibe-coding beast, dropping awesome client-side mods like custom HD texture packs and camera controls inside our Discord, alongside plenty of legendary memes. Pixelated keeps our community connected, entertained, and equipped with cool gaming utilities.') ?>
+                    <?= __('Pixelated is our resident vibe-coding beast, dropping awesome client-side mods like custom HD texture packs and camera controls inside our Discord, alongside plenty of legendary memes. Pixelated keeps our community connected, entertained, and equipped with cool gaming utilities. As Pixelated famously said: "I am Optimizer Prime, wrangler of clankers".') ?>
                 </p>
             </div>
 
