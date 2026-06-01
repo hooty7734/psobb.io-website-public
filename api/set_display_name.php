@@ -59,9 +59,10 @@ if ($result) {
 }
 
 // Save
-$stmt = $db->prepare("UPDATE users SET display_name = :name WHERE account_id = :aid");
+$stmt = $db->prepare("UPDATE users SET display_name = :name WHERE account_id = :aid OR username = :username");
 $stmt->bindValue(':name', $displayName, SQLITE3_TEXT);
 $stmt->bindValue(':aid', $accountId, SQLITE3_INTEGER);
+$stmt->bindValue(':username', $_SESSION['user']['username'], SQLITE3_TEXT);
 $stmt->execute();
 
 echo json_encode([

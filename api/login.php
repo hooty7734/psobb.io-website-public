@@ -107,6 +107,21 @@ try {
         $receive_system_mail = $row && isset($row['receive_system_mail']) ? (int)$row['receive_system_mail'] : 1;
         $receive_discord_streak_msg = $row && isset($row['receive_discord_streak_msg']) ? (int)$row['receive_discord_streak_msg'] : 1;
 
+        if ($row === false) {
+            // Create user row for legacy/in-game created accounts on first website login
+            $ins = $db->prepare("INSERT OR IGNORE INTO users (username, email, account_id, receive_system_mail, receive_discord_streak_msg) VALUES (:u, :e, :aid, 1, 1)");
+            $ins->bindValue(':u', $username, SQLITE3_TEXT);
+            $ins->bindValue(':e', $username . "_legacy@psobb.io", SQLITE3_TEXT);
+            $ins->bindValue(':aid', $user_account['AccountID'], SQLITE3_INTEGER);
+            $ins->execute();
+        } else {
+            // Self-healing: ensure account_id in SQLite is perfectly in sync with NewServ's active AccountID
+            $upd = $db->prepare("UPDATE users SET account_id = :aid WHERE username = :username");
+            $upd->bindValue(':aid', $user_account['AccountID'], SQLITE3_INTEGER);
+            $upd->bindValue(':username', $username, SQLITE3_TEXT);
+            $upd->execute();
+        }
+
         $user_account['discord_id'] = $discord_id;
         $user_account['receive_system_mail'] = $receive_system_mail;
         $user_account['receive_discord_streak_msg'] = $receive_discord_streak_msg;
