@@ -7,7 +7,7 @@ __pycache__/
 node_modules/
 
 
-db/website.db
+db/website.db*
 downloads/
 api/bot_secret.php
 db/*.log
