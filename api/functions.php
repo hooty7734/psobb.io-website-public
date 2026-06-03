@@ -55,10 +55,10 @@ function send_personal_mail($client_acc_id, $from_name, $text)
     // 8-byte header (size=0x0458, cmd=0x81, flag=0x00010000) + 1104 zero bytes = 1112 total
     $packet = pack('vvV', 0x0458, 0x0081, 0x00010000) . str_repeat("\x00", 1104);
 
-    $packet = substr_replace($packet, substr($from_utf16,  0,   30),  12,   30); // from_name
-    $packet = substr_replace($packet, pack('V', $client_acc_id),       44,    4); // to_guild_card_number
-    $packet = substr_replace($packet, substr($date_utf16,  0,   38),  48,   38); // received_date
-    $packet = substr_replace($packet, substr($text_utf16,  0, 1022),  88, 1022); // text
+    $packet = substr_replace($packet, str_pad(substr($from_utf16, 0,   30),   30, "\x00"), 12,   30); // from_name
+    $packet = substr_replace($packet, pack('V', $client_acc_id),                           44,    4); // to_guild_card_number
+    $packet = substr_replace($packet, str_pad(substr($date_utf16, 0,   38),   38, "\x00"), 48,   38); // received_date
+    $packet = substr_replace($packet, str_pad(substr($text_utf16, 0, 1022), 1022, "\x00"), 88, 1022); // text
 
     $exec_payload = json_encode(['command' => 'on ' . $client_acc_id . ' sc ' . bin2hex($packet)]);
     @file_get_contents(
