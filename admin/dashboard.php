@@ -113,6 +113,24 @@ $user_count = $db->querySingle("SELECT COUNT(*) FROM users");
             </form>
         </div>
 
+        <!-- Test In-Game Mail -->
+        <div class="admin-card">
+            <h3>Test In-Game Mail</h3>
+            <p>Send a personal mail to a connected player to verify the messaging system.</p>
+            <form id="test-mail-form" onsubmit="sendTestMail(event)">
+                <div style="display:flex; gap:10px; margin-bottom:8px;">
+                    <input type="number" id="tm-aid" placeholder="Account ID" required
+                           style="width:140px; padding:8px; flex-shrink:0;">
+                    <input type="text" id="tm-from" placeholder="From Name" value="Hunter's Guild"
+                           style="flex-grow:1; padding:8px;">
+                </div>
+                <textarea id="tm-msg" placeholder="Mail body..." required
+                          style="width:100%; padding:8px; min-height:70px; resize:vertical; box-sizing:border-box; background:rgba(255,255,255,0.05); color:inherit; border:1px solid #444;"></textarea>
+                <button type="submit" id="tm-btn" class="dl-btn success-btn" style="width:100%; margin-top:8px;">Send Test Mail</button>
+            </form>
+            <div id="tm-out" style="margin-top:8px; font-size:0.9em;"></div>
+        </div>
+
         <!-- Reward Reset -->
         <div class="admin-card">
             <h3>Reset Reward Claim</h3>
@@ -398,6 +416,45 @@ async function refreshAccountsList() {
         const tbody = document.getElementById('admin-accounts-list');
         if (tbody) tbody.innerHTML = '<tr><td colspan="6">Error loading accounts.</td></tr>';
     }
+}
+
+async function sendTestMail(e) {
+    e.preventDefault();
+    const aid  = document.getElementById('tm-aid').value;
+    const from = document.getElementById('tm-from').value.trim() || "Hunter's Guild";
+    const msg  = document.getElementById('tm-msg').value.trim();
+    const out  = document.getElementById('tm-out');
+    const btn  = document.getElementById('tm-btn');
+
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    out.style.color = 'var(--text-color)';
+    out.textContent = '';
+
+    try {
+        const res = await fetch('/api/admin_test_mail.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {'Content-Type': 'application/json', 'X-CSRF-Token': window.getCSRFToken()},
+            body: JSON.stringify({account_id: parseInt(aid), from_name: from, message: msg})
+        });
+        const data = await res.json();
+        if (data.success) {
+            out.style.color = '#00C851';
+            out.textContent = '✓ ' + data.message;
+            document.getElementById('test-mail-form').reset();
+            document.getElementById('tm-from').value = "Hunter's Guild";
+        } else {
+            out.style.color = '#ff4444';
+            out.textContent = '✗ ' + (data.error || 'Unknown error.');
+        }
+    } catch (err) {
+        out.style.color = '#ff4444';
+        out.textContent = '✗ Connection error.';
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Send Test Mail';
 }
 
 // Init

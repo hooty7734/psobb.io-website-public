@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    window.getCSRFToken = function() {
+    window.getCSRFToken = function () {
         const meta = document.querySelector('meta[name="csrf-token"]');
         return meta ? meta.getAttribute('content') : '';
     };
@@ -108,12 +108,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.innerWidth <= 768) {
                 e.preventDefault();
                 const parentDropdown = btn.closest('.dropdown');
-                
+
                 // Close other open dropdowns
                 document.querySelectorAll('.dropdown.mobile-open').forEach(d => {
                     if (d !== parentDropdown) d.classList.remove('mobile-open');
                 });
-                
+
                 parentDropdown.classList.toggle('mobile-open');
             }
         });
@@ -273,9 +273,11 @@ function showDashboard(user) {
             };
         }
 
-        // Load active character slot 0 dynamically
-        window.activeSlot = 0;
-        switchCharSlot(0);
+        // Load first available active character slot dynamically
+        const firstSlotBtn = document.querySelector('.slot-btn');
+        const defaultSlot = firstSlotBtn ? parseInt(firstSlotBtn.getAttribute('data-slot')) : 0;
+        window.activeSlot = defaultSlot;
+        switchCharSlot(defaultSlot);
     }
 }
 
@@ -312,7 +314,7 @@ window.saveDisplayName = async function () {
         const response = await fetch('/api/set_display_name.php', {
             method: 'POST',
             credentials: 'same-origin',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-Token': window.getCSRFToken()
             },
@@ -428,7 +430,7 @@ async function submitSectionIdChange(characterName) {
         const response = await fetch('/api/change_section_id.php', {
             method: 'POST',
             credentials: 'same-origin',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-Token': window.getCSRFToken()
             },
@@ -526,7 +528,7 @@ async function submitBankSwap(characterName) {
         const response = await fetch('/api/bank_swap.php', {
             method: 'POST',
             credentials: 'same-origin',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-Token': window.getCSRFToken()
             },
@@ -710,12 +712,12 @@ function renderGameList(games) {
     activeGames.forEach(g => {
         const row = document.createElement('tr');
         const players = g.Players !== undefined ? g.Players : '-';
-        
+
         let displayName = g.Name || '';
         const mode = g.Mode || 'Normal';
         const displayMode = mode === 'Normal' ? 'Extermination/Normal' : mode;
         const modeClass = `mode-${mode.toLowerCase()}`;
-        const passBadge = g.HasPassword 
+        const passBadge = g.HasPassword
             ? '<span style="display: inline-flex; align-items: center; gap: 4px; background: rgba(255, 170, 0, 0.1); border: 1px solid rgba(255, 170, 0, 0.4); color: #ffaa00; padding: 2px 8px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px;"><i class="fas fa-lock" style="font-size: 0.85em;"></i> PRIVATE</span>'
             : '<span style="display: inline-flex; align-items: center; gap: 4px; background: rgba(0, 255, 200, 0.1); border: 1px solid rgba(0, 255, 200, 0.3); color: #00ffc8; padding: 2px 8px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px;"><i class="fas fa-unlock" style="font-size: 0.85em;"></i> OPEN</span>';
 
@@ -796,7 +798,7 @@ window.confirmDelete = async function () {
         const response = await fetch('/api/delete_account.php', {
             method: 'POST',
             credentials: 'same-origin',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-Token': window.getCSRFToken()
             },
@@ -885,7 +887,7 @@ window.confirmChangePass = async function () {
         const response = await fetch('/api/change_password.php', {
             method: 'POST',
             credentials: 'same-origin',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-Token': window.getCSRFToken()
             },
@@ -939,10 +941,10 @@ window.openPlayerGuideModal = function () {
         if (scrollBox) scrollBox.scrollTop = 0;
         // Default to the first tab
         window.switchGuideTab('tab-portal');
-        
+
         // Add keyboard ESC listener
         window.addEventListener('keydown', handleGuideEscKey);
-        
+
         // Add click listener on the modal overlay itself to close it
         modal.addEventListener('click', handleGuideOverlayClick);
     }
@@ -1023,7 +1025,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 document.addEventListener('DOMContentLoaded', () => {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     if (isStandalone) return;
-    
+
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     if (isIOS && sessionStorage.getItem('psobb_user')) {
         const installCard = document.getElementById('pwa-install-card');
@@ -1036,7 +1038,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Trigger App Installation
-window.installPortalApp = async function() {
+window.installPortalApp = async function () {
     if (!window.deferredPrompt) {
         alert('The installation prompt is not ready. If you are using an iOS device, please use "Add to Home Screen" from Safari\'s share menu.');
         return;
@@ -1052,7 +1054,7 @@ window.installPortalApp = async function() {
 };
 
 // Switch Dashboard Tab Panes
-window.switchDashboardTab = function(tabId) {
+window.switchDashboardTab = function (tabId) {
     document.querySelectorAll('.dashboard-tab-pane').forEach(pane => {
         pane.classList.remove('active');
     });
@@ -1112,7 +1114,7 @@ window.switchDashboardTab = function(tabId) {
 };
 
 // Switch Character Slot
-window.switchCharSlot = function(slotIndex) {
+window.switchCharSlot = function (slotIndex) {
     window.activeSlot = slotIndex;
     document.querySelectorAll('.slot-btn').forEach(btn => {
         btn.classList.remove('active');
@@ -1124,7 +1126,7 @@ window.switchCharSlot = function(slotIndex) {
 };
 
 // Load Character Data via API
-window.loadCharSlot = async function(slotIndex) {
+window.loadCharSlot = async function (slotIndex) {
     const pane = document.getElementById('viewer-content-pane');
     const loader = document.getElementById('viewer-loader');
     if (pane) pane.style.opacity = '0.4';
@@ -1234,7 +1236,7 @@ function renderInventory() {
     if (!c || !c.inventory) return;
 
     const gearSlots = {
-        'weapon': null, 'armor': null, 'shield': null, 
+        'weapon': null, 'armor': null, 'shield': null,
         'unit1': null, 'unit2': null, 'unit3': null, 'unit4': null, 'mag': null
     };
     let unitCount = 1;
@@ -1422,7 +1424,7 @@ function renderActiveBank() {
 }
 
 // Trigger Bank Swap
-window.triggerBankSwap = async function() {
+window.triggerBankSwap = async function () {
     const c = window.activeCharData;
     const targetSelect = document.getElementById('viewer-bank-select');
     const swapResult = document.getElementById('bank-swap-result-msg');
@@ -1519,7 +1521,7 @@ function renderActiveCharacterSectionId(character) {
     secIdContainer.innerHTML = html;
 }
 
-window.triggerSectionIdChange = async function() {
+window.triggerSectionIdChange = async function () {
     const checked = document.querySelector('input[name="new-section-id"]:checked');
     const c = window.activeCharData;
     const msgEl = document.getElementById('secid-message');
@@ -1535,7 +1537,7 @@ window.triggerSectionIdChange = async function() {
         const response = await fetch('/api/change_section_id.php', {
             method: 'POST',
             credentials: 'same-origin',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-Token': window.getCSRFToken()
             },
@@ -1562,7 +1564,7 @@ window.triggerSectionIdChange = async function() {
 };
 
 // Material Reset
-window.triggerMaterialReset = async function() {
+window.triggerMaterialReset = async function () {
     const c = window.activeCharData;
     const msgEl = document.getElementById('reset-mat-message');
     if (!c || !msgEl) return;
@@ -1598,7 +1600,7 @@ window.triggerMaterialReset = async function() {
         } else {
             throw new Error(data.error || 'Failed to reset materials.');
         }
-    } catch(e) {
+    } catch (e) {
         msgEl.style.color = "#ff4444";
         msgEl.textContent = `⚠️ ${e.message}`;
     }
@@ -1679,7 +1681,7 @@ function createItemSlotElement(item, label = '') {
 
     if (item) {
         slotEl.setAttribute('data-hex', item.hex);
-        
+
         const nameLower = item.name.toLowerCase();
         if (nameLower.includes('psycho wand') || nameLower.includes('sealed j-sword') || nameLower.includes('sato')) {
             slotEl.classList.add('rare-red');
@@ -1772,11 +1774,11 @@ function setupTooltipTriggers() {
                 const barMax = ms.level || maxStat;
 
                 detailsHtml += `<div class="tooltip-stat-row"><span>Level:</span><span class="tooltip-stat-val" style="color:#ffcc00;">${ms.level}</span></div>`;
-                
+
                 const magStats = [
-                    { label: 'DEF',  val: ms.def,  color: '#4ecdc4' },
-                    { label: 'POW',  val: ms.pow,  color: '#ff6b6b' },
-                    { label: 'DEX',  val: ms.dex,  color: '#a78bfa' },
+                    { label: 'DEF', val: ms.def, color: '#4ecdc4' },
+                    { label: 'POW', val: ms.pow, color: '#ff6b6b' },
+                    { label: 'DEX', val: ms.dex, color: '#a78bfa' },
                     { label: 'MIND', val: ms.mind, color: '#60a5fa' }
                 ];
 
@@ -1830,7 +1832,7 @@ function setupTooltipTriggers() {
 
 function findItemByHex(hex) {
     if (!window.activeCharData) return null;
-    
+
     let found = window.activeCharData.inventory.find(i => i.hex === hex);
     if (found) return found;
 
@@ -1869,7 +1871,7 @@ function filterBankGrid(query) {
 function populateChatCharacterSelect() {
     const select = document.getElementById('chat-character-select');
     if (!select || !window.activeCharData) return;
-    
+
     const charName = window.activeCharData.name;
     let exists = false;
     for (let i = 0; i < select.options.length; i++) {
@@ -1888,7 +1890,7 @@ function populateChatCharacterSelect() {
 }
 
 // Web-to-Game chat sender
-window.sendWebToGameMessage = async function() {
+window.sendWebToGameMessage = async function () {
     const select = document.getElementById('chat-character-select');
     const input = document.getElementById('chat-message-input');
     const statusMsg = document.getElementById('chat-status-message');
@@ -1967,7 +1969,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ---- LFG Feed for Dashboard Tab ----
 window._lfgFeedInterval = null;
 
-window.loadLfgFeed = async function() {
+window.loadLfgFeed = async function () {
     const container = document.getElementById('lfg-feed-container');
     if (!container) return;
 
@@ -2013,10 +2015,9 @@ window.loadLfgFeed = async function() {
             let seekHtml = '';
             if (l.looking_for) {
                 seekHtml = l.looking_for.split(',').map(a =>
-                    `<span style="display:inline-block; padding:1px 6px; border-radius:3px; font-size:0.6rem; font-weight:bold; font-family:'Share Tech Mono',monospace; margin-right:3px; border:1px solid; ${
-                        a === 'HU' ? 'color:#ff6666; border-color:#ff4444; background:rgba(255,68,68,0.1);' :
+                    `<span style="display:inline-block; padding:1px 6px; border-radius:3px; font-size:0.6rem; font-weight:bold; font-family:'Share Tech Mono',monospace; margin-right:3px; border:1px solid; ${a === 'HU' ? 'color:#ff6666; border-color:#ff4444; background:rgba(255,68,68,0.1);' :
                         a === 'RA' ? 'color:#66ccff; border-color:#33b5e5; background:rgba(51,181,229,0.1);' :
-                        'color:#88ff88; border-color:#00c851; background:rgba(0,200,81,0.1);'
+                            'color:#88ff88; border-color:#00c851; background:rgba(0,200,81,0.1);'
                     }">${a}</span>`
                 ).join('');
             }
@@ -2069,11 +2070,10 @@ window.loadLfgFeed = async function() {
                     <div style="display:flex; align-items:center; gap:8px;">
                         <span style="color:#ffaa00; font-weight:bold; font-family:'Share Tech Mono',monospace;">${_lfgEsc(l.character_name)}</span>
                         <span style="font-size:0.7rem; color:#aaa;">Lv.${l.level}</span>
-                        <span style="display:inline-block; padding:1px 5px; border-radius:3px; font-size:0.6rem; font-weight:bold; font-family:'Share Tech Mono',monospace; border:1px solid; ${
-                            arch === 'HU' ? 'color:#ff6666; border-color:#ff4444; background:rgba(255,68,68,0.15);' :
-                            arch === 'RA' ? 'color:#66ccff; border-color:#33b5e5; background:rgba(51,181,229,0.15);' :
-                            'color:#88ff88; border-color:#00c851; background:rgba(0,200,81,0.15);'
-                        }">${arch}</span>
+                        <span style="display:inline-block; padding:1px 5px; border-radius:3px; font-size:0.6rem; font-weight:bold; font-family:'Share Tech Mono',monospace; border:1px solid; ${arch === 'HU' ? 'color:#ff6666; border-color:#ff4444; background:rgba(255,68,68,0.15);' :
+                    arch === 'RA' ? 'color:#66ccff; border-color:#33b5e5; background:rgba(51,181,229,0.15);' :
+                        'color:#88ff88; border-color:#00c851; background:rgba(0,200,81,0.15);'
+                }">${arch}</span>
                     </div>
                     <span style="font-size:0.65rem; color:#888;"><i class="far fa-clock"></i> ${timeAgo}</span>
                 </div>
@@ -2212,13 +2212,13 @@ async function pollLobbyFeed() {
     }
 }
 
-window.startLobbyFeed = function() {
+window.startLobbyFeed = function () {
     if (window._lobbyFeedInterval) return;
     pollLobbyFeed();
     window._lobbyFeedInterval = setInterval(pollLobbyFeed, 5000);
 };
 
-window.stopLobbyFeed = function() {
+window.stopLobbyFeed = function () {
     if (window._lobbyFeedInterval) {
         clearInterval(window._lobbyFeedInterval);
         window._lobbyFeedInterval = null;
@@ -2226,7 +2226,7 @@ window.stopLobbyFeed = function() {
 };
 
 // System mail configurations pref
-window.loadSystemMailPref = function() {
+window.loadSystemMailPref = function () {
     const userStr = sessionStorage.getItem('psobb_user');
     if (!userStr) return;
     const user = JSON.parse(userStr);
@@ -2236,7 +2236,7 @@ window.loadSystemMailPref = function() {
     }
 };
 
-window.toggleSystemMailPref = async function() {
+window.toggleSystemMailPref = async function () {
     const checkbox = document.getElementById('system-mail-toggle');
     const userStr = sessionStorage.getItem('psobb_user');
     if (!checkbox || !userStr) return;
@@ -2271,7 +2271,7 @@ window.toggleSystemMailPref = async function() {
 };
 
 // Discord streak DM preferences toggle controllers
-window.loadDiscordStreakPref = function() {
+window.loadDiscordStreakPref = function () {
     const userStr = sessionStorage.getItem('psobb_user');
     if (!userStr) return;
     const user = JSON.parse(userStr);
@@ -2281,7 +2281,7 @@ window.loadDiscordStreakPref = function() {
     }
 };
 
-window.toggleDiscordStreakPref = async function() {
+window.toggleDiscordStreakPref = async function () {
     const checkbox = document.getElementById('discord-streak-toggle');
     const userStr = sessionStorage.getItem('psobb_user');
     if (!checkbox || !userStr) return;
@@ -2346,21 +2346,21 @@ function describeBountyObjective(goalType, goalTarget) {
         case 'DIVERSE_PARTY_BOSS': {
             const bossName = bossFloorMap[target] || `Boss (Floor ${target})`;
             const prefix = goalType === 'MENTOR_BOSS' ? 'Mentor a rookie and defeat '
-                         : goalType === 'HARDCORE_MENTOR' ? 'Carry 3+ rookies and defeat '
-                         : goalType === 'DIVERSE_PARTY_BOSS' ? 'Defeat with a diverse party: '
-                         : 'Defeat ';
+                : goalType === 'HARDCORE_MENTOR' ? 'Carry 3+ rookies and defeat '
+                    : goalType === 'DIVERSE_PARTY_BOSS' ? 'Defeat with a diverse party: '
+                        : 'Defeat ';
             return prefix + bossName;
         }
         case 'SPEEDRUN_BOSS': {
             const parts = target.split('_');
             const bossName = bossFloorMap[parts[0]] || `Boss (Floor ${parts[0]})`;
-            const timeLimit = parts[1] ? ` in under ${Math.floor(parts[1]/60)}m ${parts[1]%60}s` : '';
+            const timeLimit = parts[1] ? ` in under ${Math.floor(parts[1] / 60)}m ${parts[1] % 60}s` : '';
             return `Speedrun ${bossName}${timeLimit}`;
         }
         case 'SPEEDRUN_FLOOR': {
             const parts = target.split('_');
             const areaName = areaFloorMap[parts[0]] || `Area ${parts[0]}`;
-            const timeLimit = parts[1] ? ` in under ${Math.floor(parts[1]/60)}m ${parts[1]%60}s` : '';
+            const timeLimit = parts[1] ? ` in under ${Math.floor(parts[1] / 60)}m ${parts[1] % 60}s` : '';
             return `Speedrun ${areaName}${timeLimit}`;
         }
         case 'PATROL': return `Patrol ${areaFloorMap[target] || 'Area ' + target} (10 ticks)`;
@@ -2381,7 +2381,7 @@ function describeBountyObjective(goalType, goalTarget) {
 }
 
 // Load bounties & community events for Guild tab
-window.loadMyBounties = async function() {
+window.loadMyBounties = async function () {
     try {
         const res = await fetch('/api/my_bounties.php', { credentials: 'same-origin' });
         if (!res.ok) return;
@@ -2499,7 +2499,7 @@ window.loadMyBounties = async function() {
 };
 
 // Abandon a bounty mission
-window.abandonBounty = async function(playerMissionId) {
+window.abandonBounty = async function (playerMissionId) {
     if (!confirm('Are you sure you want to abandon this bounty? Progress will be lost.')) return;
     try {
         const res = await fetch('/api/abandon_bounty.php', {
@@ -2523,7 +2523,7 @@ window.abandonBounty = async function(playerMissionId) {
 };
 
 // Milestone reward loading
-window.loadUnlocks = function() {
+window.loadUnlocks = function () {
     const container = document.getElementById('milestones-container');
     const statusBox = document.getElementById('unlocks-status');
     const charInfo = document.getElementById('character-info');
@@ -2631,7 +2631,7 @@ function renderMilestones(milestones, inGame) {
         const toggle = document.createElement('button');
         toggle.style.cssText = 'background:rgba(170,102,204,0.1); border:1px solid rgba(170,102,204,0.3); color:#aa66cc; padding:8px 16px; border-radius:6px; font-family:"Share Tech Mono",monospace; font-size:0.8rem; cursor:pointer; width:100%; margin-top:1rem; transition:all 0.3s;';
         toggle.innerHTML = `<i class="fas fa-chevron-down"></i> Show ${claimed.length} Claimed Milestones`;
-        
+
         const claimedContainer = document.createElement('div');
         claimedContainer.style.cssText = 'display:none; margin-top:0.75rem;';
         claimedContainer.className = 'milestones-grid';
@@ -2652,7 +2652,7 @@ function renderMilestones(milestones, inGame) {
         toggle.addEventListener('click', () => {
             const isHidden = claimedContainer.style.display === 'none';
             claimedContainer.style.display = isHidden ? '' : 'none';
-            toggle.innerHTML = isHidden 
+            toggle.innerHTML = isHidden
                 ? `<i class="fas fa-chevron-up"></i> Hide ${claimed.length} Claimed Milestones`
                 : `<i class="fas fa-chevron-down"></i> Show ${claimed.length} Claimed Milestones`;
         });
@@ -2739,48 +2739,48 @@ function initClaimModalCategoryButtons() {
                     fetch('/api/claim_unlock.php', {
                         method: 'POST',
                         credentials: 'same-origin',
-                        headers: { 
-                            'Content-Type': 'application/json', 
-                            'X-CSRF-Token': window.getCSRFToken() 
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': window.getCSRFToken()
                         },
                         body: JSON.stringify({ level: window.currentClaimLevel, category: category })
                     })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.error) {
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.error) {
+                                clearInterval(countdownInterval);
+                                overlay.style.display = 'none';
+                                if (modalError) {
+                                    modalError.textContent = data.error;
+                                    modalError.style.display = 'block';
+                                }
+                                if (modal) modal.style.display = 'flex';
+                            } else {
+                                countdownEl.style.display = 'none';
+                                thankYouText.style.animation = 'textDrop 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+                                createFireworks();
+
+                                setTimeout(() => {
+                                    overlay.style.display = 'none';
+                                    const statusBox = document.getElementById('unlocks-status');
+                                    if (statusBox) {
+                                        statusBox.style.display = 'block';
+                                        statusBox.className = 'alert-box success';
+                                        statusBox.innerHTML = `🎉 <b>Success!</b> ${category} reward dropped inside your game room. Enjoy!`;
+                                    }
+                                    loadUnlocks();
+                                }, 3500);
+                            }
+                        })
+                        .catch(err => {
                             clearInterval(countdownInterval);
                             overlay.style.display = 'none';
                             if (modalError) {
-                                modalError.textContent = data.error;
+                                modalError.textContent = "A connection error occurred.";
                                 modalError.style.display = 'block';
                             }
                             if (modal) modal.style.display = 'flex';
-                        } else {
-                            countdownEl.style.display = 'none';
-                            thankYouText.style.animation = 'textDrop 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
-                            createFireworks();
-
-                            setTimeout(() => {
-                                overlay.style.display = 'none';
-                                const statusBox = document.getElementById('unlocks-status');
-                                if (statusBox) {
-                                    statusBox.style.display = 'block';
-                                    statusBox.className = 'alert-box success';
-                                    statusBox.innerHTML = `🎉 <b>Success!</b> ${category} reward dropped inside your game room. Enjoy!`;
-                                }
-                                loadUnlocks();
-                            }, 3500);
-                        }
-                    })
-                    .catch(err => {
-                        clearInterval(countdownInterval);
-                        overlay.style.display = 'none';
-                        if (modalError) {
-                            modalError.textContent = "A connection error occurred.";
-                            modalError.style.display = 'block';
-                        }
-                        if (modal) modal.style.display = 'flex';
-                    });
+                        });
 
                     clearInterval(countdownInterval);
                 }
@@ -2834,14 +2834,14 @@ function createFireworks() {
 }
 
 // Daily Streak Calendar claims
-window.loadStreak = function() {
+window.loadStreak = function () {
     // Non-linear fill calculation based on evenly spaced milestone segments
     function calculateFillPercentage(streak) {
         const milestones = [0, 7, 30, 90, 180, 270, 365];
         const segmentWidth = 100 / (milestones.length - 1); // 20% per segment
         for (let i = 0; i < milestones.length - 1; i++) {
             const current = milestones[i];
-            const next = milestones[i+1];
+            const next = milestones[i + 1];
             if (streak >= current && streak <= next) {
                 const segmentProgress = (streak - current) / (next - current);
                 return (i * segmentWidth) + (segmentProgress * segmentWidth);
@@ -2920,7 +2920,7 @@ window.loadStreak = function() {
                 daysArray.forEach(m => {
                     let rewardName = 'Mono';
                     let tierClass = 'tier-mono';
-                    
+
                     if (m === 365) {
                         rewardName = data.has_claimed_yahoo ? 'Rare' : 'Yahoo!';
                         tierClass = 'tier-yahoo';
@@ -3040,24 +3040,24 @@ function claimStreak(milestone) {
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.getCSRFToken() },
                 body: JSON.stringify({ milestone })
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) {
-                    overlay.style.display = 'none';
-                    alert(data.error);
-                } else {
-                    thankYouText.style.animation = 'textDrop 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
-                    createFireworks();
-                    setTimeout(() => {
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
                         overlay.style.display = 'none';
-                        window.loadStreak();
-                    }, 4000);
-                }
-            })
-            .catch(() => {
-                overlay.style.display = 'none';
-                alert('Connection error. Please try again.');
-            });
+                        alert(data.error);
+                    } else {
+                        thankYouText.style.animation = 'textDrop 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+                        createFireworks();
+                        setTimeout(() => {
+                            overlay.style.display = 'none';
+                            window.loadStreak();
+                        }, 4000);
+                    }
+                })
+                .catch(() => {
+                    overlay.style.display = 'none';
+                    alert('Connection error. Please try again.');
+                });
         }
     }, 1000);
 }
@@ -3105,39 +3105,39 @@ function claimDaily() {
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.getCSRFToken() },
                 body: JSON.stringify({})
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) {
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        overlay.style.display = 'none';
+                        dailyBtn.disabled = false;
+                        dailyBtn.textContent = '🎲 Claim Daily Reward';
+                        dailyResult.style.display = 'block';
+                        dailyResult.style.color = '#ff4444';
+                        dailyResult.textContent = data.error;
+                    } else {
+                        thankYouText.style.animation = 'textDrop 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+                        createFireworks();
+
+                        setTimeout(() => {
+                            overlay.style.display = 'none';
+                            dailyResult.style.display = 'block';
+                            dailyResult.style.color = '#00ff88';
+                            dailyResult.textContent = '🎉 ' + data.item + ' dropped in-game!';
+
+                            const nowUnix = Math.floor(Date.now() / 1000);
+                            const midnightEstimate = nowUnix + (86400 - (nowUnix % 86400));
+                            startDailyCountdown(dailyBtn, midnightEstimate, nowUnix);
+                        }, 4000);
+                    }
+                })
+                .catch(() => {
                     overlay.style.display = 'none';
                     dailyBtn.disabled = false;
                     dailyBtn.textContent = '🎲 Claim Daily Reward';
                     dailyResult.style.display = 'block';
                     dailyResult.style.color = '#ff4444';
-                    dailyResult.textContent = data.error;
-                } else {
-                    thankYouText.style.animation = 'textDrop 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
-                    createFireworks();
-
-                    setTimeout(() => {
-                        overlay.style.display = 'none';
-                        dailyResult.style.display = 'block';
-                        dailyResult.style.color = '#00ff88';
-                        dailyResult.textContent = '🎉 ' + data.item + ' dropped in-game!';
-
-                        const nowUnix = Math.floor(Date.now() / 1000);
-                        const midnightEstimate = nowUnix + (86400 - (nowUnix % 86400));
-                        startDailyCountdown(dailyBtn, midnightEstimate, nowUnix);
-                    }, 4000);
-                }
-            })
-            .catch(() => {
-                overlay.style.display = 'none';
-                dailyBtn.disabled = false;
-                dailyBtn.textContent = '🎲 Claim Daily Reward';
-                dailyResult.style.display = 'block';
-                dailyResult.style.color = '#ff4444';
-                dailyResult.textContent = 'Connection error.';
-            });
+                    dailyResult.textContent = 'Connection error.';
+                });
         }
     }, 1000);
 }

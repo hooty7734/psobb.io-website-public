@@ -14,112 +14,62 @@
 function send_personal_mail($client_acc_id, $from_name, $text)
 {
     global $NEWSERV_API_URL;
-    $packet = str_repeat("\x00", 1112);
-    $packet[0] = chr(0x58);
-    $packet[1] = chr(0x04);
-    $packet[2] = chr(0x81);
-    $packet[3] = chr(0x00);
-    $packet[4] = chr(0x00);
-    $packet[5] = chr(0x00);
-    $packet[6] = chr(0x01);
-    $packet[7] = chr(0x00);
 
     $date_str = date('Y-m-d H:i:s');
 
-    // Fetch target player's settings from the database
-    $marker = "\tE"; // Default to English
-    if (function_exists('get_db')) {
-        try {
-            $db = get_db();
-            $stmt = $db->prepare("SELECT language, receive_system_mail FROM users WHERE account_id = :acc LIMIT 1");
-            $stmt->bindValue(':acc', $client_acc_id, SQLITE3_INTEGER);
-            $row = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
-            
-            // Check system mail opt-out preference
-            if ($row && isset($row['receive_system_mail']) && (int)$row['receive_system_mail'] === 0) {
-                return; // Player has opted out of system mails. Silence immediately.
-            }
-            
-            if ($row && isset($row['language']) && strtolower(trim($row['language'])) === 'jp') {
-                $marker = "\tJ";
-            }
-        } catch (Exception $e) {
-            // Ignore DB errors and fallback to English
+    // Fetch player preferences; default to English and allow sending
+    $marker = "\tE";
+    try {
+        $db = get_db();
+        $stmt = $db->prepare("SELECT language, receive_system_mail FROM users WHERE account_id = :acc LIMIT 1");
+        $stmt->bindValue(':acc', $client_acc_id, SQLITE3_INTEGER);
+        $row = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
+
+        if ($row && (int)$row['receive_system_mail'] === 0) {
+            return; // Player has opted out of system mails.
         }
+        if ($row && strtolower(trim($row['language'])) === 'jp') {
+            $marker = "\tJ";
+        }
+    } catch (Exception $e) {
+        // Fallback to English on DB error
     }
 
-    // NewServ uses \tE (English) or \tJ (Japanese) as the language marker for the Sender Name
+    // NewServ uses \tE / \tJ as the language marker prepended to the sender name
     $from_name = $marker . trim($from_name);
-    // Remove the temporary padding hacks now that the structural offsets are correct
-    $text = trim($text);
+    $text      = trim($text);
 
-    if (function_exists('mb_convert_encoding')) {
-        $from_utf16 = mb_convert_encoding($from_name, 'UTF-16LE', 'UTF-8');
-        $date_utf16 = mb_convert_encoding($date_str, 'UTF-16LE', 'UTF-8');
-        $text_utf16 = mb_convert_encoding($text, 'UTF-16LE', 'UTF-8');
-    } elseif (function_exists('iconv')) {
-        $from_utf16 = iconv('UTF-8', 'UTF-16LE', $from_name);
-        $date_utf16 = iconv('UTF-8', 'UTF-16LE', $date_str);
-        $text_utf16 = iconv('UTF-8', 'UTF-16LE', $text);
-    } else {
-        // Fallback for ASCII if both extensions are missing
-        $from_utf16 = preg_replace('/(.)/s', "$1\x00", $from_name);
-        $date_utf16 = preg_replace('/(.)/s', "$1\x00", $date_str);
-        $text_utf16 = preg_replace('/(.)/s', "$1\x00", $text);
-    }
+    // UTF-16LE encoding helper — tries the fastest available method
+    $to_utf16 = function(string $s) {
+        if (function_exists('mb_convert_encoding'))
+            return mb_convert_encoding($s, 'UTF-16LE', 'UTF-8');
+        if (function_exists('iconv'))
+            return iconv('UTF-8', 'UTF-16LE', $s);
+        return preg_replace('/(.)/s', "$1\x00", $s); // ASCII-only fallback
+    };
 
-    // The PSOBB Command Header is 8 bytes long.
-    // Total Size = 8 (header) + 1108 (payload) = 1116 bytes (0x45C)
-    $packet = str_repeat("\x00", 1116);
-    $packet[0] = chr(0x5C);
-    $packet[1] = chr(0x04); // Size = 0x45C
-    $packet[2] = chr(0x81);
-    $packet[3] = chr(0x00); // Command = 0x81
-    $packet[4] = chr(0x00);
-    $packet[5] = chr(0x00);
-    $packet[6] = chr(0x00);
-    $packet[7] = chr(0x00); // Flag = 0
+    $from_utf16 = (string)$to_utf16($from_name);
+    $date_utf16 = (string)$to_utf16($date_str);
+    $text_utf16 = (string)$to_utf16($text);
 
-    // Payload starts at offset 8
-    // player_tag = 0x00010000
-    $packet[8] = chr(0x00);
-    $packet[9] = chr(0x00);
-    $packet[10] = chr(0x01);
-    $packet[11] = chr(0x00);
+    // 8-byte header (size=0x0458, cmd=0x81, flag=0x00010000) + 1104 zero bytes = 1112 total
+    $packet = pack('vvV', 0x0458, 0x0081, 0x00010000) . str_repeat("\x00", 1104);
 
-    // from_guild_card_number (offset 12) left as 0
+    $packet = substr_replace($packet, substr($from_utf16,  0,   30),  12,   30); // from_name
+    $packet = substr_replace($packet, pack('V', $client_acc_id),       44,    4); // to_guild_card_number
+    $packet = substr_replace($packet, substr($date_utf16,  0,   38),  48,   38); // received_date
+    $packet = substr_replace($packet, substr($text_utf16,  0, 1022),  88, 1022); // text
 
-    // from_name (offset 16, max 30 bytes)
-    for ($i = 0; $i < min(30, strlen($from_utf16)); $i++) {
-        $packet[16 + $i] = $from_utf16[$i];
-    }
-
-    // to_guild_card_number (offset 48)
-    $packet[48] = chr($client_acc_id & 0xFF);
-    $packet[49] = chr(($client_acc_id >> 8) & 0xFF);
-    $packet[50] = chr(($client_acc_id >> 16) & 0xFF);
-    $packet[51] = chr(($client_acc_id >> 24) & 0xFF);
-
-    // received_date (offset 52, max 38 bytes)
-    for ($i = 0; $i < min(38, strlen($date_utf16)); $i++) {
-        $packet[52 + $i] = $date_utf16[$i];
-    }
-
-    // text (offset 92, max 1022 bytes)
-    for ($i = 0; $i < min(1022, strlen($text_utf16)); $i++) {
-        $packet[92 + $i] = $text_utf16[$i];
-    }
-
-    $hex = bin2hex($packet);
-    $exec_payload = json_encode(["command" => "on " . $client_acc_id . " sc " . $hex]);
-    $exec_options = [
-        'http' => [
-            'header' => "Content-type: application/json\r\n",
-            'method' => 'POST',
-            'content' => $exec_payload
-        ]
-    ];
-    @file_get_contents($NEWSERV_API_URL . "/y/shell-exec", false, stream_context_create($exec_options));
+    $exec_payload = json_encode(['command' => 'on ' . $client_acc_id . ' sc ' . bin2hex($packet)]);
+    @file_get_contents(
+        $NEWSERV_API_URL . '/y/shell-exec',
+        false,
+        stream_context_create(['http' => [
+            'method'  => 'POST',
+            'header'  => "Content-Type: application/json\r\n",
+            'content' => $exec_payload,
+        ]])
+    );
 }
 
 /**
