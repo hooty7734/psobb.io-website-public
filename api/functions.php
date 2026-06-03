@@ -35,9 +35,9 @@ function send_personal_mail($client_acc_id, $from_name, $text)
         // Fallback to English on DB error
     }
 
-    // NewServ uses \tE / \tJ as the language marker prepended to the sender name
+    // NewServ uses \tE / \tJ as the language marker — required at the start of both fields
     $from_name = $marker . trim($from_name);
-    $text      = trim($text);
+    $text      = $marker . trim($text);
 
     // UTF-16LE encoding helper — tries the fastest available method
     $to_utf16 = function(string $s) {
