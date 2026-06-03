@@ -36,9 +36,10 @@ try {
     $db = get_db();
     
     // Update setting in users table
-    $stmt = $db->prepare("UPDATE users SET receive_discord_streak_msg = :enabled WHERE account_id = :accId");
+    $stmt = $db->prepare("UPDATE users SET receive_discord_streak_msg = :enabled WHERE account_id = :accId OR username = :username");
     $stmt->bindValue(':enabled', $enabled, SQLITE3_INTEGER);
     $stmt->bindValue(':accId', $accountId, SQLITE3_INTEGER);
+    $stmt->bindValue(':username', $_SESSION['user']['username'], SQLITE3_TEXT);
     $stmt->execute();
     
     // Update active session memory
