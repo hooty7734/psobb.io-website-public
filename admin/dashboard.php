@@ -205,10 +205,11 @@ $user_count = $db->querySingle("SELECT COUNT(*) FROM users");
                             <th>Created At</th>
                             <th>Flags</th>
                             <th>Last Char</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="admin-accounts-list">
-                        <tr><td colspan="7">Loading accounts...</td></tr>
+                        <tr><td colspan="8">Loading accounts...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -377,6 +378,33 @@ async function kickUser(id, name) {
     await execCommand(`kick ${id}`);
 }
 
+async function deleteAccount(id, name) {
+    if (!id && !name) {
+        alert("Cannot determine account info to delete.");
+        return;
+    }
+    const confirmMsg = `WARNING: Are you sure you want to permanently delete the account "${name}" (ID: ${id})?\n\nThis will completely delete the account and all of its characters from both the game server and the website database. This action is IRREVERSIBLE.`;
+    if (!confirm(confirmMsg)) return;
+
+    try {
+        const res = await fetch('/api/admin_delete_account.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {'Content-Type': 'application/json', 'X-CSRF-Token': window.getCSRFToken()},
+            body: JSON.stringify({account_id: id ? parseInt(id) : null, username: name})
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert(data.message || "Account deleted successfully.");
+            refreshAccountsList();
+        } else {
+            alert(data.error || "Failed to delete account.");
+        }
+    } catch (err) {
+        alert("Connection error occurred while attempting deletion.");
+    }
+}
+
 async function refreshAccountsList() {
     try {
         const res = await fetch('/api/admin_get_accounts.php', { credentials: 'same-origin' });
@@ -385,7 +413,7 @@ async function refreshAccountsList() {
         tbody.innerHTML = '';
 
         if (!data.success || !data.accounts || data.accounts.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7">No accounts found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8">No accounts found.</td></tr>';
             return;
         }
 
@@ -408,13 +436,16 @@ async function refreshAccountsList() {
                 <td style="padding:0.5rem;">${created}</td>
                 <td style="padding:0.5rem; font-family:monospace;">${flagsStr}</td>
                 <td style="padding:0.5rem;">${lastChar}</td>
+                <td style="padding:0.5rem;">
+                    <button class="action-btn" onclick="deleteAccount('${a.AccountID}', '${name.replace(/'/g, "\\'")}')">Delete</button>
+                </td>
             `;
             tbody.appendChild(row);
         });
     } catch (e) {
         console.error(e);
         const tbody = document.getElementById('admin-accounts-list');
-        if (tbody) tbody.innerHTML = '<tr><td colspan="6">Error loading accounts.</td></tr>';
+        if (tbody) tbody.innerHTML = '<tr><td colspan="8">Error loading accounts.</td></tr>';
     }
 }
 
