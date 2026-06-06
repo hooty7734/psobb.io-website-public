@@ -43,29 +43,6 @@ if (!$authenticated) {
 
 $action = $_GET['action'] ?? '';
 
-if ($action === 'link') {
-    $username = $_POST['username'] ?? '';
-    $discord_id = $_POST['discord_id'] ?? '';
-    
-    if (!$username || !$discord_id) {
-        echo json_encode(["error" => "Missing data"]);
-        exit;
-    }
-    
-    $db = get_db();
-    $stmt = $db->prepare("UPDATE users SET discord_id = :discord_id WHERE username = :username");
-    $stmt->bindValue(':discord_id', $discord_id, SQLITE3_TEXT);
-    $stmt->bindValue(':username', $username, SQLITE3_TEXT);
-    $result = $stmt->execute();
-    
-    if ($db->changes() > 0) {
-        echo json_encode(["success" => true]);
-    } else {
-        echo json_encode(["error" => "User not found or already linked"]);
-    }
-    exit;
-}
-
 // ============================================================
 // SHARED CHARACTER PARSING HELPERS (ported from character_viewer.php)
 // These MUST live at top level (not inside an action branch); a function
@@ -85,6 +62,29 @@ $SECID_MAP = [
     4 => 'Purplenum', 5 => 'Pinkal',    6 => 'Redria',    7 => 'Oran',
     8 => 'Yellowboze', 9 => 'Whitill'
 ];
+
+if ($action === 'link') {
+    $username = $_POST['username'] ?? '';
+    $discord_id = $_POST['discord_id'] ?? '';
+
+    if (!$username || !$discord_id) {
+        echo json_encode(["error" => "Missing data"]);
+        exit;
+    }
+
+    $db = get_db();
+    $stmt = $db->prepare("UPDATE users SET discord_id = :discord_id WHERE username = :username");
+    $stmt->bindValue(':discord_id', $discord_id, SQLITE3_TEXT);
+    $stmt->bindValue(':username', $username, SQLITE3_TEXT);
+    $stmt->execute();
+
+    if ($db->changes() > 0) {
+        echo json_encode(["success" => true]);
+    } else {
+        echo json_encode(["error" => "User not found or already linked"]);
+    }
+    exit;
+}
 
 function bot_parse_item_data($bytes) {
     if (strlen($bytes) < 20) return null;
