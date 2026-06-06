@@ -32,7 +32,8 @@ function get_db()
         $db->exec("PRAGMA synchronous = NORMAL;");
         $db->exec("PRAGMA temp_store = MEMORY;");
         $db->exec("PRAGMA cache_size = -8000;");  // 8MB page cache
-        $db->exec("PRAGMA foreign_keys = ON;");
+        // Note: PRAGMA foreign_keys is enabled AFTER all schema migrations run,
+        // so self-healing drops (e.g. bot_tokens FK repair) execute without errors.
 
         // --- Auto-migration for 'users' table ---
         // Ensure discord_id column exists
@@ -276,6 +277,15 @@ function get_db()
         }
 
         // --- Bot API Tokens ---
+        // Self-healing: if the table was created with the broken FK (REFERENCES users(account_id)),
+        // drop it and recreate. The FK is invalid because account_id has no UNIQUE/PK constraint.
+        $bad_schema = $db->querySingle(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name='bot_tokens' AND sql LIKE '%REFERENCES users%'"
+        );
+        if ($bad_schema) {
+            $db->exec("DROP TABLE IF EXISTS bot_tokens");
+            $db->exec("DROP INDEX IF EXISTS idx_bot_tokens_hash");
+        }
         $db->exec("
             CREATE TABLE IF NOT EXISTS bot_tokens (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -289,6 +299,9 @@ function get_db()
             );
             CREATE INDEX IF NOT EXISTS idx_bot_tokens_hash ON bot_tokens(token_hash) WHERE revoked = 0;
         ");
+
+        // Enable FK enforcement only after all schema migrations are done
+        $db->exec("PRAGMA foreign_keys = ON;");
 
         return $db;
 
