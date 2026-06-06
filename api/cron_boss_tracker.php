@@ -40,7 +40,7 @@ while (time() - $script_start < 55) {
         continue;
     }
 
-    $clients = json_decode($data, true);
+    $clients = json_decode(iconv('UTF-8', 'UTF-8//IGNORE', $data), true);
     if (!is_array($clients) || empty($clients)) {
         sleep(5);
         continue;

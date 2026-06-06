@@ -54,6 +54,11 @@ while (time() - $script_start < 55) {
         exit;
     }
 
+    // PSO character names may contain Shift-JIS private-use bytes (custom symbols like hearts,
+    // stars, etc.) that are not valid UTF-8. Strip only those invalid bytes so json_decode
+    // succeeds. Standard Unicode — including Japanese Hiragana, Katakana, and CJK — is valid
+    // UTF-8 and passes through iconv unchanged.
+    $data = iconv('UTF-8', 'UTF-8//IGNORE', $data);
     $clients = json_decode($data, true);
 
     if (!is_array($clients) || empty($clients)) {
@@ -65,7 +70,7 @@ while (time() - $script_start < 55) {
     $lobbies_data = @file_get_contents($lobbies_url);
     $lobbies = [];
     if ($lobbies_data) {
-        $lobbies = json_decode($lobbies_data, true) ?: [];
+        $lobbies = json_decode(iconv('UTF-8', 'UTF-8//IGNORE', $lobbies_data), true) ?: [];
     }
     $lobby_episode_map = [];
     foreach ($lobbies as $l) {

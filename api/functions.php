@@ -60,7 +60,10 @@ function send_personal_mail($client_acc_id, $from_name, $text)
     $packet = substr_replace($packet, str_pad(substr($date_utf16, 0,   38),   38, "\x00"), 48,   38); // received_date
     $packet = substr_replace($packet, str_pad(substr($text_utf16, 0, 1022), 1022, "\x00"), 88, 1022); // text
 
-    $exec_payload = json_encode(['command' => 'on ' . $client_acc_id . ' sc ' . bin2hex($packet)]);
+    // Zero-pad to 8 hex digits so newserv's identifier lookup is unambiguously hex,
+    // avoiding the dual hex/decimal parse that can cause "multiple clients found" errors.
+    $hex_id = sprintf('%08X', (int)$client_acc_id);
+    $exec_payload = json_encode(['command' => 'on ' . $hex_id . ' sc ' . bin2hex($packet)]);
     @file_get_contents(
         $NEWSERV_API_URL . '/y/shell-exec',
         false,

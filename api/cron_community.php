@@ -36,12 +36,12 @@ if (!$response) {
     die("[CRON_COMMUNITY] Failed to fetch clients from NewServ API.\n");
 }
 
-$clients = json_decode($response, true) ?: [];
+$clients = json_decode(iconv('UTF-8', 'UTF-8//IGNORE', $response), true) ?: [];
 
 $lobbies_response = @file_get_contents($NEWSERV_API_URL . '/y/lobbies', false, $context);
 $lobbies = [];
 if ($lobbies_response) {
-    $lobbies = json_decode($lobbies_response, true) ?: [];
+    $lobbies = json_decode(iconv('UTF-8', 'UTF-8//IGNORE', $lobbies_response), true) ?: [];
 }
 $lobby_episode_map = [];
 $lobby_difficulty_map = [];
@@ -411,17 +411,17 @@ foreach ($clients as $client) {
                     if ($exp_gain || $loot_gain) {
                         // Calculate score based on difficulty and boss type
                         $diff_bonus = 0;
-                        if ($lobby_difficulty === 'Hard') $diff_bonus = 1;
-                        elseif ($lobby_difficulty === 'Very Hard') $diff_bonus = 2;
-                        elseif ($lobby_difficulty === 'Ultimate') $diff_bonus = 3;
+                        if ($lobby_difficulty === 'Hard') $diff_bonus = 2;
+                        elseif ($lobby_difficulty === 'Very Hard') $diff_bonus = 5;
+                        elseif ($lobby_difficulty === 'Ultimate') $diff_bonus = 10;
                         
                         $base_score = 1;
                         $valid_for_event = false;
                         
                         if ($target_floor === 'DIGITAL_BLASPHEMY') {
-                            if ($boss_type === 'vol_opt') { $base_score = 1; $valid_for_event = true; }
-                            elseif ($boss_type === 'gol_dragon') { $base_score = 2; $valid_for_event = true; }
-                            elseif ($boss_type === 'shambertin') { $base_score = 3; $valid_for_event = true; }
+                            if ($boss_type === 'vol_opt') { $base_score = 5; $valid_for_event = true; }
+                            elseif ($boss_type === 'gol_dragon') { $base_score = 10; $valid_for_event = true; }
+                            elseif ($boss_type === 'shambertin') { $base_score = 15; $valid_for_event = true; }
                         } elseif ($target_floor === 'EP1_BOSS_RUSH') {
                             if ($boss_episode === 'Episode 1') {
                                 $valid_for_event = true;
