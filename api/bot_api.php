@@ -63,9 +63,14 @@ if ($action === 'link') {
     } else {
         echo json_encode(["error" => "User not found or already linked"]);
     }
+    exit;
+}
 
 // ============================================================
 // SHARED CHARACTER PARSING HELPERS (ported from character_viewer.php)
+// These MUST live at top level (not inside an action branch); a function
+// defined inside `if ($action === 'link')` is only declared when that branch
+// runs, so get_player would hit "Call to undefined function bot_parse_psochar".
 // ============================================================
 
 $CLASS_MAP = [
@@ -294,7 +299,7 @@ function bot_parse_psochar($charData, $slot, $CLASS_MAP, $SECID_MAP) {
     ];
 }
 
-} elseif ($action === 'get_player') {
+if ($action === 'get_player') {
     $discord_id = $_GET['discord_id'] ?? '';
 
     if (!$discord_id) {
