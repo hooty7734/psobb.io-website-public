@@ -13,6 +13,7 @@ require_once 'db.php';
 // Clean output
 if (ob_get_length()) ob_clean();
 header('Content-Type: application/json');
+start_secure_session();
 verify_csrf_token($_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['csrf_token'] ?? '');
 
 $input = json_decode(file_get_contents('php://input'), true);
