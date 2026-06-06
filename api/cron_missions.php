@@ -99,7 +99,9 @@ while (time() - $script_start < 55) {
 foreach ($clients as $client) {
     if (!isset($client['Account']['AccountID'])) continue;
     $accId = (string)$client['Account']['AccountID'];
-    
+    // Collect daily logins during the loop; batch-write them after to minimize
+    // the number of separate write lock acquisitions.
+    if (!isset($pending_logins)) $pending_logins = [];
     $charName = $client['Name'] ?? 'Unknown';
     $stateKey = $accId . '_' . $charName;
     
@@ -209,11 +211,8 @@ foreach ($clients as $client) {
         }
     }
 
-    // Feature: Automatic Daily Login Streak
-    $streak_stmt = $db->prepare("INSERT OR IGNORE INTO daily_logins (account_id, login_date) VALUES (:aid, :date)");
-    $streak_stmt->bindValue(':aid', $accId, SQLITE3_INTEGER);
-    $streak_stmt->bindValue(':date', date('Y-m-d'), SQLITE3_TEXT);
-    $streak_stmt->execute();
+    // Defer daily login INSERT until after the loop (see batch-write below)
+    $pending_logins[] = $accId;
 
     // Feature: Unclaimed Rewards Login Notification
     if ($just_logged_in) {
@@ -1236,6 +1235,27 @@ CRITICAL RULE: Return ONLY valid JSON properly formatted with double quotes stri
         'patrol' => $current_patrols,
         'floor_entered_time' => $floor_entered_time,
     ];
+}
+
+// Batch-write all daily login records in a single transaction.
+// This is the highest-frequency write path in the cron; batching it dramatically
+// reduces lock contention against concurrent user-facing redemption requests.
+if (!empty($pending_logins)) {
+    $today = date('Y-m-d');
+    $db->exec("BEGIN IMMEDIATE");
+    try {
+        $streak_stmt = $db->prepare("INSERT OR IGNORE INTO daily_logins (account_id, login_date) VALUES (:aid, :date)");
+        foreach ($pending_logins as $loginAccId) {
+            $streak_stmt->bindValue(':aid', (int)$loginAccId, SQLITE3_INTEGER);
+            $streak_stmt->bindValue(':date', $today, SQLITE3_TEXT);
+            $streak_stmt->execute();
+            $streak_stmt->reset();
+        }
+        $db->exec("COMMIT");
+    } catch (Exception $e) {
+        $db->exec("ROLLBACK");
+        echo "[CRON] Daily login batch failed: " . $e->getMessage() . "\n";
+    }
 }
 
     // 4. Save state

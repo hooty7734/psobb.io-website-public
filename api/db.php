@@ -23,12 +23,15 @@ function get_db()
     try {
         $db = new SQLite3($path);
         $db->enableExceptions(true);
-        $db->busyTimeout(5000);
-        
+        // 30s timeout: cron jobs hold write locks for multiple seconds during
+        // per-player batch processing; user-facing redemptions must wait them out.
+        $db->busyTimeout(30000);
+
         // High-concurrency optimizations
         $db->exec("PRAGMA journal_mode = WAL;");
         $db->exec("PRAGMA synchronous = NORMAL;");
         $db->exec("PRAGMA temp_store = MEMORY;");
+        $db->exec("PRAGMA cache_size = -8000;");  // 8MB page cache
         $db->exec("PRAGMA foreign_keys = ON;");
 
         // --- Auto-migration for 'users' table ---

@@ -157,6 +157,10 @@ foreach ($active_community_events as $ce) {
 }
 
 // --- 2. Player Delta Accumulation ---
+// Wrap all contribution writes in one transaction so the write lock is acquired
+// once per tick instead of twice per contributing player.
+$db->exec("BEGIN IMMEDIATE");
+try {
 foreach ($clients as $client) {
     if (!isset($client['Account']['AccountID'])) continue;
     $accId = (string)$client['Account']['AccountID'];
@@ -611,6 +615,11 @@ foreach ($clients as $client) {
         'last_boss_arena_time' => $last_boss_arena_time,
         'pre_boss_floor' => $pre_boss_floor
     ];
+}
+$db->exec("COMMIT");
+} catch (Exception $e) {
+    $db->exec("ROLLBACK");
+    echo "[CRON_COMMUNITY] DB transaction failed: " . $e->getMessage() . "\n";
 }
 
 file_put_contents($state_cache_file, json_encode($player_states));
