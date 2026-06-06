@@ -5,12 +5,37 @@ require_once 'functions.php';
 
 header('Content-Type: application/json');
 
+require_once 'db.php';
+
 $headers = getallheaders();
 $auth = $headers['Authorization'] ?? '';
+// Strip "Bearer " prefix if present
+$provided = (str_starts_with($auth, 'Bearer ')) ? substr($auth, 7) : $auth;
 
-// Authenticate via Bearer header only (never accept secrets in query strings)
+$authenticated = false;
 
-if ($auth !== "Bearer $BOT_API_SECRET" && $auth !== $BOT_API_SECRET) {
+// Tier 1: legacy env secret (backward-compat)
+if (!empty($BOT_API_SECRET) && hash_equals($BOT_API_SECRET, $provided)) {
+    $authenticated = true;
+}
+
+// Tier 2: DB-managed tokens — bcrypt-verified, expiry and revoke aware
+if (!$authenticated && !empty($provided)) {
+    $db = get_db();
+    $res = $db->query("SELECT id, token_hash FROM bot_tokens WHERE revoked = 0 AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)");
+    while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
+        if (password_verify($provided, $row['token_hash'])) {
+            $authenticated = true;
+            // Update last_used_at asynchronously (best-effort, non-blocking)
+            $upd = $db->prepare("UPDATE bot_tokens SET last_used_at = CURRENT_TIMESTAMP WHERE id = :id");
+            $upd->bindValue(':id', $row['id'], SQLITE3_INTEGER);
+            $upd->execute();
+            break;
+        }
+    }
+}
+
+if (!$authenticated) {
     http_response_code(403);
     echo json_encode(["error" => "Unauthorized"]);
     exit;
@@ -48,10 +73,12 @@ $CLASS_MAP = [
     4 => 'RAcast',   5 => 'RAcaseal',  6 => 'FOmarl',    7 => 'FOnewm',
     8 => 'FOnewearl',9 => 'HUcaseal', 10 => 'FOmar',    11 => 'RAmarl'
 ];
+// Section ID index values verified against newserv StaticGameData.cc section_id_to_name[]
+// Note: "Greennill" (double-n) is the canonical spelling used by newserv.
 $SECID_MAP = [
-    0 => 'Viridia', 1 => 'Greenill', 2 => 'Skyly',     3 => 'Bluefull',
-    4 => 'Purplenum',5 => 'Pinkal',  6 => 'Redria',    7 => 'Oran',
-    8 => 'Yellowboze',9 => 'Whitill'
+    0 => 'Viridia',   1 => 'Greennill', 2 => 'Skyly',    3 => 'Bluefull',
+    4 => 'Purplenum', 5 => 'Pinkal',    6 => 'Redria',    7 => 'Oran',
+    8 => 'Yellowboze', 9 => 'Whitill'
 ];
 
 function bot_parse_item_data($bytes) {

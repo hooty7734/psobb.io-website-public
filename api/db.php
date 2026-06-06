@@ -275,7 +275,24 @@ function get_db()
             $db->exec("ALTER TABLE lfg_requests ADD COLUMN looking_for TEXT");
         }
 
+        // --- Bot API Tokens ---
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS bot_tokens (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                token_hash TEXT NOT NULL UNIQUE,
+                created_by INTEGER NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                last_used_at DATETIME,
+                expires_at DATETIME,
+                revoked INTEGER DEFAULT 0,
+                FOREIGN KEY(created_by) REFERENCES users(account_id)
+            );
+            CREATE INDEX IF NOT EXISTS idx_bot_tokens_hash ON bot_tokens(token_hash) WHERE revoked = 0;
+        ");
+
         return $db;
+
     } catch (Exception $e) {
         throw $e;
     }
