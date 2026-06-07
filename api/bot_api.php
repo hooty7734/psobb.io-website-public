@@ -1,4 +1,35 @@
 <?php
+// Register global error and exception handlers to prevent opaque HTTP 500 responses
+ini_set('display_errors', '0');
+register_shutdown_function(function () {
+    $err = error_get_last();
+    $fatalTypes = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR];
+    if ($err && in_array($err['type'], $fatalTypes, true)) {
+        if (!headers_sent()) {
+            http_response_code(500);
+            header('Content-Type: application/json');
+        }
+        echo json_encode([
+            'error'   => 'PHP fatal',
+            'message' => $err['message'],
+            'file'    => $err['file'],
+            'line'    => $err['line'],
+        ]);
+    }
+});
+set_exception_handler(function ($e) {
+    if (!headers_sent()) {
+        http_response_code(500);
+        header('Content-Type: application/json');
+    }
+    echo json_encode([
+        'error'   => 'PHP exception',
+        'message' => $e->getMessage(),
+        'file'    => $e->getFile(),
+        'line'    => $e->getLine(),
+    ]);
+});
+
 require_once 'config.php';
 require_once 'db.php';
 require_once 'functions.php';
@@ -44,9 +75,10 @@ if (!$authenticated) {
 $action = $_GET['action'] ?? '';
 
 // ============================================================
-// SHARED CHARACTER PARSING HELPERS
-// Defined here (before the action if/elseif chain) so they are
-// available to all actions, not just 'link'.
+// SHARED CHARACTER PARSING HELPERS (ported from character_viewer.php)
+// These MUST live at top level (not inside an action branch); a function
+// defined inside `if ($action === 'link')` is only declared when that branch
+// runs, so get_player would hit "Call to undefined function bot_parse_psochar".
 // ============================================================
 
 $CLASS_MAP = [
@@ -83,7 +115,7 @@ if ($action === 'link') {
         echo json_encode(["error" => "User not found or already linked"]);
     }
     exit;
-
+}
 
 function bot_parse_item_data($bytes) {
     if (strlen($bytes) < 20) return null;
@@ -298,7 +330,7 @@ function bot_parse_psochar($charData, $slot, $CLASS_MAP, $SECID_MAP) {
     ];
 }
 
-} elseif ($action === 'get_player') {
+if ($action === 'get_player') {
     $discord_id = $_GET['discord_id'] ?? '';
 
     if (!$discord_id) {
@@ -509,4 +541,42 @@ function bot_parse_psochar($charData, $slot, $CLASS_MAP, $SECID_MAP) {
     }
     
     echo json_encode($events);
+} elseif ($action === 'get_online_players') {
+    // 1. Fetch live clients list from newserv
+    $clients_raw = @file_get_contents($NEWSERV_API_URL . "/y/clients");
+    if (!$clients_raw) {
+        echo json_encode([]);
+        exit;
+    }
+    $all = json_decode(iconv('UTF-8', 'UTF-8//IGNORE', $clients_raw), true);
+    if (!is_array($all)) {
+        echo json_encode([]);
+        exit;
+    }
+
+    // 2. Fetch all linked discord_ids from db
+    $db = get_db();
+    $res = $db->query("SELECT account_id, discord_id FROM users WHERE discord_id IS NOT NULL");
+    $discord_map = [];
+    if ($res) {
+        while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
+            $discord_map[$row['account_id']] = $row['discord_id'];
+        }
+    }
+
+    // 3. Construct response mapping account_id to discord_id
+    $online_players = [];
+    foreach ($all as $c) {
+        $acc_id = $c['Account']['AccountID'] ?? null;
+        if ($acc_id && isset($discord_map[$acc_id])) {
+            $online_players[] = [
+                'account_id' => $acc_id,
+                'discord_id' => $discord_map[$acc_id],
+                'name' => $c['Name'] ?? 'Unknown',
+            ];
+        }
+    }
+
+    echo json_encode($online_players);
+    exit;
 }
