@@ -80,6 +80,56 @@ include '../includes/header.php';
 }
 .btn-apply-attrs:hover { background: rgba(52,211,153,.3); }
 
+/* -- Material Bulk Builder -- */
+.mat-toggle {
+    background: rgba(139,92,246,.15); border: 1px solid rgba(139,92,246,.4);
+    color: #c4b5fd; border-radius: 7px; padding: .35rem .9rem;
+    font-size: .8rem; font-weight: 600; cursor: pointer;
+    display: inline-flex; align-items: center; gap: .4rem;
+    transition: all .2s; margin-bottom: .5rem;
+}
+.mat-toggle:hover { background: rgba(139,92,246,.3); }
+.mat-panel {
+    background: rgba(139,92,246,.05); border: 1px solid rgba(139,92,246,.25);
+    border-radius: 8px; padding: .85rem 1rem; display: none;
+}
+.mat-panel.open { display: block; }
+.mat-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: .5rem; margin-bottom: .75rem;
+}
+.mat-row {
+    display: flex; align-items: center; gap: .4rem;
+    background: rgba(0,0,0,.3); border: 1px solid #1f2937;
+    border-radius: 6px; padding: .35rem .6rem;
+}
+.mat-row label { flex: 1; font-size: .78rem; color: #d1d5db; white-space: nowrap; }
+.mat-qty {
+    width: 48px; text-align: center;
+    background: rgba(0,0,0,.4); border: 1px solid #374151;
+    border-radius: 5px; color: #f9fafb; padding: .2rem .3rem;
+    font-size: .8rem; font-family: 'Share Tech Mono', monospace;
+}
+.mat-qty:focus { border-color: #7c3aed; outline: none; }
+.mat-stepper {
+    background: none; border: none; color: #9ca3af;
+    cursor: pointer; font-size: 1.1rem; padding: 0 .1rem;
+    line-height: 1; transition: color .15s;
+}
+.mat-stepper:hover { color: #f9fafb; }
+.btn-build-mat {
+    background: rgba(139,92,246,.2); border: 1px solid rgba(139,92,246,.5);
+    color: #c4b5fd; border-radius: 6px; padding: .35rem .9rem;
+    font-size: .8rem; font-weight: 600; cursor: pointer;
+    display: inline-flex; align-items: center; gap: .35rem; transition: all .15s;
+}
+.btn-build-mat:hover { background: rgba(139,92,246,.35); color: #fff; }
+.mat-preview-str {
+    margin-top: .4rem; margin-bottom: .5rem;
+    font-family: 'Share Tech Mono', monospace; font-size: .75rem;
+    color: #a78bfa; word-break: break-all; min-height: 1.2em;
+}
+
 /* ── Create card / form ── */
 .create-card {
     background: rgba(251,146,60,.06);
@@ -237,6 +287,69 @@ td { padding: .75rem 1rem; font-size: .875rem; color: #d1d5db; vertical-align: m
                         <span class="attr-val" id="ab-unit-val-v">0</span>
                     </div>
                     <div class="attr-preview"><span id="ab-preview-unit">—</span><button class="btn-apply-attrs" onclick="applyAttrs()"><i class="fas fa-check"></i> Apply</button></div>
+                </div>
+            </div>
+
+            <!-- Material Bulk Builder -->
+            <div class="form-group full">
+                <button class="mat-toggle" type="button" id="mat-toggle-btn" onclick="toggleMatPanel()">
+                    <i class="fas fa-cubes"></i> Material Bulk Builder
+                </button>
+                <div class="mat-panel" id="mat-panel">
+                    <div class="mat-grid">
+                        <div class="mat-row">
+                            <label>&#x1F4AA; Power</label>
+                            <button class="mat-stepper" type="button" onclick="stepMat('mat-power',-1)">&#8722;</button>
+                            <input class="mat-qty" id="mat-power" type="number" min="0" max="99" value="0" oninput="updateMatPreview()">
+                            <button class="mat-stepper" type="button" onclick="stepMat('mat-power',1)">+</button>
+                        </div>
+                        <div class="mat-row">
+                            <label>&#x1F9E0; Mind</label>
+                            <button class="mat-stepper" type="button" onclick="stepMat('mat-mind',-1)">&#8722;</button>
+                            <input class="mat-qty" id="mat-mind" type="number" min="0" max="99" value="0" oninput="updateMatPreview()">
+                            <button class="mat-stepper" type="button" onclick="stepMat('mat-mind',1)">+</button>
+                        </div>
+                        <div class="mat-row">
+                            <label>&#x1F4A8; Evade</label>
+                            <button class="mat-stepper" type="button" onclick="stepMat('mat-evade',-1)">&#8722;</button>
+                            <input class="mat-qty" id="mat-evade" type="number" min="0" max="99" value="0" oninput="updateMatPreview()">
+                            <button class="mat-stepper" type="button" onclick="stepMat('mat-evade',1)">+</button>
+                        </div>
+                        <div class="mat-row">
+                            <label>&#x2764;&#xFE0F; HP</label>
+                            <button class="mat-stepper" type="button" onclick="stepMat('mat-hp',-1)">&#8722;</button>
+                            <input class="mat-qty" id="mat-hp" type="number" min="0" max="99" value="0" oninput="updateMatPreview()">
+                            <button class="mat-stepper" type="button" onclick="stepMat('mat-hp',1)">+</button>
+                        </div>
+                        <div class="mat-row">
+                            <label>&#x26A1; TP</label>
+                            <button class="mat-stepper" type="button" onclick="stepMat('mat-tp',-1)">&#8722;</button>
+                            <input class="mat-qty" id="mat-tp" type="number" min="0" max="99" value="0" oninput="updateMatPreview()">
+                            <button class="mat-stepper" type="button" onclick="stepMat('mat-tp',1)">+</button>
+                        </div>
+                        <div class="mat-row">
+                            <label>&#x1F6E1;&#xFE0F; Def</label>
+                            <button class="mat-stepper" type="button" onclick="stepMat('mat-def',-1)">&#8722;</button>
+                            <input class="mat-qty" id="mat-def" type="number" min="0" max="99" value="0" oninput="updateMatPreview()">
+                            <button class="mat-stepper" type="button" onclick="stepMat('mat-def',1)">+</button>
+                        </div>
+                        <div class="mat-row">
+                            <label>&#x1F3AF; Hit</label>
+                            <button class="mat-stepper" type="button" onclick="stepMat('mat-hit',-1)">&#8722;</button>
+                            <input class="mat-qty" id="mat-hit" type="number" min="0" max="99" value="0" oninput="updateMatPreview()">
+                            <button class="mat-stepper" type="button" onclick="stepMat('mat-hit',1)">+</button>
+                        </div>
+                        <div class="mat-row">
+                            <label>&#x2B50; Luck</label>
+                            <button class="mat-stepper" type="button" onclick="stepMat('mat-luck',-1)">&#8722;</button>
+                            <input class="mat-qty" id="mat-luck" type="number" min="0" max="99" value="0" oninput="updateMatPreview()">
+                            <button class="mat-stepper" type="button" onclick="stepMat('mat-luck',1)">+</button>
+                        </div>
+                    </div>
+                    <div class="mat-preview-str" id="mat-preview-str">Set quantities above then click Apply.</div>
+                    <button class="btn-build-mat" type="button" onclick="buildMaterials()">
+                        <i class="fas fa-arrow-down"></i> Apply to Item String
+                    </button>
                 </div>
             </div>
 
