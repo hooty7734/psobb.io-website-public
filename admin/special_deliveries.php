@@ -6,6 +6,7 @@ if (empty($_SESSION['user']) || empty($_SESSION['user']['is_admin'])) {
     exit;
 }
 $page_title = "Special Deliveries — Admin";
+$current_page = 'special_deliveries';
 include '../includes/header.php';
 ?>
 
