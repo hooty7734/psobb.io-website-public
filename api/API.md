@@ -156,6 +156,17 @@ NewServ is unreachable or nobody linked is online.
 This drives the bot's role-sync "Path A" (mirror in-game class/level/Section ID
 into Discord roles).
 
+### `action=get_linked_players` — all linked accounts
+`GET` · no params.
+
+Returns every `users` row that has a non-empty `discord_id`, regardless of
+online status. Drives the bot's admin `!sync all` command so it can force-sync
+everyone who linked on the website — not just players seen online.
+
+```json
+[ { "account_id": 1234, "discord_id": "335974112046350341", "username": "player1" } ]
+```
+
 ### `action=get_events` — active community events
 `GET` · no params. Returns active rows from `community_events` with rendered
 objective/reward text.

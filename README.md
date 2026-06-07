@@ -167,6 +167,7 @@ calls (with `?action=…`). It exposes:
 | `link` | POST | Link a website username to a Discord ID |
 | `get_player` | GET | Full player profile: all 20 character slots (live + save-file), bank, missions |
 | `get_online_players` | GET | Currently-online clients whose accounts are linked to a Discord ID (drives role sync) |
+| `get_linked_players` | GET | Every account linked to a Discord ID, online or not (drives the admin `!sync all`) |
 | `get_events` | GET | Active community events |
 
 The bot uses `get_online_players` + `get_player` to mirror in-game class /
