@@ -334,12 +334,6 @@ td { padding: .75rem 1rem; font-size: .875rem; color: #d1d5db; vertical-align: m
                             <button class="mat-stepper" type="button" onclick="stepMat('mat-def',1)">+</button>
                         </div>
                         <div class="mat-row">
-                            <label>&#x1F3AF; Hit</label>
-                            <button class="mat-stepper" type="button" onclick="stepMat('mat-hit',-1)">&#8722;</button>
-                            <input class="mat-qty" id="mat-hit" type="number" min="0" max="99" value="0" oninput="updateMatPreview()">
-                            <button class="mat-stepper" type="button" onclick="stepMat('mat-hit',1)">+</button>
-                        </div>
-                        <div class="mat-row">
                             <label>&#x2B50; Luck</label>
                             <button class="mat-stepper" type="button" onclick="stepMat('mat-luck',-1)">&#8722;</button>
                             <input class="mat-qty" id="mat-luck" type="number" min="0" max="99" value="0" oninput="updateMatPreview()">
@@ -682,15 +676,23 @@ function resetAllBuilders() {
 
 // -- Material Bulk Builder ----------------------------------------
 const MAT_TYPES = [
-    { id: 'mat-power', name: 'Power Material' },
-    { id: 'mat-mind',  name: 'Mind Material'  },
-    { id: 'mat-evade', name: 'Evade Material' },
-    { id: 'mat-hp',    name: 'HP Material'    },
-    { id: 'mat-tp',    name: 'TP Material'    },
-    { id: 'mat-def',   name: 'Def Material'   },
-    { id: 'mat-hit',   name: 'Hit Material'   },
-    { id: 'mat-luck',  name: 'Luck Material'  },
+    { id: 'mat-power', name: 'Power Material', hex: '030B00' },
+    { id: 'mat-mind',  name: 'Mind Material',  hex: '030B01' },
+    { id: 'mat-evade', name: 'Evade Material', hex: '030B02' },
+    { id: 'mat-hp',    name: 'HP Material',    hex: '030B03' },
+    { id: 'mat-tp',    name: 'TP Material',    hex: '030B04' },
+    { id: 'mat-def',   name: 'Def Material',   hex: '030B05' },
+    { id: 'mat-luck',  name: 'Luck Material',  hex: '030B07' },
 ];
+
+// Encode qty at byte 5 of the item binary so one $item command drops the whole stack.
+// Layout: byte0-2 = item code, byte3 = 0, byte4 = 0, byte5 = quantity, bytes 6-15 = 0
+function matHex(hexCode, qty) {
+    qty = Math.min(99, Math.max(1, qty));
+    const qtyHex = qty.toString(16).padStart(2, '0').toUpperCase();
+    // 6 + 4 + 2 + 20 = 32 hex chars
+    return hexCode + '0000' + qtyHex + '00000000000000000000';
+}
 
 function toggleMatPanel() {
     const panel = document.getElementById('mat-panel');
@@ -725,20 +727,20 @@ function updateMatPreview() {
 }
 
 function buildMaterials() {
-    const parts = [];
+    const hexParts  = [];
     const nameParts = [];
-    MAT_TYPES.forEach(({ id, name }) => {
+    MAT_TYPES.forEach(({ id, name, hex }) => {
         const qty = parseInt(document.getElementById(id).value) || 0;
         if (qty > 0) {
-            parts.push(qty === 1 ? name : `${name} x${qty}`);
+            hexParts.push(matHex(hex, qty));                      // one $item = full stack
             nameParts.push(`${qty}x ${name.replace(' Material', '')}`);
         }
     });
-    if (parts.length === 0) {
+    if (hexParts.length === 0) {
         toast('Set at least one material quantity first', 'error');
         return;
     }
-    document.getElementById('sd-item-string').value = parts.join(', ');
+    document.getElementById('sd-item-string').value = hexParts.join(', ');
     // Auto-fill display name if blank
     const nf = document.getElementById('sd-item-name');
     if (!nf.value) nf.value = 'Materials: ' + nameParts.join(', ');
