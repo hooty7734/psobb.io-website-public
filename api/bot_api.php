@@ -12,7 +12,7 @@ register_shutdown_function(function () {
         echo json_encode([
             'error'   => 'PHP fatal',
             'message' => $err['message'],
-            'file'    => $err['file'],
+            'file'    => basename($err['file']),
             'line'    => $err['line'],
         ]);
     }
@@ -25,7 +25,7 @@ set_exception_handler(function ($e) {
     echo json_encode([
         'error'   => 'PHP exception',
         'message' => $e->getMessage(),
-        'file'    => $e->getFile(),
+        'file'    => basename($e->getFile()),
         'line'    => $e->getLine(),
     ]);
 });
@@ -35,8 +35,6 @@ require_once 'db.php';
 require_once 'functions.php';
 
 header('Content-Type: application/json');
-
-require_once 'db.php';
 
 $headers = getallheaders();
 $auth = $headers['Authorization'] ?? '';
@@ -75,10 +73,9 @@ if (!$authenticated) {
 $action = $_GET['action'] ?? '';
 
 // ============================================================
-// SHARED CHARACTER PARSING HELPERS (ported from character_viewer.php)
-// These MUST live at top level (not inside an action branch); a function
-// defined inside `if ($action === 'link')` is only declared when that branch
-// runs, so get_player would hit "Call to undefined function bot_parse_psochar".
+// SHARED CHARACTER PARSING HELPERS
+// Defined here (before the action if/elseif chain) so they are
+// available to all actions, not just 'link'.
 // ============================================================
 
 $CLASS_MAP = [
@@ -95,7 +92,7 @@ $SECID_MAP = [
 ];
 
 if ($action === 'link') {
-    $username = $_POST['username'] ?? '';
+    $username   = $_POST['username'] ?? '';
     $discord_id = $_POST['discord_id'] ?? '';
 
     if (!$username || !$discord_id) {
@@ -104,18 +101,20 @@ if ($action === 'link') {
     }
 
     $db = get_db();
-    $stmt = $db->prepare("UPDATE users SET discord_id = :discord_id WHERE username = :username");
+    // COLLATE NOCASE: newserv usernames may differ in case from what's stored in our DB
+    $stmt = $db->prepare("UPDATE users SET discord_id = :discord_id WHERE username = :username COLLATE NOCASE");
     $stmt->bindValue(':discord_id', $discord_id, SQLITE3_TEXT);
-    $stmt->bindValue(':username', $username, SQLITE3_TEXT);
+    $stmt->bindValue(':username',   strtolower($username), SQLITE3_TEXT);
     $stmt->execute();
 
     if ($db->changes() > 0) {
         echo json_encode(["success" => true]);
     } else {
-        echo json_encode(["error" => "User not found or already linked"]);
+        echo json_encode(["error" => "User not found or already linked", "username" => $username]);
     }
     exit;
 }
+
 
 function bot_parse_item_data($bytes) {
     if (strlen($bytes) < 20) return null;
@@ -349,7 +348,8 @@ if ($action === 'get_player') {
     require_once 'lang.php';
 
     if (!$user) {
-        echo json_encode(["error" => "Not linked"]);
+        // Include the queried discord_id in the error so bot logs show exactly what wasn't found
+        echo json_encode(["error" => "Not linked", "queried_discord_id" => $discord_id]);
         exit;
     }
 
@@ -541,8 +541,13 @@ if ($action === 'get_player') {
     }
     
     echo json_encode($events);
-} elseif ($action === 'get_online_players') {
-    // 1. Fetch live clients list from newserv
+}
+
+// ----------------------------------------------------------------
+// get_online_players — returns online players who have linked Discord
+// Used by the bot for role-sync without needing to query per-user
+// ----------------------------------------------------------------
+if ($action === 'get_online_players') {
     $clients_raw = @file_get_contents($NEWSERV_API_URL . "/y/clients");
     if (!$clients_raw) {
         echo json_encode([]);
@@ -554,7 +559,6 @@ if ($action === 'get_player') {
         exit;
     }
 
-    // 2. Fetch all linked discord_ids from db
     $db = get_db();
     $res = $db->query("SELECT account_id, discord_id FROM users WHERE discord_id IS NOT NULL");
     $discord_map = [];
@@ -564,7 +568,6 @@ if ($action === 'get_player') {
         }
     }
 
-    // 3. Construct response mapping account_id to discord_id
     $online_players = [];
     foreach ($all as $c) {
         $acc_id = $c['Account']['AccountID'] ?? null;
@@ -572,7 +575,7 @@ if ($action === 'get_player') {
             $online_players[] = [
                 'account_id' => $acc_id,
                 'discord_id' => $discord_map[$acc_id],
-                'name' => $c['Name'] ?? 'Unknown',
+                'name'       => $c['Name'] ?? 'Unknown',
             ];
         }
     }

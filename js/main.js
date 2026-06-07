@@ -254,6 +254,9 @@ function showDashboard(user) {
         // Initialize Discord streak DM checkbox preference
         loadDiscordStreakPref();
 
+        // Check for special item deliveries (widget is hidden unless count > 0)
+        loadSpecialDeliveries();
+
         // Initialize milestone categories claim triggers inside portal
         initClaimModalCategoryButtons();
 
@@ -292,6 +295,106 @@ async function loadDisplayName() {
         }
     } catch (e) { /* silent */ }
 }
+
+// ---- Special Item Delivery ---------------------------------------------------
+async function loadSpecialDeliveries() {
+    const widget = document.getElementById('special-delivery-widget');
+    const list   = document.getElementById('special-delivery-list');
+    if (!widget || !list) return;
+
+    try {
+        const res  = await fetch('/api/redeem_special_delivery.php', { credentials: 'same-origin' });
+        const data = await res.json();
+
+        if (!data.count || data.count === 0) {
+            widget.style.display = 'none';
+            return;
+        }
+
+        widget.style.display = 'block';
+        list.innerHTML = data.items.map(item => `
+            <div id="sditem-${item.id}" style="
+                background: rgba(0,0,0,.3); border: 1px solid rgba(251,146,60,.2);
+                border-radius: 8px; padding: .75rem; margin-bottom: .6rem;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:.5rem; flex-wrap:wrap;">
+                    <div>
+                        <div style="font-weight:700; color:#fff; font-size:.9rem;">${escHtml(item.item_name)}</div>
+                        ${item.admin_note ? `<div style="font-size:.78rem; color:#9ca3af; margin-top:.2rem; font-style:italic;">&ldquo;${escHtml(item.admin_note)}&rdquo;</div>` : ''}
+                    </div>
+                    <button
+                        onclick="claimDelivery(${item.id})"
+                        id="sdbtn-${item.id}"
+                        style="background:rgba(251,146,60,.2); border:1px solid #fb923c; color:#fdba74;
+                               border-radius:6px; padding:.35rem .85rem; font-size:.8rem;
+                               font-weight:600; cursor:pointer; white-space:nowrap;
+                               transition:all .2s; flex-shrink:0;"
+                        onmouseover="this.style.background='rgba(251,146,60,.4)'"
+                        onmouseout="this.style.background='rgba(251,146,60,.2)'">
+                        <i class="fas fa-hand-holding"></i> Claim
+                    </button>
+                </div>
+                <div id="sdmsg-${item.id}" style="font-size:.78rem; margin-top:.4rem; display:none;"></div>
+            </div>
+        `).join('');
+
+    } catch (e) { /* silent — widget stays hidden */ }
+}
+
+window.claimDelivery = async function(id) {
+    const btn = document.getElementById(`sdbtn-${id}`);
+    const msg = document.getElementById(`sdmsg-${id}`);
+    if (!btn) return;
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Claiming…';
+
+    try {
+        const res  = await fetch('/api/redeem_special_delivery.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': window.getCSRFToken ? window.getCSRFToken() : '',
+            },
+            body: JSON.stringify({ id }),
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            // Remove the item card with a fade
+            const card = document.getElementById(`sditem-${id}`);
+            if (card) { card.style.transition = 'opacity .4s'; card.style.opacity = '0'; setTimeout(() => card.remove(), 400); }
+            // Hide widget if nothing left
+            setTimeout(() => {
+                const list = document.getElementById('special-delivery-list');
+                if (list && list.children.length === 0) {
+                    const w = document.getElementById('special-delivery-widget');
+                    if (w) w.style.display = 'none';
+                }
+            }, 500);
+        } else if (data.offline) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-hand-holding"></i> Claim';
+            msg.style.display = 'block';
+            msg.style.color = '#fbbf24';
+            msg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> You must be logged into the game to claim this item.';
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-hand-holding"></i> Claim';
+            msg.style.display = 'block';
+            msg.style.color = '#f87171';
+            msg.innerHTML = '<i class="fas fa-times-circle"></i> ' + escHtml(data.error ?? 'Claim failed. Please try again.');
+        }
+    } catch (e) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-hand-holding"></i> Claim';
+    }
+};
+
+function escHtml(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+// ---- End Special Item Delivery -----------------------------------------------
 
 window.saveDisplayName = async function () {
     const input = document.getElementById('display-name-input');

@@ -74,8 +74,8 @@ $username = $_SESSION['user']['username'];
 try {
     $db = get_db();
     
-    // Check if the user exists in the web database (legacy/in-game accounts might not)
-    $stmt = $db->prepare("SELECT id FROM users WHERE username = :username");
+    // Look up existing row — use COLLATE NOCASE so case differences between session and DB don't matter
+    $stmt = $db->prepare("SELECT id FROM users WHERE username = :username COLLATE NOCASE");
     $stmt->bindValue(':username', $username, SQLITE3_TEXT);
     $res = $stmt->execute();
     $row = $res->fetchArray(SQLITE3_ASSOC);
@@ -83,18 +83,25 @@ try {
     if (!$row) {
         // Create a stub row so we can store their Discord ID integration
         $ins = $db->prepare("INSERT INTO users (username, email, account_id, discord_id) VALUES (:u, :e, :aid, :did)");
-        $ins->bindValue(':u', $username, SQLITE3_TEXT);
-        // Use a dummy email for legacy accounts to satisfy the UNIQUE NOT NULL constraint
-        $ins->bindValue(':e', $username . "_legacy@psobb.io", SQLITE3_TEXT);
+        $ins->bindValue(':u', strtolower($username), SQLITE3_TEXT);
+        $ins->bindValue(':e', strtolower($username) . "_legacy@psobb.io", SQLITE3_TEXT);
         $ins->bindValue(':aid', $_SESSION['user']['account_id'], SQLITE3_INTEGER);
         $ins->bindValue(':did', $discord_id, SQLITE3_TEXT);
         $ins->execute();
     } else {
-        // Update existing row
-        $stmt = $db->prepare("UPDATE users SET discord_id = :discord_id WHERE username = :username");
+        // Update existing row — use COLLATE NOCASE so case differences don't cause a silent miss
+        $stmt = $db->prepare("UPDATE users SET discord_id = :discord_id WHERE username = :username COLLATE NOCASE");
         $stmt->bindValue(':discord_id', $discord_id, SQLITE3_TEXT);
         $stmt->bindValue(':username', $username, SQLITE3_TEXT);
         $stmt->execute();
+
+        if ($db->changes() === 0) {
+            // The UPDATE matched 0 rows — fall back to an insert-or-update by account_id
+            $stmt2 = $db->prepare("UPDATE users SET discord_id = :discord_id WHERE account_id = :aid");
+            $stmt2->bindValue(':discord_id', $discord_id, SQLITE3_TEXT);
+            $stmt2->bindValue(':aid', (int)$_SESSION['user']['account_id'], SQLITE3_INTEGER);
+            $stmt2->execute();
+        }
     }
     
     // Unset the state to prevent replay
