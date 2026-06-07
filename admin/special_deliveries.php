@@ -680,6 +680,71 @@ function resetAllBuilders() {
     selectedCat  = '';
 }
 
+// -- Material Bulk Builder ----------------------------------------
+const MAT_TYPES = [
+    { id: 'mat-power', name: 'Power Material' },
+    { id: 'mat-mind',  name: 'Mind Material'  },
+    { id: 'mat-evade', name: 'Evade Material' },
+    { id: 'mat-hp',    name: 'HP Material'    },
+    { id: 'mat-tp',    name: 'TP Material'    },
+    { id: 'mat-def',   name: 'Def Material'   },
+    { id: 'mat-hit',   name: 'Hit Material'   },
+    { id: 'mat-luck',  name: 'Luck Material'  },
+];
+
+function toggleMatPanel() {
+    const panel = document.getElementById('mat-panel');
+    const btn   = document.getElementById('mat-toggle-btn');
+    panel.classList.toggle('open');
+    btn.innerHTML = panel.classList.contains('open')
+        ? '<i class="fas fa-cubes"></i> Material Bulk Builder <i class="fas fa-chevron-up" style="font-size:.7rem;margin-left:.3rem;"></i>'
+        : '<i class="fas fa-cubes"></i> Material Bulk Builder';
+}
+
+function stepMat(id, delta) {
+    const el  = document.getElementById(id);
+    const val = Math.min(99, Math.max(0, (parseInt(el.value) || 0) + delta));
+    el.value  = val;
+    updateMatPreview();
+}
+
+function updateMatPreview() {
+    const parts = [];
+    MAT_TYPES.forEach(({ id, name }) => {
+        const qty = parseInt(document.getElementById(id).value) || 0;
+        if (qty > 0) parts.push(qty === 1 ? name : `${name} x${qty}`);
+    });
+    const preview = document.getElementById('mat-preview-str');
+    if (parts.length === 0) {
+        preview.textContent = 'Set quantities above then click Apply.';
+        preview.style.color = '#6b7280';
+    } else {
+        preview.textContent = parts.join(', ');
+        preview.style.color = '#a78bfa';
+    }
+}
+
+function buildMaterials() {
+    const parts = [];
+    const nameParts = [];
+    MAT_TYPES.forEach(({ id, name }) => {
+        const qty = parseInt(document.getElementById(id).value) || 0;
+        if (qty > 0) {
+            parts.push(qty === 1 ? name : `${name} x${qty}`);
+            nameParts.push(`${qty}x ${name.replace(' Material', '')}`);
+        }
+    });
+    if (parts.length === 0) {
+        toast('Set at least one material quantity first', 'error');
+        return;
+    }
+    document.getElementById('sd-item-string').value = parts.join(', ');
+    // Auto-fill display name if blank
+    const nf = document.getElementById('sd-item-name');
+    if (!nf.value) nf.value = 'Materials: ' + nameParts.join(', ');
+    toast('Material string applied ' + String.fromCodePoint(0x2713), 'success');
+}
+
 document.getElementById('btn-create-delivery').addEventListener('click', create);
 load();
 </script>
