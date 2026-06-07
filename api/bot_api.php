@@ -583,8 +583,8 @@ if ($action === 'get_online_players') {
     echo json_encode($online_players);
     exit;
 } elseif ($action === 'get_linked_players') {
-    // Every account that has linked a Discord ID, online or not. Used by the bot's
-    // admin "!sync all" command to force-sync everyone, not just players seen online.
+    // Every account that has linked a Discord ID, online or not.
+    // Used by the bot's admin "!sync all" command to force-sync everyone.
     $db = get_db();
     $res = $db->query("SELECT account_id, username, discord_id FROM users WHERE discord_id IS NOT NULL AND discord_id != ''");
     $linked = [];
