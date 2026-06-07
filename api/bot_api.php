@@ -596,4 +596,67 @@ if ($action === 'get_player') {
     }
     echo json_encode($linked);
     exit;
+} elseif ($action === 'get_lfg') {
+    // Recent Looking-For-Group posts, for the Discord bot's LFG announcer. Bearer
+    // auth (handled at the top of this file). Mirrors lfg_requests.php's GET
+    // enrichment (bounty join, E/B/C game-mode prefix parsing, reward rendering)
+    // but WITHOUT the website session gate, and adds the poster's discord_id so the
+    // bot can @mention them. Text is returned raw (NOT htmlspecialchars'd) because
+    // the consumer is Discord, not HTML — the bot restricts mentions on its side.
+    //
+    // Optional ?since_id=N returns only posts with id > N for incremental polling.
+    // `latest_id` is always the current max id so the bot can seed its cursor on
+    // first run without announcing a backlog.
+    require_once 'lang.php'; // renderRewardString may use translation helpers
+    $since_id = isset($_GET['since_id']) && is_numeric($_GET['since_id']) ? (int)$_GET['since_id'] : 0;
+
+    $db = get_db();
+
+    $latest_id = 0;
+    $maxRes = $db->query("SELECT MAX(id) AS m FROM lfg_requests");
+    if ($maxRes) {
+        $r = $maxRes->fetchArray(SQLITE3_ASSOC);
+        $latest_id = (int)($r['m'] ?? 0);
+    }
+
+    $stmt = $db->prepare("
+        SELECT lfg.*,
+               u.discord_id AS discord_id,
+               m.title AS bounty_title, m.reward_item_string AS bounty_reward
+        FROM lfg_requests lfg
+        LEFT JOIN users u ON lfg.account_id = u.account_id
+        LEFT JOIN missions m ON lfg.bounty_id = m.id
+        WHERE lfg.created_at >= DATETIME('now', '-2 hours') AND lfg.id > :since
+        ORDER BY lfg.id ASC
+    ");
+    $stmt->bindValue(':since', $since_id, SQLITE3_INTEGER);
+    $res = $stmt->execute();
+
+    $listings = [];
+    while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
+        // Strip the mode prefix (E/B/C) from game_name and expose game_mode.
+        $raw_game_name = trim($row['game_name'] ?? '');
+        $game_mode = 'Normal';
+        if (strlen($raw_game_name) > 0) {
+            $modeChar = strtoupper($raw_game_name[0]);
+            if (in_array($modeChar, ['E', 'B', 'C'])) {
+                $raw_game_name = trim(substr($raw_game_name, 1));
+                if ($modeChar === 'B') $game_mode = 'Battle';
+                elseif ($modeChar === 'C') $game_mode = 'Challenge';
+            }
+        }
+        $row['game_name'] = $raw_game_name;
+        $row['game_mode'] = $game_mode;
+        if (!empty($row['bounty_reward'])) {
+            $row['bounty_reward'] = renderRewardString($row['bounty_reward']);
+        }
+        $listings[] = $row;
+    }
+
+    echo json_encode([
+        'success'   => true,
+        'latest_id' => $latest_id,
+        'listings'  => $listings,
+    ]);
+    exit;
 }

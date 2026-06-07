@@ -167,6 +167,34 @@ everyone who linked on the website — not just players seen online.
 [ { "account_id": 1234, "discord_id": "335974112046350341", "username": "player1" } ]
 ```
 
+### `action=get_lfg` — recent Looking-For-Group posts
+`GET` · optional param: `since_id` (only return posts with `id` greater than this).
+
+Returns LFG posts from the **last 2 hours**, newest-id last, with the same
+enrichment as the website's `lfg_requests.php` GET (bounty title/reward join,
+`game_mode` parsed from the `E`/`B`/`C` name prefix) **plus** the poster's
+`discord_id`. Unlike the website endpoint it is **not** session-gated and text is
+returned **raw** (not HTML-escaped) for Discord. `latest_id` is the current max
+`id` so a poller can seed its cursor without replaying a backlog. Drives the
+bot's LFG announcer (poll with `since_id` = last announced id).
+
+```json
+{
+  "success": true,
+  "latest_id": 482,
+  "listings": [
+    {
+      "id": 482, "account_id": 1234, "discord_id": "335974112046350341",
+      "character_name": "RedRanger", "class": "RAcast", "level": 142,
+      "section_id": "Redria", "game_id": 7, "game_name": "Ruins Run",
+      "game_mode": "Normal", "looking_for": "HU,FO", "description": "need DPS",
+      "bounty_id": 9, "bounty_title": "Hardcore Mentor",
+      "bounty_reward": "PsychoWand x1", "created_at": "2026-06-07 10:08:05"
+    }
+  ]
+}
+```
+
 ### `action=get_events` — active community events
 `GET` · no params. Returns active rows from `community_events` with rendered
 objective/reward text.
