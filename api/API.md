@@ -195,6 +195,36 @@ bot's LFG announcer (poll with `since_id` = last announced id).
 }
 ```
 
+### `action=get_lfg` companion — `action=get_parties` — live multiplayer instances
+`GET` · no params.
+
+Joins NewServ `/y/lobbies` (entries where `IsGame`) → each lobby's `ClientIDs`
+→ `/y/clients`, and resolves each player's linked `discord_id` from `users`.
+Returns every active multiplayer game instance with its full roster, so the bot
+can create per-party private voice channels and @mention the members. Returns
+`{"success":false,"parties":[]}` if the game server is unreachable.
+
+```json
+{
+  "success": true,
+  "parties": [
+    {
+      "game_id": 7, "name": "Ruins Run", "mode": "Normal",
+      "episode": "Ep1", "difficulty": "Ultimate", "section_id": "Redria",
+      "max_clients": 4, "has_password": false,
+      "players": [
+        { "account_id": 1234, "discord_id": "335974112046350341",
+          "character_name": "RedRanger", "level": 142, "class": "RAcast",
+          "section_id": "Redria" },
+        { "account_id": 5678, "discord_id": null,
+          "character_name": "Guest", "level": 88, "class": "HUcast",
+          "section_id": "Viridia" }
+      ]
+    }
+  ]
+}
+```
+
 ### `action=get_events` — active community events
 `GET` · no params. Returns active rows from `community_events` with rendered
 objective/reward text.

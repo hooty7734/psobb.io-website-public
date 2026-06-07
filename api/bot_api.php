@@ -659,4 +659,87 @@ if ($action === 'get_player') {
         'listings'  => $listings,
     ]);
     exit;
+} elseif ($action === 'get_parties') {
+    // Active multiplayer game instances with their full rosters, for the bot's
+    // party-voice-room feature. Joins /y/lobbies (IsGame) -> ClientIDs ->
+    // /y/clients, and resolves each player's linked discord_id from the users
+    // table so the bot can build private channels and @mention party members.
+    $lobbies_raw = @file_get_contents($NEWSERV_API_URL . "/y/lobbies");
+    $clients_raw = @file_get_contents($NEWSERV_API_URL . "/y/clients");
+    if ($lobbies_raw === false || $clients_raw === false) {
+        echo json_encode(["success" => false, "error" => "Game server API offline", "parties" => []]);
+        exit;
+    }
+    $lobbies = json_decode(iconv('UTF-8', 'UTF-8//IGNORE', $lobbies_raw), true);
+    $clients = json_decode(iconv('UTF-8', 'UTF-8//IGNORE', $clients_raw), true);
+    if (!is_array($lobbies) || !is_array($clients)) {
+        echo json_encode(["success" => false, "error" => "Invalid server response", "parties" => []]);
+        exit;
+    }
+
+    // Index live clients by their client ID; collect account ids for one discord lookup.
+    $clientById = [];
+    $accountIds = [];
+    foreach ($clients as $c) {
+        if (isset($c['ID'])) $clientById[$c['ID']] = $c;
+        if (isset($c['Account']['AccountID'])) $accountIds[(int)$c['Account']['AccountID']] = true;
+    }
+
+    $discordByAccount = [];
+    if (!empty($accountIds)) {
+        $db = get_db();
+        $idList = implode(',', array_map('intval', array_keys($accountIds)));
+        $res = $db->query("SELECT account_id, discord_id FROM users WHERE discord_id IS NOT NULL AND discord_id != '' AND account_id IN ($idList)");
+        if ($res) {
+            while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
+                $discordByAccount[(int)$row['account_id']] = $row['discord_id'];
+            }
+        }
+    }
+
+    $parties = [];
+    foreach ($lobbies as $l) {
+        if (empty($l['IsGame'])) continue;
+        $clientIds = isset($l['ClientIDs']) && is_array($l['ClientIDs']) ? $l['ClientIDs'] : [];
+
+        $players = [];
+        foreach ($clientIds as $cid) {
+            if ($cid === null || !isset($clientById[$cid])) continue;
+            $c = $clientById[$cid];
+            $accId = isset($c['Account']['AccountID']) ? (int)$c['Account']['AccountID'] : null;
+            $players[] = [
+                'account_id'     => $accId,
+                'discord_id'     => $accId !== null ? ($discordByAccount[$accId] ?? null) : null,
+                'character_name' => $c['Name'] ?? 'Unknown',
+                'level'          => isset($c['Level']) ? (int)$c['Level'] : null,
+                'class'          => $c['CharClass'] ?? ($c['Class'] ?? null),
+                'section_id'     => $c['SectionID'] ?? null,
+            ];
+        }
+
+        // Strip the E/B/C mode prefix from the game name and expose the mode.
+        $rawName = trim($l['Name'] ?? 'Game');
+        $mode = 'Normal';
+        if (strlen($rawName) > 0 && in_array(strtoupper($rawName[0]), ['E', 'B', 'C'])) {
+            $mc = strtoupper($rawName[0]);
+            $rawName = trim(substr($rawName, 1));
+            if ($mc === 'B') $mode = 'Battle';
+            elseif ($mc === 'C') $mode = 'Challenge';
+        }
+
+        $parties[] = [
+            'game_id'      => (int)($l['ID'] ?? 0),
+            'name'         => $rawName,
+            'mode'         => $mode,
+            'episode'      => $l['Episode'] ?? null,
+            'difficulty'   => $l['Difficulty'] ?? null,
+            'section_id'   => $l['SectionID'] ?? null,
+            'max_clients'  => isset($l['MaxClients']) ? (int)$l['MaxClients'] : 4,
+            'has_password' => !empty($l['HasPassword']),
+            'players'      => $players,
+        ];
+    }
+
+    echo json_encode(["success" => true, "parties" => $parties]);
+    exit;
 }
