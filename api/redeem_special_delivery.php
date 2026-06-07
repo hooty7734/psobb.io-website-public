@@ -82,6 +82,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    // parse_and_drop_items checks function_exists('buildHexPayload') and falls back to
+    // a stub that strips all attributes if it's not defined. Define the full version here,
+    // the same way redeem_bounty.php does, so attributes and grind are encoded correctly.
+    if (!function_exists('buildHexPayload')) {
+        function buildHexPayload($itemStr)
+        {
+            $itemStr = trim($itemStr);
+            if (empty($itemStr)) return $itemStr;
+            $parts     = explode(' ', $itemStr);
+            $firstPart = array_shift($parts);
+            if (ctype_xdigit($firstPart) && strlen($firstPart) >= 6) {
+                $hex  = str_pad(substr($firstPart, 0, 32), 32, '0');
+                $data = hex2bin($hex);
+                $is_weapon       = ($data[0] === "\x00");
+                $is_armor_shield = ($data[0] === "\x01" && ($data[1] === "\x01" || $data[1] === "\x02"));
+                $is_unit         = ($data[0] === "\x01" && $data[1] === "\x03");
+                if ($is_weapon) {
+                    if (!empty($parts) && strpos($parts[0], '/') !== false) {
+                        $stats = explode('/', $parts[0]);
+                        $idx   = 6;
+                        for ($i = 0; $i < 5; $i++) {
+                            if (isset($stats[$i]) && (int)$stats[$i] > 0 && $idx < 12) {
+                                $data[$idx]     = chr($i + 1);
+                                $data[$idx + 1] = chr((int)$stats[$i]);
+                                $idx += 2;
+                            }
+                        }
+                    }
+                } elseif ($is_armor_shield) {
+                    foreach ($parts as $token) {
+                        if (substr($token, 0, 1) === '+') {
+                            if (strpos($token, 'def') !== false) {
+                                $val = intval(str_replace('def', '', substr($token, 1)));
+                                $data[6] = chr($val & 0xFF); $data[7] = chr(($val >> 8) & 0xFF);
+                            } elseif (strpos($token, 'evp') !== false) {
+                                $val = intval(str_replace('evp', '', substr($token, 1)));
+                                $data[8] = chr($val & 0xFF); $data[9] = chr(($val >> 8) & 0xFF);
+                            } else {
+                                $data[5] = chr(intval(substr($token, 1)) & 0xFF);
+                            }
+                        }
+                    }
+                } elseif ($is_unit) {
+                    foreach ($parts as $token) {
+                        if (preg_match('/^\+(\d+)$/', $token, $m)) {
+                            $val = (int)$m[1];
+                            $data[6] = chr($val & 0xFF); $data[7] = chr(($val >> 8) & 0xFF);
+                        }
+                    }
+                }
+                return strtoupper(bin2hex($data));
+            }
+            return $itemStr;
+        }
+    }
+
     // Attempt to deliver via newserv (player must be in-game)
     $result = parse_and_drop_items($accountId, $delivery['item_string']);
 
