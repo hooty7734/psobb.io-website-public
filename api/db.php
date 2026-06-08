@@ -300,57 +300,6 @@ function get_db()
             CREATE INDEX IF NOT EXISTS idx_bot_tokens_hash ON bot_tokens(token_hash) WHERE revoked = 0;
         ");
 
-        // --- Discord Tekker Challenge tables ---
-        // The Discord bot stores all tekker-challenge state here (via
-        // api/bot_tekker_db.php) instead of carrying its own SQLite dependency.
-        $db->exec("
-            CREATE TABLE IF NOT EXISTS tekker_active_drops (
-                drop_id TEXT PRIMARY KEY,
-                stat_native INTEGER NOT NULL,
-                stat_abeast INTEGER NOT NULL,
-                stat_machine INTEGER NOT NULL,
-                stat_dark INTEGER NOT NULL,
-                stat_hit INTEGER NOT NULL,
-                hint_attribute TEXT NOT NULL,
-                is_active INTEGER NOT NULL DEFAULT 1
-            );
-            CREATE TABLE IF NOT EXISTS tekker_player_state (
-                user_id TEXT NOT NULL,
-                drop_id TEXT NOT NULL,
-                attempts_used INTEGER NOT NULL,
-                max_attempts INTEGER NOT NULL,
-                PRIMARY KEY (user_id, drop_id)
-            );
-            CREATE TABLE IF NOT EXISTS tekker_telemetry (
-                log_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id TEXT NOT NULL,
-                drop_id TEXT NOT NULL,
-                guess_array TEXT NOT NULL,
-                result_state TEXT NOT NULL,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-            );
-            CREATE TABLE IF NOT EXISTS tekker_tokens (
-                token_id TEXT PRIMARY KEY,
-                owner_id TEXT NOT NULL,
-                stat_native INTEGER NOT NULL,
-                stat_abeast INTEGER NOT NULL,
-                stat_machine INTEGER NOT NULL,
-                stat_dark INTEGER NOT NULL,
-                stat_hit INTEGER NOT NULL,
-                is_claimed INTEGER DEFAULT 0,
-                claimed_by TEXT,
-                claimed_at DATETIME,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            );
-            CREATE TABLE IF NOT EXISTS tekker_active_users (
-                user_id TEXT PRIMARY KEY
-            );
-            CREATE TABLE IF NOT EXISTS tekker_settings (
-                key TEXT PRIMARY KEY,
-                value TEXT NOT NULL
-            );
-        ");
-
         // Enable FK enforcement only after all schema migrations are done
         $db->exec("PRAGMA foreign_keys = ON;");
 
