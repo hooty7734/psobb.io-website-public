@@ -83,10 +83,12 @@ $CLASS_MAP = [
     4 => 'RAcast',   5 => 'RAcaseal',  6 => 'FOmarl',    7 => 'FOnewm',
     8 => 'FOnewearl',9 => 'HUcaseal', 10 => 'FOmar',    11 => 'RAmarl'
 ];
-// Section ID index values verified against newserv StaticGameData.cc section_id_to_name[]
-// Note: "Greennill" (double-n) is the canonical spelling used by newserv.
+// Section ID index values verified against newserv StaticGameData.cc section_id_to_name[].
+// newserv spells index 1 "Greennill" (double-n), but the rest of the site
+// (get_drops.php, character_viewer.php) and the Discord role use the single-n
+// "Greenill". Normalize to the single-n form here so every endpoint agrees.
 $SECID_MAP = [
-    0 => 'Viridia',   1 => 'Greennill', 2 => 'Skyly',    3 => 'Bluefull',
+    0 => 'Viridia',   1 => 'Greenill',  2 => 'Skyly',    3 => 'Bluefull',
     4 => 'Purplenum', 5 => 'Pinkal',    6 => 'Redria',    7 => 'Oran',
     8 => 'Yellowboze', 9 => 'Whitill'
 ];
@@ -447,7 +449,7 @@ if ($action === 'get_player') {
                 if (isset($c['Meseta'])) $parsed['stats']['Meseta'] = (int)$c['Meseta'];
                 if (isset($c['Level']))  $parsed['level']            = (int)$c['Level'];
                 if (isset($c['EXP']))    $parsed['experience']       = (int)$c['EXP'];
-                if (isset($c['SectionID'])) $parsed['section_id']    = $c['SectionID'];
+                if (isset($c['SectionID'])) $parsed['section_id']    = ($c['SectionID'] === 'Greennill') ? 'Greenill' : $c['SectionID'];
                 if (isset($c['CharClass']))  $parsed['class']         = $c['CharClass'];
 
                 // Live material overrides
