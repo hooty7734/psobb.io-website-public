@@ -300,6 +300,24 @@ function get_db()
             CREATE INDEX IF NOT EXISTS idx_bot_tokens_hash ON bot_tokens(token_hash) WHERE revoked = 0;
         ");
 
+        // --- Special Item Deliveries ---
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS special_deliveries (
+                id             INTEGER PRIMARY KEY AUTOINCREMENT,
+                recipient_id   INTEGER NOT NULL,
+                recipient_name TEXT    NOT NULL,
+                item_name      TEXT    NOT NULL,
+                item_string    TEXT    NOT NULL,
+                admin_note     TEXT,
+                created_by     INTEGER NOT NULL,
+                created_at     DATETIME DEFAULT CURRENT_TIMESTAMP,
+                redeemed_at    DATETIME,
+                status         TEXT DEFAULT 'pending'
+            );
+            CREATE INDEX IF NOT EXISTS idx_special_deliveries_recipient
+                ON special_deliveries(recipient_id, status);
+        ");
+
         // Enable FK enforcement only after all schema migrations are done
         $db->exec("PRAGMA foreign_keys = ON;");
 

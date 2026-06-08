@@ -6,6 +6,7 @@ if (empty($_SESSION['user']) || empty($_SESSION['user']['is_admin'])) {
     exit;
 }
 $page_title = "Bot Token Manager — Admin";
+$current_page = 'bot_tokens';
 include '../includes/header.php';
 ?>
 

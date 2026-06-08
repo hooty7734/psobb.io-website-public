@@ -162,6 +162,24 @@ if (isset($_SESSION['user']['username'])) {
                             </div>
                         </div>
 
+                        <!-- Special Delivery Widget (hidden until pending deliveries exist) -->
+                        <div id="special-delivery-widget" style="display:none;"
+                             class="animate-fade-in">
+                            <div style="background: linear-gradient(135deg, rgba(251,146,60,.12) 0%, rgba(249,115,22,.06) 100%);
+                                        border: 1px solid rgba(251,146,60,.4);
+                                        border-radius: 12px; padding: 1.25rem;
+                                        box-shadow: 0 0 20px rgba(251,146,60,.08);">
+                                <h3 style="color:#fdba74; font-family:'Share Tech Mono',monospace;
+                                           margin:0 0 .75rem; font-size:.95rem;
+                                           display:flex; align-items:center; gap:.5rem;
+                                           border-bottom:1px solid rgba(251,146,60,.2); padding-bottom:.6rem;">
+                                    <i class="fas fa-gift" style="animation: pulse 2s infinite;"></i>
+                                    <?= __('Special Delivery') ?>
+                                </h3>
+                                <div id="special-delivery-list"></div>
+                            </div>
+                        </div>
+
                         <!-- PWA Installation Card -->
                         <div id="pwa-install-card" class="pwa-install-card" style="display: none;">
                             <h3
