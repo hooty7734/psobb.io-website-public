@@ -36,9 +36,15 @@ require_once 'functions.php';
 
 header('Content-Type: application/json');
 
-$headers = getallheaders();
-$auth = $headers['Authorization'] ?? '';
-// Strip "Bearer " prefix if present
+$auth = '';
+if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+    $auth = $_SERVER['HTTP_AUTHORIZATION'];
+} elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+    $auth = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+} elseif (function_exists('getallheaders')) {
+    $headers = array_change_key_case(getallheaders(), CASE_LOWER);
+    $auth = $headers['authorization'] ?? '';
+}
 $provided = (str_starts_with($auth, 'Bearer ')) ? substr($auth, 7) : $auth;
 
 $authenticated = false;

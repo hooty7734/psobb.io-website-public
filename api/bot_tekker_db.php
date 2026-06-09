@@ -27,8 +27,15 @@ require_once 'db.php';
 header('Content-Type: application/json');
 
 // --- Bearer auth (mirrors bot_api.php: legacy secret OR a bcrypt bot_tokens row) ---
-$headers = getallheaders();
-$auth = $headers['Authorization'] ?? '';
+$auth = '';
+if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+    $auth = $_SERVER['HTTP_AUTHORIZATION'];
+} elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+    $auth = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+} elseif (function_exists('getallheaders')) {
+    $headers = array_change_key_case(getallheaders(), CASE_LOWER);
+    $auth = $headers['authorization'] ?? '';
+}
 $provided = (str_starts_with($auth, 'Bearer ')) ? substr($auth, 7) : $auth;
 
 $authenticated = false;

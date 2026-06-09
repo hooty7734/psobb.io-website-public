@@ -195,7 +195,7 @@ bot's LFG announcer (poll with `since_id` = last announced id).
 }
 ```
 
-### `action=get_lfg` companion — `action=get_parties` — live multiplayer instances
+### `action=get_parties` — live multiplayer instances
 `GET` · no params.
 
 Joins NewServ `/y/lobbies` (entries where `IsGame`) → each lobby's `ClientIDs`
