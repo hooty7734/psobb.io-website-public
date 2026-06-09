@@ -119,5 +119,57 @@ $db->exec("CREATE TABLE IF NOT EXISTS mod_ratings (
     UNIQUE(mod_id, account_id)
 )");
 
+// Tekker Challenge tables
+$db->exec("CREATE TABLE IF NOT EXISTS tekker_active_drops (
+    drop_id TEXT PRIMARY KEY,
+    stat_native INTEGER NOT NULL,
+    stat_abeast INTEGER NOT NULL,
+    stat_machine INTEGER NOT NULL,
+    stat_dark INTEGER NOT NULL,
+    stat_hit INTEGER NOT NULL,
+    hint_attribute TEXT NOT NULL,
+    is_active INTEGER NOT NULL DEFAULT 1
+)");
+
+$db->exec("CREATE TABLE IF NOT EXISTS tekker_player_state (
+    user_id TEXT NOT NULL,
+    drop_id TEXT NOT NULL,
+    attempts_used INTEGER NOT NULL,
+    max_attempts INTEGER NOT NULL,
+    PRIMARY KEY (user_id, drop_id)
+)");
+
+$db->exec("CREATE TABLE IF NOT EXISTS tekker_telemetry (
+    log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    drop_id TEXT NOT NULL,
+    guess_array TEXT NOT NULL,
+    result_state TEXT NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+)");
+
+$db->exec("CREATE TABLE IF NOT EXISTS tekker_tokens (
+    token_id TEXT PRIMARY KEY,
+    owner_id TEXT NOT NULL,
+    stat_native INTEGER NOT NULL,
+    stat_abeast INTEGER NOT NULL,
+    stat_machine INTEGER NOT NULL,
+    stat_dark INTEGER NOT NULL,
+    stat_hit INTEGER NOT NULL,
+    is_claimed INTEGER DEFAULT 0,
+    claimed_by TEXT,
+    claimed_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)");
+
+$db->exec("CREATE TABLE IF NOT EXISTS tekker_active_users (
+    user_id TEXT PRIMARY KEY
+)");
+
+$db->exec("CREATE TABLE IF NOT EXISTS tekker_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+)");
+
 echo "Database initialized at $dbPath\n";
 ?>
