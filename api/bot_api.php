@@ -83,10 +83,12 @@ $CLASS_MAP = [
     4 => 'RAcast',   5 => 'RAcaseal',  6 => 'FOmarl',    7 => 'FOnewm',
     8 => 'FOnewearl',9 => 'HUcaseal', 10 => 'FOmar',    11 => 'RAmarl'
 ];
-// Section ID index values verified against newserv StaticGameData.cc section_id_to_name[]
-// Note: "Greennill" (double-n) is the canonical spelling used by newserv.
+// Section ID index values verified against newserv StaticGameData.cc section_id_to_name[].
+// newserv spells index 1 "Greennill" (double-n), but the rest of the site
+// (get_drops.php, character_viewer.php) and the Discord role use the single-n
+// "Greenill". Normalize to the single-n form here so every endpoint agrees.
 $SECID_MAP = [
-    0 => 'Viridia',   1 => 'Greennill', 2 => 'Skyly',    3 => 'Bluefull',
+    0 => 'Viridia',   1 => 'Greenill',  2 => 'Skyly',    3 => 'Bluefull',
     4 => 'Purplenum', 5 => 'Pinkal',    6 => 'Redria',    7 => 'Oran',
     8 => 'Yellowboze', 9 => 'Whitill'
 ];
@@ -447,7 +449,7 @@ if ($action === 'get_player') {
                 if (isset($c['Meseta'])) $parsed['stats']['Meseta'] = (int)$c['Meseta'];
                 if (isset($c['Level']))  $parsed['level']            = (int)$c['Level'];
                 if (isset($c['EXP']))    $parsed['experience']       = (int)$c['EXP'];
-                if (isset($c['SectionID'])) $parsed['section_id']    = $c['SectionID'];
+                if (isset($c['SectionID'])) $parsed['section_id']    = ($c['SectionID'] === 'Greennill') ? 'Greenill' : $c['SectionID'];
                 if (isset($c['CharClass']))  $parsed['class']         = $c['CharClass'];
 
                 // Live material overrides
@@ -598,5 +600,151 @@ if ($action === 'get_online_players') {
         }
     }
     echo json_encode($linked);
+    exit;
+} elseif ($action === 'get_lfg') {
+    // Recent Looking-For-Group posts, for the Discord bot's LFG announcer. Bearer
+    // auth (handled at the top of this file). Mirrors lfg_requests.php's GET
+    // enrichment (bounty join, E/B/C game-mode prefix parsing, reward rendering)
+    // but WITHOUT the website session gate, and adds the poster's discord_id so the
+    // bot can @mention them. Text is returned raw (NOT htmlspecialchars'd) because
+    // the consumer is Discord, not HTML — the bot restricts mentions on its side.
+    //
+    // Optional ?since_id=N returns only posts with id > N for incremental polling.
+    // `latest_id` is always the current max id so the bot can seed its cursor on
+    // first run without announcing a backlog.
+    require_once 'lang.php'; // renderRewardString may use translation helpers
+    $since_id = isset($_GET['since_id']) && is_numeric($_GET['since_id']) ? (int)$_GET['since_id'] : 0;
+
+    $db = get_db();
+
+    $latest_id = 0;
+    $maxRes = $db->query("SELECT MAX(id) AS m FROM lfg_requests");
+    if ($maxRes) {
+        $r = $maxRes->fetchArray(SQLITE3_ASSOC);
+        $latest_id = (int)($r['m'] ?? 0);
+    }
+
+    $stmt = $db->prepare("
+        SELECT lfg.*,
+               u.discord_id AS discord_id,
+               m.title AS bounty_title, m.reward_item_string AS bounty_reward
+        FROM lfg_requests lfg
+        LEFT JOIN users u ON lfg.account_id = u.account_id
+        LEFT JOIN missions m ON lfg.bounty_id = m.id
+        WHERE lfg.created_at >= DATETIME('now', '-2 hours') AND lfg.id > :since
+        ORDER BY lfg.id ASC
+    ");
+    $stmt->bindValue(':since', $since_id, SQLITE3_INTEGER);
+    $res = $stmt->execute();
+
+    $listings = [];
+    while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
+        // Strip the mode prefix (E/B/C) from game_name and expose game_mode.
+        $raw_game_name = trim($row['game_name'] ?? '');
+        $game_mode = 'Normal';
+        if (strlen($raw_game_name) > 0) {
+            $modeChar = strtoupper($raw_game_name[0]);
+            if (in_array($modeChar, ['E', 'B', 'C'])) {
+                $raw_game_name = trim(substr($raw_game_name, 1));
+                if ($modeChar === 'B') $game_mode = 'Battle';
+                elseif ($modeChar === 'C') $game_mode = 'Challenge';
+            }
+        }
+        $row['game_name'] = $raw_game_name;
+        $row['game_mode'] = $game_mode;
+        if (!empty($row['bounty_reward'])) {
+            $row['bounty_reward'] = renderRewardString($row['bounty_reward']);
+        }
+        $listings[] = $row;
+    }
+
+    echo json_encode([
+        'success'   => true,
+        'latest_id' => $latest_id,
+        'listings'  => $listings,
+    ]);
+    exit;
+} elseif ($action === 'get_parties') {
+    // Active multiplayer game instances with their full rosters, for the bot's
+    // party-voice-room feature. Joins /y/lobbies (IsGame) -> ClientIDs ->
+    // /y/clients, and resolves each player's linked discord_id from the users
+    // table so the bot can build private channels and @mention party members.
+    $lobbies_raw = @file_get_contents($NEWSERV_API_URL . "/y/lobbies");
+    $clients_raw = @file_get_contents($NEWSERV_API_URL . "/y/clients");
+    if ($lobbies_raw === false || $clients_raw === false) {
+        echo json_encode(["success" => false, "error" => "Game server API offline", "parties" => []]);
+        exit;
+    }
+    $lobbies = json_decode(iconv('UTF-8', 'UTF-8//IGNORE', $lobbies_raw), true);
+    $clients = json_decode(iconv('UTF-8', 'UTF-8//IGNORE', $clients_raw), true);
+    if (!is_array($lobbies) || !is_array($clients)) {
+        echo json_encode(["success" => false, "error" => "Invalid server response", "parties" => []]);
+        exit;
+    }
+
+    // Index live clients by their client ID; collect account ids for one discord lookup.
+    $clientById = [];
+    $accountIds = [];
+    foreach ($clients as $c) {
+        if (isset($c['ID'])) $clientById[$c['ID']] = $c;
+        if (isset($c['Account']['AccountID'])) $accountIds[(int)$c['Account']['AccountID']] = true;
+    }
+
+    $discordByAccount = [];
+    if (!empty($accountIds)) {
+        $db = get_db();
+        $idList = implode(',', array_map('intval', array_keys($accountIds)));
+        $res = $db->query("SELECT account_id, discord_id FROM users WHERE discord_id IS NOT NULL AND discord_id != '' AND account_id IN ($idList)");
+        if ($res) {
+            while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
+                $discordByAccount[(int)$row['account_id']] = $row['discord_id'];
+            }
+        }
+    }
+
+    $parties = [];
+    foreach ($lobbies as $l) {
+        if (empty($l['IsGame'])) continue;
+        $clientIds = isset($l['ClientIDs']) && is_array($l['ClientIDs']) ? $l['ClientIDs'] : [];
+
+        $players = [];
+        foreach ($clientIds as $cid) {
+            if ($cid === null || !isset($clientById[$cid])) continue;
+            $c = $clientById[$cid];
+            $accId = isset($c['Account']['AccountID']) ? (int)$c['Account']['AccountID'] : null;
+            $players[] = [
+                'account_id'     => $accId,
+                'discord_id'     => $accId !== null ? ($discordByAccount[$accId] ?? null) : null,
+                'character_name' => $c['Name'] ?? 'Unknown',
+                'level'          => isset($c['Level']) ? (int)$c['Level'] : null,
+                'class'          => $c['CharClass'] ?? ($c['Class'] ?? null),
+                'section_id'     => $c['SectionID'] ?? null,
+            ];
+        }
+
+        // Strip the E/B/C mode prefix from the game name and expose the mode.
+        $rawName = trim($l['Name'] ?? 'Game');
+        $mode = 'Normal';
+        if (strlen($rawName) > 0 && in_array(strtoupper($rawName[0]), ['E', 'B', 'C'])) {
+            $mc = strtoupper($rawName[0]);
+            $rawName = trim(substr($rawName, 1));
+            if ($mc === 'B') $mode = 'Battle';
+            elseif ($mc === 'C') $mode = 'Challenge';
+        }
+
+        $parties[] = [
+            'game_id'      => (int)($l['ID'] ?? 0),
+            'name'         => $rawName,
+            'mode'         => $mode,
+            'episode'      => $l['Episode'] ?? null,
+            'difficulty'   => $l['Difficulty'] ?? null,
+            'section_id'   => $l['SectionID'] ?? null,
+            'max_clients'  => isset($l['MaxClients']) ? (int)$l['MaxClients'] : 4,
+            'has_password' => !empty($l['HasPassword']),
+            'players'      => $players,
+        ];
+    }
+
+    echo json_encode(["success" => true, "parties" => $parties]);
     exit;
 }
