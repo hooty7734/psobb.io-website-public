@@ -1184,6 +1184,8 @@ window.switchDashboardTab = function (tabId) {
         window.loadMyBounties();
     } else if (tabId === 'tab-lfg') {
         window.loadLfgFeed();
+    } else if (tabId === 'tab-tekker') {
+        window.loadTekkerTokens();
     }
 
     // Start/stop bounty change-detection polling based on guild tab visibility
@@ -3274,4 +3276,378 @@ function startDailyCountdown(btn, resetTimestamp, serverTime) {
     if (dailyCountdownInterval) clearInterval(dailyCountdownInterval);
     dailyCountdownInterval = setInterval(updateCountdown, 1000);
 }
+
+// ---- Tekker Token Redemption Store ------------------------------------------
+function getLang() {
+    const match = document.cookie.match(/(?:^|; )psobb_lang=([^;]*)/);
+    return (match && match[1] === 'jp') ? 'jp' : 'en';
+}
+
+const tekkerI18n = {
+    en: {
+        choice1: "Weapon Choice 1",
+        choice2: "Weapon Choice 2",
+        choice3: "Weapon Choice 3",
+        redeem: "Redeem Token",
+        noAttr: "No attributes",
+        earned: "Earned",
+        loadError: "Failed to load tokens from server.",
+        connError: "A connection error occurred.",
+        select3: "You must select exactly 3 weapons",
+        errorPrefix: "Error:",
+        successPrefix: "Success:",
+        dropping: "DROPPING!",
+        maxSelect: "You can select at most 3 tokens.",
+        tierInfo: "{count} Token(s) — Up to {stars}-star weapons unlocked",
+        noSelected: "None",
+        combinedLabel: "Combined Stats"
+    },
+    jp: {
+        choice1: "武器候補 1",
+        choice2: "武器候補 2",
+        choice3: "武器候補 3",
+        redeem: "トークンを交換する",
+        noAttr: "属性なし",
+        earned: "獲得日",
+        loadError: "サーバーからトークンを読み込めませんでした。",
+        connError: "接続エラーが発生しました。",
+        select3: "武器を正確に3つ選択してください。",
+        errorPrefix: "エラー:",
+        successPrefix: "成功:",
+        dropping: "ドロップ中!",
+        maxSelect: "選択できるトークンは最大3個までです。",
+        tierInfo: "{count}個のトークン — 最大 {stars}★ の武器をアンロック",
+        noSelected: "選択なし",
+        combinedLabel: "結合ステータス"
+    }
+};
+
+const tier9Weapons = [
+    { hex: '004400', en: "Red Handgun", jp: "レッドハンドガン" },
+    { hex: '003E00', en: "Red Partisan", jp: "レッドパルチザン" },
+    { hex: '004100', en: "Red Slicer", jp: "レッドスライサー" },
+    { hex: '000E00', en: "Double Saber", jp: "ダブルセイバー" },
+    { hex: '000105', en: "DB's Saber", jp: "ＤＢの剣" }
+];
+
+const tier10Weapons = [
+    { hex: '003400', en: "Red Sword", jp: "レッドソード" },
+    { hex: '004200', en: "Handgun: Guld", jp: "ハンドガン：ガルド" },
+    { hex: '004300', en: "Handgun: Milla", jp: "ハンドガン：ミラ" },
+    { hex: '004500', en: "Frozen Shooter", jp: "フローズンシューター" },
+    { hex: '001300', en: "Holy Ray", jp: "ホーリーレイ" },
+    { hex: '002100', en: "Chain Sawd", jp: "チェインソード" },
+    { hex: '001000', en: "Orotiagito", jp: "オロチアギト" },
+    { hex: '003001', en: "Girasole", jp: "ジラソーレ" },
+    { hex: '000F02', en: "God Hand", jp: "ゴッドハンド" },
+    { hex: '00C800', en: "Daylight Scar", jp: "デイライトスカー" }
+];
+
+const tier11Weapons = [
+    { hex: '001200', en: "Spread Needle", jp: "スプレッドニードル" },
+    { hex: '00AB00', en: "Lame d'Argent", jp: "ラメ・ド・アルジャン" }
+];
+
+window.loadTekkerTokens = async function () {
+    const loader = document.getElementById('tekker-loader');
+    const unlinked = document.getElementById('tekker-unlinked-state');
+    const empty = document.getElementById('tekker-empty-state');
+    const container = document.getElementById('tekker-tokens-container');
+    const alertBox = document.getElementById('tekker-status-alert');
+    const redemptionCard = document.getElementById('tekker-redemption-card');
+    
+    const lang = getLang();
+    const t = tekkerI18n[lang];
+
+    if (alertBox) alertBox.style.display = 'none';
+    if (loader) loader.style.display = 'block';
+    if (unlinked) unlinked.style.display = 'none';
+    if (empty) empty.style.display = 'none';
+    if (redemptionCard) redemptionCard.style.display = 'none';
+    if (container) { container.style.display = 'none'; container.innerHTML = ''; }
+
+    try {
+        const res = await fetch('/api/claim_tekker_drop.php', { credentials: 'same-origin' });
+        const data = await res.json();
+
+        if (loader) loader.style.display = 'none';
+
+        if (!data.linked) {
+            if (unlinked) unlinked.style.display = 'block';
+            return;
+        }
+
+        if (!data.tokens || data.tokens.length === 0) {
+            if (empty) empty.style.display = 'block';
+            return;
+        }
+
+        if (container) {
+            container.style.display = 'flex';
+            container.innerHTML = data.tokens.map(token => {
+                const statParts = [];
+                statParts.push(`<span class="tekker-stat-badge ${token.stat_native > 0 ? 'has-val' : ''}">Native: +${token.stat_native}%</span>`);
+                statParts.push(`<span class="tekker-stat-badge ${token.stat_abeast > 0 ? 'has-val' : ''}">A.Beast: +${token.stat_abeast}%</span>`);
+                statParts.push(`<span class="tekker-stat-badge ${token.stat_machine > 0 ? 'has-val' : ''}">Machine: +${token.stat_machine}%</span>`);
+                statParts.push(`<span class="tekker-stat-badge ${token.stat_dark > 0 ? 'has-val' : ''}">Dark: +${token.stat_dark}%</span>`);
+                statParts.push(`<span class="tekker-stat-badge ${token.stat_hit > 0 ? 'has-hit' : ''}">Hit: +${token.stat_hit}%</span>`);
+                const statsDisplay = statParts.join('');
+
+                return `
+                    <div id="tekker-card-${token.token_id}" class="tekker-card-premium" onclick="window.handleCardClick(event, '${token.token_id}')">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <label class="tekker-checkbox-container" onclick="event.stopPropagation()">
+                                    <input type="checkbox" class="tekker-select-cb" value="${token.token_id}" 
+                                           data-native="${token.stat_native}" 
+                                           data-abeast="${token.stat_abeast}" 
+                                           data-machine="${token.stat_machine}" 
+                                           data-dark="${token.stat_dark}" 
+                                           data-hit="${token.stat_hit}" 
+                                           onchange="window.updateTekkerSelection()" />
+                                    <span class="tekker-checkmark"></span>
+                                </label>
+                                <div>
+                                    <span style="font-family:'Share Tech Mono', monospace; font-size:0.8rem; color:#888;">TOKEN: ${token.token_id}</span>
+                                    <div style="margin-top:6px; display:flex; flex-wrap:wrap; gap:4px;">
+                                        ${statsDisplay}
+                                    </div>
+                                </div>
+                            </div>
+                            <span style="font-size:0.75rem; color:#666; font-family:'Share Tech Mono', monospace;">${t.earned}: ${token.created_at}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    } catch (e) {
+        if (loader) loader.style.display = 'none';
+        if (alertBox) {
+            alertBox.style.display = 'block';
+            alertBox.className = 'alert-box danger';
+            alertBox.textContent = t.loadError;
+        }
+    }
+};
+
+window.handleCardClick = function (event, tokenId) {
+    if (event.target.closest('.tekker-checkbox-container') || event.target.tagName === 'INPUT') {
+        return;
+    }
+    const cb = document.querySelector(`.tekker-select-cb[value="${tokenId}"]`);
+    if (cb) {
+        cb.checked = !cb.checked;
+        window.updateTekkerSelection();
+    }
+};
+
+window.updateTekkerSelection = function () {
+    const checkboxes = Array.from(document.querySelectorAll('.tekker-select-cb'));
+    const checked = checkboxes.filter(cb => cb.checked);
+    const alertBox = document.getElementById('tekker-status-alert');
+    const redemptionCard = document.getElementById('tekker-redemption-card');
+    
+    const lang = getLang();
+    const t = tekkerI18n[lang];
+
+    if (alertBox) alertBox.style.display = 'none';
+
+    // Enforce max 3 tokens selected
+    if (checked.length > 3) {
+        // Find the last checkbox that was clicked and uncheck it
+        checked[checked.length - 1].checked = false;
+        checked.pop(); // Remove from checked array
+        
+        if (alertBox) {
+            alertBox.style.display = 'block';
+            alertBox.className = 'alert-box danger';
+            alertBox.innerHTML = `❌ <b>${t.errorPrefix}</b> ${t.maxSelect}`;
+        }
+    }
+
+    // Toggle active-selected class on card containers based on selection state
+    checkboxes.forEach(cb => {
+        const card = document.getElementById(`tekker-card-${cb.value}`);
+        if (card) {
+            if (cb.checked) {
+                card.classList.add('active-selected');
+            } else {
+                card.classList.remove('active-selected');
+            }
+        }
+    });
+
+    const count = checked.length;
+    if (count === 0) {
+        if (redemptionCard) redemptionCard.style.display = 'none';
+        return;
+    }
+
+    if (redemptionCard) redemptionCard.style.display = 'block';
+
+    // Aggregate stats
+    let native = 0, abeast = 0, machine = 0, dark = 0, hit = 0;
+    checked.forEach(cb => {
+        native += parseInt(cb.getAttribute('data-native') || 0);
+        abeast += parseInt(cb.getAttribute('data-abeast') || 0);
+        machine += parseInt(cb.getAttribute('data-machine') || 0);
+        dark += parseInt(cb.getAttribute('data-dark') || 0);
+        hit += parseInt(cb.getAttribute('data-hit') || 0);
+    });
+
+    native = Math.min(100, native);
+    abeast = Math.min(100, abeast);
+    machine = Math.min(100, machine);
+    dark = Math.min(100, dark);
+    hit = Math.min(100, hit);
+
+    const statParts = [];
+    statParts.push(`<span class="tekker-stat-badge ${native > 0 ? 'has-val' : ''}">Native: +${native}%</span>`);
+    statParts.push(`<span class="tekker-stat-badge ${abeast > 0 ? 'has-val' : ''}">A.Beast: +${abeast}%</span>`);
+    statParts.push(`<span class="tekker-stat-badge ${machine > 0 ? 'has-val' : ''}">Machine: +${machine}%</span>`);
+    statParts.push(`<span class="tekker-stat-badge ${dark > 0 ? 'has-val' : ''}">Dark: +${dark}%</span>`);
+    statParts.push(`<span class="tekker-stat-badge ${hit > 0 ? 'has-hit' : ''}">Hit: +${hit}%</span>`);
+    const combinedStatsHtml = statParts.join('');
+
+    document.getElementById('tekker-selected-count').textContent = count;
+    document.getElementById('tekker-combined-stats').innerHTML = combinedStatsHtml;
+
+    // Determine allowed weapons and stars level
+    let allowedList = [];
+    let stars = 9;
+    if (count === 1) {
+        allowedList = [...tier9Weapons];
+        stars = 9;
+    } else if (count === 2) {
+        allowedList = [...tier9Weapons, ...tier10Weapons];
+        stars = 10;
+    } else {
+        allowedList = [...tier9Weapons, ...tier10Weapons, ...tier11Weapons];
+        stars = 11;
+    }
+
+    document.getElementById('tekker-unlocked-tier').textContent = t.tierInfo.replace('{count}', count).replace('{stars}', stars);
+
+    // Populate dropdown choices, preserving selections if they exist and are still valid
+    const selects = ['tekker-weapon-1', 'tekker-weapon-2', 'tekker-weapon-3'];
+    selects.forEach(sid => {
+        const sel = document.getElementById(sid);
+        const prevVal = sel.value;
+        sel.innerHTML = allowedList.map(w => `<option value="${w.hex}">${lang === 'jp' ? w.jp : w.en}</option>`).join('');
+        if (allowedList.some(w => w.hex === prevVal)) {
+            sel.value = prevVal;
+        }
+    });
+};
+
+window.submitTekkerClaim = async function () {
+    const checkboxes = Array.from(document.querySelectorAll('.tekker-select-cb'));
+    const checked = checkboxes.filter(cb => cb.checked);
+    const tokenIds = checked.map(cb => cb.value);
+    
+    const w1 = document.getElementById('tekker-weapon-1').value;
+    const w2 = document.getElementById('tekker-weapon-2').value;
+    const w3 = document.getElementById('tekker-weapon-3').value;
+    const alertBox = document.getElementById('tekker-status-alert');
+    const claimBtn = document.getElementById('tekker-claim-btn');
+
+    const lang = getLang();
+    const t = tekkerI18n[lang];
+
+    if (alertBox) alertBox.style.display = 'none';
+    if (claimBtn) claimBtn.disabled = true;
+
+    const overlay = document.getElementById('drop-animation-overlay');
+    const box = document.getElementById('drop-item-box');
+    const countdownEl = document.getElementById('countdown-text');
+    const thankYouText = document.getElementById('thank-you-text');
+
+    if (overlay && box && countdownEl && thankYouText) {
+        box.className = 'drop-item-box orange-box';
+        thankYouText.style.animation = 'none';
+        thankYouText.style.opacity = '0';
+
+        const newBox = box.cloneNode(true);
+        box.parentNode.replaceChild(newBox, box);
+
+        overlay.style.display = 'flex';
+
+        let count = 3;
+        countdownEl.style.display = 'block';
+        countdownEl.textContent = count;
+
+        const countdownInterval = setInterval(() => {
+            count--;
+            if (count > 0) {
+                countdownEl.textContent = count;
+                countdownEl.style.transform = 'scale(1.5)';
+                setTimeout(() => countdownEl.style.transform = 'scale(1)', 100);
+            } else if (count === 0) {
+                countdownEl.style.transform = 'scale(1.5)';
+                countdownEl.textContent = t.dropping;
+
+                fetch('/api/claim_tekker_drop.php', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': window.getCSRFToken()
+                    },
+                    body: JSON.stringify({
+                        token_ids: tokenIds,
+                        weapons: [w1, w2, w3],
+                        csrf_token: window.getCSRFToken()
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    clearInterval(countdownInterval);
+                    if (data.error) {
+                        overlay.style.display = 'none';
+                        if (claimBtn) claimBtn.disabled = false;
+                        if (alertBox) {
+                            alertBox.style.display = 'block';
+                            alertBox.className = 'alert-box danger';
+                            alertBox.innerHTML = `❌ <b>${t.errorPrefix}</b> ${data.error}`;
+                        }
+                    } else {
+                        countdownEl.style.display = 'none';
+                        thankYouText.style.animation = 'textDrop 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+                        if (window.createFireworks) window.createFireworks();
+
+                        setTimeout(() => {
+                            overlay.style.display = 'none';
+                            if (claimBtn) claimBtn.disabled = false;
+                            if (alertBox) {
+                                alertBox.style.display = 'block';
+                                alertBox.className = 'alert-box success';
+                                alertBox.innerHTML = `🎉 <b>${t.successPrefix}</b> ${data.message}`;
+                            }
+                            window.loadTekkerTokens();
+                        }, 3500);
+                    }
+                })
+                .catch(err => {
+                    clearInterval(countdownInterval);
+                    overlay.style.display = 'none';
+                    if (claimBtn) claimBtn.disabled = false;
+                    if (alertBox) {
+                        alertBox.style.display = 'block';
+                        alertBox.className = 'alert-box danger';
+                        alertBox.textContent = t.connError;
+                    }
+                });
+            }
+        }, 1000);
+    }
+};
+
+window.claimTekkerToken = function (tokenId) {
+    const cb = document.querySelector(`.tekker-select-cb[value="${tokenId}"]`);
+    if (cb) {
+        cb.checked = true;
+        window.updateTekkerSelection();
+    }
+};
+
 

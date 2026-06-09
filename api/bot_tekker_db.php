@@ -222,71 +222,83 @@ try {
             $stmt = $db->prepare("INSERT INTO tekker_tokens
                 (token_id, owner_id, stat_native, stat_abeast, stat_machine, stat_dark, stat_hit, is_claimed)
                 VALUES (:t,:o,:n,:a,:m,:d,:h,0)");
-            $stmt->bindValue(':t', $in['token_id'], SQLITE3_TEXT);
-            $stmt->bindValue(':o', $in['owner_id'], SQLITE3_TEXT);
-            $stmt->bindValue(':n', (int)$in['stat_native'], SQLITE3_INTEGER);
-            $stmt->bindValue(':a', (int)$in['stat_abeast'], SQLITE3_INTEGER);
-            $stmt->bindValue(':m', (int)$in['stat_machine'], SQLITE3_INTEGER);
-            $stmt->bindValue(':d', (int)$in['stat_dark'], SQLITE3_INTEGER);
-            $stmt->bindValue(':h', (int)$in['stat_hit'], SQLITE3_INTEGER);
+            $stmt->bindValue(':t', trim($in['token_id'] ?? ''), SQLITE3_TEXT);
+            $stmt->bindValue(':o', trim($in['owner_id'] ?? ''), SQLITE3_TEXT);
+            $stmt->bindValue(':n', (int)($in['stat_native'] ?? 0), SQLITE3_INTEGER);
+            $stmt->bindValue(':a', (int)($in['stat_abeast'] ?? 0), SQLITE3_INTEGER);
+            $stmt->bindValue(':m', (int)($in['stat_machine'] ?? 0), SQLITE3_INTEGER);
+            $stmt->bindValue(':d', (int)($in['stat_dark'] ?? 0), SQLITE3_INTEGER);
+            $stmt->bindValue(':h', (int)($in['stat_hit'] ?? 0), SQLITE3_INTEGER);
             $stmt->execute();
             $result = ['ok' => true];
             break;
         }
         case 'getToken': {
-            $stmt = $db->prepare("SELECT * FROM tekker_tokens WHERE token_id = :t");
-            $stmt->bindValue(':t', $in['tokenId'], SQLITE3_TEXT);
+            $stmt = $db->prepare("SELECT * FROM tekker_tokens WHERE trim(token_id, char(13)||char(10)||' '||char(9)) = :t");
+            $stmt->bindValue(':t', trim($in['tokenId'] ?? ''), SQLITE3_TEXT);
             $r = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
+            if ($r) {
+                $r['token_id'] = trim($r['token_id']);
+                $r['owner_id'] = trim($r['owner_id']);
+            }
             $result = $r ? $r : null;
             break;
         }
         case 'getUnclaimedTokens': {
-            $stmt = $db->prepare("SELECT * FROM tekker_tokens WHERE owner_id = :o AND is_claimed = 0 ORDER BY created_at DESC");
-            $stmt->bindValue(':o', $in['ownerId'], SQLITE3_TEXT);
+            $stmt = $db->prepare("SELECT * FROM tekker_tokens WHERE trim(owner_id, char(13)||char(10)||' '||char(9)) = :o AND is_claimed = 0 ORDER BY created_at DESC");
+            $stmt->bindValue(':o', trim($in['ownerId'] ?? ''), SQLITE3_TEXT);
             $res = $stmt->execute();
             $rows = [];
-            while ($row = $res->fetchArray(SQLITE3_ASSOC)) $rows[] = $row;
+            while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
+                $row['token_id'] = trim($row['token_id']);
+                $row['owner_id'] = trim($row['owner_id']);
+                $rows[] = $row;
+            }
             $result = $rows;
             break;
         }
         case 'getAllTokens': {
             $res = $db->query("SELECT * FROM tekker_tokens ORDER BY created_at DESC");
             $rows = [];
-            while ($row = $res->fetchArray(SQLITE3_ASSOC)) $rows[] = $row;
+            while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
+                $row['token_id'] = trim($row['token_id']);
+                $row['owner_id'] = trim($row['owner_id']);
+                $rows[] = $row;
+            }
             $result = $rows;
             break;
         }
         case 'transferToken': {
-            $stmt = $db->prepare("UPDATE tekker_tokens SET owner_id = :o WHERE token_id = :t");
-            $stmt->bindValue(':o', $in['newOwnerId'], SQLITE3_TEXT);
-            $stmt->bindValue(':t', $in['tokenId'], SQLITE3_TEXT);
+            $stmt = $db->prepare("UPDATE tekker_tokens SET owner_id = :o WHERE trim(token_id, char(13)||char(10)||' '||char(9)) = :t");
+            $stmt->bindValue(':o', trim($in['newOwnerId'] ?? ''), SQLITE3_TEXT);
+            $stmt->bindValue(':t', trim($in['tokenId'] ?? ''), SQLITE3_TEXT);
             $stmt->execute();
             $result = ['ok' => true];
             break;
         }
         case 'markTokenClaimed': {
-            $stmt = $db->prepare("UPDATE tekker_tokens SET is_claimed = 1, claimed_by = :c, claimed_at = datetime('now') WHERE token_id = :t");
-            $stmt->bindValue(':c', $in['claimerId'], SQLITE3_TEXT);
-            $stmt->bindValue(':t', $in['tokenId'], SQLITE3_TEXT);
+            $stmt = $db->prepare("UPDATE tekker_tokens SET is_claimed = 1, claimed_by = :c, claimed_at = datetime('now') WHERE trim(token_id, char(13)||char(10)||' '||char(9)) = :t");
+            $stmt->bindValue(':c', trim($in['claimerId'] ?? ''), SQLITE3_TEXT);
+            $stmt->bindValue(':t', trim($in['tokenId'] ?? ''), SQLITE3_TEXT);
             $stmt->execute();
             $result = ['ok' => true];
             break;
         }
         case 'deleteToken': {
-            $stmt = $db->prepare("DELETE FROM tekker_tokens WHERE token_id = :t");
-            $stmt->bindValue(':t', $in['tokenId'], SQLITE3_TEXT);
+            $stmt = $db->prepare("DELETE FROM tekker_tokens WHERE trim(token_id, char(13)||char(10)||' '||char(9)) = :t");
+            $stmt->bindValue(':t', trim($in['tokenId'] ?? ''), SQLITE3_TEXT);
             $stmt->execute();
             $result = ['ok' => true, 'deleted' => $db->changes()];
             break;
         }
         case 'setTokenClaimed': {
             if (!empty($in['claimed'])) {
-                $stmt = $db->prepare("UPDATE tekker_tokens SET is_claimed = 1, claimed_by = :c, claimed_at = datetime('now') WHERE token_id = :t");
-                $stmt->bindValue(':c', $in['claimerId'] ?? null, SQLITE3_TEXT);
+                $stmt = $db->prepare("UPDATE tekker_tokens SET is_claimed = 1, claimed_by = :c, claimed_at = datetime('now') WHERE trim(token_id, char(13)||char(10)||' '||char(9)) = :t");
+                $stmt->bindValue(':c', trim($in['claimerId'] ?? ''), SQLITE3_TEXT);
             } else {
-                $stmt = $db->prepare("UPDATE tekker_tokens SET is_claimed = 0, claimed_by = NULL, claimed_at = NULL WHERE token_id = :t");
+                $stmt = $db->prepare("UPDATE tekker_tokens SET is_claimed = 0, claimed_by = NULL, claimed_at = NULL WHERE trim(token_id, char(13)||char(10)||' '||char(9)) = :t");
             }
-            $stmt->bindValue(':t', $in['tokenId'], SQLITE3_TEXT);
+            $stmt->bindValue(':t', trim($in['tokenId'] ?? ''), SQLITE3_TEXT);
             $stmt->execute();
             $result = ['ok' => true];
             break;

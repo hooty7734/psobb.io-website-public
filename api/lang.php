@@ -369,7 +369,18 @@ $I18N = [
         // Hooty7734
         'Discord Administrator & Moderator' => 'Discord管理者 ＆ モデレーター',
         'Community Management' => 'コミュニティ管理',
-        'Hooty7734 is our seasoned Discord Admin, bringing years of dedicated experience from managing and moderating other large online communities. He works to keep our community spaces safe, welcoming, and organized for all hunters who join our ranks.' => 'Hooty7734は、他の大規模なオンラインコミュニティの管理およびモデレーションにおいて長年の豊富な経験を持つ、頼れるDiscord管理者です。仲間に加わるすべてのハンターのために、コミュニティスペースが安全で、歓迎され、そしてよく整理された場所であるように努めています。'
+        'Hooty7734 is our seasoned Discord Admin, bringing years of dedicated experience from managing and moderating other large online communities. He works to keep our community spaces safe, welcoming, and organized for all hunters who join our ranks.' => 'Hooty7734は、他の大規模なオンラインコミュニティの管理およびモデレーションにおいて長年の豊富な経験を持つ、頼れるDiscord管理者です。仲間に加わるすべてのハンターのために、コミュニティスペースが安全で、歓迎され、そしてよく整理された場所であるように努めています。',
+
+        // Tekker Store
+        'Tekker Store' => 'テッカーストア',
+        'Discord Tekker Store' => 'Discord テッカーストア',
+        'Redeem your earned Discord Tekker Challenge tokens for rare untekked weapons. Select exactly 3 weapons you want; the server will randomly pick one, inject the token\'s stats, and drop it at your feet in-game!' => '獲得したDiscordテッカーチャレンジのトークンを、未鑑定（テッカ前）のレア武器と交換します。欲しい武器を3つ選択してください。サーバーがその中からランダムで1つを選び、トークンのステータスを付与した上で、ゲーム内の足元にドロップします！',
+        'RETRIEVING TOKENS...' => 'トークンを取得中...',
+        'Discord Account Not Linked' => 'Discordアカウントが連携されていません',
+        'You must link your Discord account in order to view and redeem Tekker Challenge tokens.' => 'テッカーチャレンジのトークンを表示・交換するには、Discordアカウントを連携する必要があります。',
+        'Go to Settings & Link Discord' => '設定へ進みDiscordを連携する',
+        'No Unclaimed Tokens' => '未請求のトークンはありません',
+        'You have no unclaimed reward tokens. Play the Tekker Challenge minigame on our Discord server to earn some!' => '未請求の報酬トークンはありません。Discordサーバーのテッカーチャレンジミニゲームをプレイしてトークンを獲得しましょう！'
     ]
 ];
 
