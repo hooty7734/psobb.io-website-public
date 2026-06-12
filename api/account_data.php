@@ -53,12 +53,33 @@ if ($foundAccount) {
     }
     
     // Check Admin Flags again to ensure freshness
-    $flags = $foundAccount['flags'] ?? 0;
+    $flags = $foundAccount['Flags'] ?? $foundAccount['flags'] ?? 0;
     // 0xFF = Administrator, 0x7FFFFFFF = Root
     // Checking for any admin-like bits (KICK/BAN/SILENCE/MOD/ADMIN/ROOT)
     // Common masks: MODERATOR (0x07), ADMINISTRATOR (0xFF), ROOT (0x7FFFFFFF)
     $isAdmin = ($flags & 0x07) !== 0;     
     $foundAccount['isAdmin'] = $isAdmin;
+
+    // Fetch external integrations (like Discord OAuth limits) from the local SQLite DB
+    require_once 'db.php';
+    $db = get_db();
+    $username = strtolower(trim($foundAccount['username'] ?? $_SESSION['user']['username'] ?? ''));
+    if (empty($username) && isset($foundAccount['BBLicenses']) && is_array($foundAccount['BBLicenses']) && count($foundAccount['BBLicenses']) > 0) {
+        $username = strtolower(trim($foundAccount['BBLicenses'][0]['UserName'] ?? ''));
+    }
+
+    $stmt = $db->prepare("SELECT discord_id, receive_system_mail, receive_discord_streak_msg FROM users WHERE username = :username");
+    $stmt->bindValue(':username', $username, SQLITE3_TEXT);
+    $res = $stmt->execute();
+    $row = $res ? $res->fetchArray(SQLITE3_ASSOC) : false;
+    
+    $discord_id = $row ? $row['discord_id'] : null;
+    $receive_system_mail = $row && isset($row['receive_system_mail']) ? (int)$row['receive_system_mail'] : 1;
+    $receive_discord_streak_msg = $row && isset($row['receive_discord_streak_msg']) ? (int)$row['receive_discord_streak_msg'] : 1;
+
+    $foundAccount['discord_id'] = $discord_id;
+    $foundAccount['receive_system_mail'] = $receive_system_mail;
+    $foundAccount['receive_discord_streak_msg'] = $receive_discord_streak_msg;
 
     // Calculate total account playtime across all 4 character files
     $playersDir = '/opt/newserv/system/players/';
@@ -67,7 +88,6 @@ if ($foundAccount) {
     }
     
     $total_play_time = 0;
-    $username = strtolower(trim($foundAccount['username'] ?? $_SESSION['user']['username'] ?? ''));
     $usernames = [$username];
     if (empty($username) && isset($foundAccount['BBLicenses']) && is_array($foundAccount['BBLicenses']) && count($foundAccount['BBLicenses']) > 0) {
         $usernames[] = strtolower(trim($foundAccount['BBLicenses'][0]['UserName'] ?? ''));

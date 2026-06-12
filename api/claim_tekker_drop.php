@@ -102,45 +102,123 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Weapons grouped by star rating tier
     $tier9_weapons = [
-        '004400' => 'RED HANDGUN',
-        '003E00' => 'RED PARTISAN',
-        '004100' => 'RED SLICER',
+        '000207' => 'DRAGON SLAYER',
+        '008900' => 'MUSASHI',
+        '000206' => 'LAST SURVIVOR',
+        '000407' => 'GAE BOLG',
+        '000307' => 'CROSS SCAR',
+        '000405' => 'BRIONAC',
+        '000305' => 'BLADE DANCE',
+        '000306' => 'BLOODY ART',
+        '00CD00' => 'TANEGASHIMA',
+        '00D200' => 'ANO BAZOOKA',
+        '000707' => 'JUSTY-23ST',
+        '000706' => 'WALS-MK2',
+        '000705' => 'VISK-235W',
+        '008B00' => 'PHOTON LAUNCHER',
+        '000907' => 'FINAL IMPACT',
+        '000906' => 'METEOR SMASH',
+        '000905' => 'CRUSH BULLET',
+        '000B06' => 'ALIVE AQHU',
+        '005500' => 'RABBIT WAND',
+        '000B05' => 'BRAVE HAMMER',
+        '000B04' => 'BATTLE VERGE',
+        '008C00' => 'TALIS',
+        '000A06' => 'CLUB OF ZUMIURAN',
+        '000A05' => 'MACE OF ADAMAN',
+        '000A04' => 'CLUB OF LACONIUM',
+        '000C06' => 'STORM WAND: INDRA',
+        '000C05' => 'ICE STAFF: DAGON',
+        '000F00' => 'BRAVE KNUCKLE',
+        '000107' => 'DURANDAL',
+        '000106' => 'KALADBOLG',
+        '000D00' => 'PHOTON CLAW',
+        '00CB00' => "TYRELL'S PARASOL",
+        '000607' => 'BRAVACE',
+        '000605' => 'VARISTA',
+        '000606' => 'CUSTOM RAY VER.OO',
         '000E00' => 'DOUBLE SABER',
-        '000105' => "DB'S SABER"
+        '000506' => 'DISKA OF LIBERATOR'
     ];
     $tier10_weapons = [
+        '00B700' => 'SHOUREN',
+        '002001' => 'LACONIUM AXE',
+        '006900' => 'HEART OF POUMN',
+        '008A02' => 'KAMUI',
         '003400' => 'RED SWORD',
-        '004200' => 'HANDGUN:GULD',
-        '004300' => 'HANDGUN:MILLA',
-        '004500' => 'FROZEN SHOOTER',
-        '001300' => 'HOLY RAY',
-        '002100' => 'CHAIN SAWD',
-        '001000' => 'OROTIAGITO',
-        '003001' => 'GIRASOLE',
+        '00070B' => 'RIANOV 303SNR-3',
+        '004E00' => 'PANZER FAUST',
+        '00070C' => 'RIANOV 303SNR-4',
+        '001500' => 'FLAME VISIT',
+        '006B00' => 'YASMINKOV 7000V',
+        '000C07' => 'EARTH WAND BROWNIE',
+        '00C400' => 'SIREN GLASS HAMMER',
+        '002200' => 'CADUCEUS',
+        '00C200' => 'SOLFERINO',
+        '009200' => 'GUARDIANNA',
+        '00B500' => 'SACRED DUSTER',
         '000F02' => 'GOD HAND',
-        '00C800' => 'DAYLIGHT SCAR'
+        '009800' => "RIKA'S CLAW",
+        '002900' => 'YAMIGARASU',
+        '00B400' => 'KUSANAGI',
+        '002700' => 'ANCIENT SABER',
+        '001101' => 'SOUL BANISH',
+        '000B07' => 'VALKYRIE',
+        '000D03' => 'PHOENIX CLAW',
+        '000F01' => 'ANGRY FIST',
+        '00C600' => 'SHICHISHITO',
+        '009400' => 'MORNING GLORY'
     ];
     $tier11_weapons = [
-        '001200' => 'SPREAD NEEDLE',
-        '00AB00' => "LAME D'ARGENT"
+        '001001' => 'AGITO',
+        '008D00' => 'NUG2000-BAZOOKA',
+        '00C900' => 'DECALOG',
+        '005A00' => 'PROPHETS OF MOTAV',
+        '003A00' => "MADAM'S PARASOL"
     ];
 
     // Allowed weapons dynamically unlock based on number of tokens claimed
     $tokenCount = count($tokenIds);
+
+    // Validate each weapon's tier and duplicate constraints
+    $weapon_counts = array_count_values($weapons);
+    foreach ($weapon_counts as $w => $c) {
+        $tier = null;
+        if (isset($tier9_weapons[$w])) {
+            $tier = 9;
+        } elseif (isset($tier10_weapons[$w])) {
+            $tier = 10;
+        } elseif (isset($tier11_weapons[$w])) {
+            $tier = 11;
+        } else {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid weapon choice.']);
+            exit;
+        }
+
+        // Ensure selected tier is unlocked for the token count
+        if ($tier > 8 + $tokenCount) {
+            http_response_code(400);
+            echo json_encode(['error' => "Weapon tier {$tier} is not unlocked by the number of selected tokens."]);
+            exit;
+        }
+
+        // Enforce duplicate constraints based on token count and tier
+        $maxAllowed = $tokenCount - ($tier - 9);
+        if ($c > $maxAllowed) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Weapon duplication count exceeds the allowance for the selected tier and tokens.']);
+            exit;
+        }
+    }
+
+    // Build list of allowed weapons and set chosen weapon name map
     $allowed_weapons = $tier9_weapons;
     if ($tokenCount >= 2) {
         $allowed_weapons = array_merge($allowed_weapons, $tier10_weapons);
     }
     if ($tokenCount >= 3) {
         $allowed_weapons = array_merge($allowed_weapons, $tier11_weapons);
-    }
-
-    foreach ($weapons as $w) {
-        if (!isset($allowed_weapons[$w])) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Invalid weapon selection for the selected token tier.']);
-            exit;
-        }
     }
 
     // Lookup user's discord_id
@@ -197,12 +275,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $combined_stats['stat_hit']     += (int)$t['stat_hit'];
     }
 
-    // Cap combined stats at 100% per attribute
-    $combined_stats['stat_native']  = min(100, $combined_stats['stat_native']);
-    $combined_stats['stat_abeast']  = min(100, $combined_stats['stat_abeast']);
-    $combined_stats['stat_machine'] = min(100, $combined_stats['stat_machine']);
-    $combined_stats['stat_dark']    = min(100, $combined_stats['stat_dark']);
-    $combined_stats['stat_hit']     = min(100, $combined_stats['stat_hit']);
+    // Count how many attributes are active (>0) before any filtering
+    $active_stats = [];
+    foreach ($combined_stats as $k => $val) {
+        if ($val > 0) {
+            $active_stats[] = $k;
+        }
+    }
+
+    // If combined stats span >3 columns, player must select exactly 3 to keep
+    if (count($active_stats) > 3) {
+        $keep = $input['keep_attributes'] ?? [];
+        if (!is_array($keep) || count($keep) !== 3) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Combined stats span more than 3 attributes. You must select exactly 3 to keep.']);
+            exit;
+        }
+
+        $valid_keys = ['stat_native', 'stat_abeast', 'stat_machine', 'stat_dark', 'stat_hit'];
+        foreach ($keep as $k) {
+            if (!in_array($k, $valid_keys)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Invalid attribute key selected to keep.']);
+                exit;
+            }
+        }
+
+        // Zero out any attributes not explicitly selected to keep
+        foreach ($combined_stats as $k => $val) {
+            if (!in_array($k, $keep)) {
+                $combined_stats[$k] = 0;
+            }
+        }
+    }
+
+    // Clamp combined stats at 90% per attribute
+    $combined_stats['stat_native']  = min(90, $combined_stats['stat_native']);
+    $combined_stats['stat_abeast']  = min(90, $combined_stats['stat_abeast']);
+    $combined_stats['stat_machine'] = min(90, $combined_stats['stat_machine']);
+    $combined_stats['stat_dark']    = min(90, $combined_stats['stat_dark']);
+    $combined_stats['stat_hit']     = min(90, $combined_stats['stat_hit']);
 
     // 1. Fetch online clients from newserv to verify status
     $url = $NEWSERV_API_URL . "/y/clients";
@@ -332,19 +444,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Mark all selected tokens as claimed inside a transaction
+    // Consolidated claim log: one row per claim event recording the player, every
+    // token spent, and the item produced (name + the combined stats it was rolled
+    // with). The per-token is_claimed flags below remain the source of truth for
+    // token state; this is the human-readable audit log of who claimed what for what.
+    $db->exec("
+        CREATE TABLE IF NOT EXISTS tekker_claim_log (
+            claim_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            account_id INTEGER NOT NULL,
+            discord_id TEXT,
+            token_ids TEXT NOT NULL,
+            token_count INTEGER NOT NULL,
+            weapon_hex TEXT NOT NULL,
+            weapon_name TEXT NOT NULL,
+            stat_native INTEGER DEFAULT 0,
+            stat_abeast INTEGER DEFAULT 0,
+            stat_machine INTEGER DEFAULT 0,
+            stat_dark INTEGER DEFAULT 0,
+            stat_hit INTEGER DEFAULT 0,
+            claimed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ");
+
+    $trimmedTokenIds = array_map('trim', $tokenIds);
+
+    // Record the claim AND remove the spent tokens inside one transaction: the log
+    // row (who claimed what, for which item) is written FIRST, then the source
+    // tokens are deleted. Because both happen atomically, tokens are only ever
+    // removed once their permanent claim-log record exists — never before.
     $db->exec("BEGIN TRANSACTION;");
     try {
-        foreach ($tokenIds as $tid) {
-            $upd = $db->prepare("
-                UPDATE tekker_tokens 
-                SET is_claimed = 1, claimed_by = :claimed_by, claimed_at = datetime('now') 
+        $logStmt = $db->prepare("
+            INSERT INTO tekker_claim_log
+                (account_id, discord_id, token_ids, token_count, weapon_hex, weapon_name,
+                 stat_native, stat_abeast, stat_machine, stat_dark, stat_hit)
+            VALUES
+                (:account_id, :discord_id, :token_ids, :token_count, :weapon_hex, :weapon_name,
+                 :sn, :sa, :sm, :sd, :sh)
+        ");
+        $logStmt->bindValue(':account_id', $accountId, SQLITE3_INTEGER);
+        $logStmt->bindValue(':discord_id', $discordId, SQLITE3_TEXT);
+        $logStmt->bindValue(':token_ids', json_encode($trimmedTokenIds), SQLITE3_TEXT);
+        $logStmt->bindValue(':token_count', count($trimmedTokenIds), SQLITE3_INTEGER);
+        $logStmt->bindValue(':weapon_hex', $chosenWeaponHex, SQLITE3_TEXT);
+        $logStmt->bindValue(':weapon_name', $chosenWeaponName, SQLITE3_TEXT);
+        $logStmt->bindValue(':sn', $combined_stats['stat_native'], SQLITE3_INTEGER);
+        $logStmt->bindValue(':sa', $combined_stats['stat_abeast'], SQLITE3_INTEGER);
+        $logStmt->bindValue(':sm', $combined_stats['stat_machine'], SQLITE3_INTEGER);
+        $logStmt->bindValue(':sd', $combined_stats['stat_dark'], SQLITE3_INTEGER);
+        $logStmt->bindValue(':sh', $combined_stats['stat_hit'], SQLITE3_INTEGER);
+        $logStmt->execute();
+
+        // Claim is now permanently recorded — delete the spent tokens from the live
+        // store. The claim log is the record of these tokens from here on.
+        foreach ($trimmedTokenIds as $tid) {
+            $del = $db->prepare("
+                DELETE FROM tekker_tokens
                 WHERE trim(token_id, char(13)||char(10)||' '||char(9)) = :tokenId
             ");
-            $upd->bindValue(':claimed_by', $accountId, SQLITE3_INTEGER);
-            $upd->bindValue(':tokenId', trim($tid), SQLITE3_TEXT);
-            $upd->execute();
+            $del->bindValue(':tokenId', $tid, SQLITE3_TEXT);
+            $del->execute();
         }
+
         $db->exec("COMMIT;");
     } catch (Exception $e) {
         $db->exec("ROLLBACK;");

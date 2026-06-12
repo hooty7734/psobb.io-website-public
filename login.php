@@ -1202,20 +1202,45 @@ if (isset($_SESSION['user']['username'])) {
                             <div><?= __('Tokens Selected:') ?> <span id="tekker-selected-count" style="color:#00ffff; font-weight:bold;">0</span> / 3</div>
                             <div><?= __('Unlocked Rarity Tier:') ?> <span id="tekker-unlocked-tier" style="color:#00ffc8; font-weight:bold;">-</span></div>
                             <div style="display:flex; align-items:center; flex-wrap:wrap; margin-top:4px;"><?= __('Combined Telemetry Stats:') ?> <span id="tekker-combined-stats" style="margin-left: 6px;">-</span></div>
+                            <div id="tekker-keeper-selection-container" style="display:none; margin-top: 10px; border: 1px dashed #ffaa00; padding: 10px; border-radius: 6px; background: rgba(255,170,0,0.05);">
+                                <div style="font-family:'Share Tech Mono', monospace; font-size:0.85rem; color:#ffaa00; margin-bottom:6px;">
+                                    ⚠️ Combined stats exist in more than 3 categories. Select exactly 3 categories to keep:
+                                </div>
+                                <div id="tekker-keeper-checkboxes" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+                            </div>
+                            <div id="tekker-cap-warning-container" style="display:none; margin-top: 10px; border: 1px dashed #ff4444; padding: 10px; border-radius: 6px; background: rgba(255,68,68,0.05);">
+                                <div style="font-family:'Share Tech Mono', monospace; font-size:0.85rem; color:#ff4444; line-height: 1.4;">
+                                    ⚠️ <b>Notice:</b> One or more combined attributes exceed the 90% limit. These stats will be capped at exactly 90% upon redemption.
+                                </div>
+                            </div>
+                            <div id="tekker-selection-error-container" style="display:none; margin-top: 10px; border: 1px dashed #ff4444; padding: 10px; border-radius: 6px; background: rgba(255,68,68,0.05);">
+                                <div id="tekker-selection-error-text" style="font-family:'Share Tech Mono', monospace; font-size:0.85rem; color:#ff4444; line-height: 1.4;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 15px; max-width: 300px;">
+                            <label style="font-size:0.75rem; color:#aaa; display:block; margin-bottom:4px;"><?= __('Filter by Equipable Class') ?></label>
+                            <select id="tekker-class-filter" class="tekker-select" onchange="window.syncWeaponDropdowns(null, false, true)">
+                                <option value="ALL"><?= __('All Classes') ?></option>
+                                <option value="HU"><?= __('Hunter (HU)') ?></option>
+                                <option value="RA"><?= __('Ranger (RA)') ?></option>
+                                <option value="FO"><?= __('Force (FO)') ?></option>
+                            </select>
                         </div>
 
                         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 15px;">
                             <div>
                                 <label style="font-size:0.75rem; color:#aaa; display:block; margin-bottom:4px;"><?= __('Weapon Choice 1') ?></label>
-                                <select id="tekker-weapon-1" class="tekker-select"></select>
+                                <select id="tekker-weapon-1" class="tekker-select" onchange="window.syncWeaponDropdowns('tekker-weapon-1')"></select>
                             </div>
                             <div>
                                 <label style="font-size:0.75rem; color:#aaa; display:block; margin-bottom:4px;"><?= __('Weapon Choice 2') ?></label>
-                                <select id="tekker-weapon-2" class="tekker-select"></select>
+                                <select id="tekker-weapon-2" class="tekker-select" onchange="window.syncWeaponDropdowns('tekker-weapon-2')"></select>
                             </div>
                             <div>
                                 <label style="font-size:0.75rem; color:#aaa; display:block; margin-bottom:4px;"><?= __('Weapon Choice 3') ?></label>
-                                <select id="tekker-weapon-3" class="tekker-select"></select>
+                                <select id="tekker-weapon-3" class="tekker-select" onchange="window.syncWeaponDropdowns('tekker-weapon-3')"></select>
                             </div>
                         </div>
 

@@ -14,3 +14,9 @@ db/*.log
 api/*.log
 db/.cron_player_state.json
 api/agent_state.json
+
+# Local-only developer/test tooling — NEVER commit or deploy. Contains an
+# auth-bypass dev login + mock newserv server used for local testing only.
+# Kept out of the repo (and therefore out of any upstream PR) entirely.
+/dev_login.php
+test_scripts/
