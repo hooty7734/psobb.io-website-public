@@ -840,3 +840,73 @@ function parse_and_drop_items($accountId, $itemString, $characterName = null)
     return ["success" => true, "dropped" => $droppedPayloads];
 }
 
+/**
+ * Normalizes player/character names and comments by decoding UTF-16LE,
+ * parsing double-null terminators, and removing PSO language markers.
+ *
+ * @param string $data The raw binary string.
+ * @param bool $is_utf16 Whether the input string is encoded in UTF-16LE.
+ * @param string $default_lang The default language code for fallback decoding ('en' or 'jp').
+ * @return string The normalized clean UTF-8 string.
+ */
+function normalize_pso_string($data, $is_utf16 = true, $default_lang = 'en')
+{
+    if ($is_utf16) {
+        // Safe 2-byte aligned split to find double-null terminator
+        $chars = str_split($data, 2);
+        $clean_chars = [];
+        foreach ($chars as $char) {
+            if ($char === "\x00\x00" || (strlen($char) < 2 && $char === "\x00")) {
+                break;
+            }
+            $clean_chars[] = $char;
+        }
+        $data = implode('', $clean_chars);
+
+        if (function_exists('mb_convert_encoding')) {
+            $utf8 = mb_convert_encoding($data, 'UTF-8', 'UTF-16LE');
+        } elseif (function_exists('iconv')) {
+            $utf8 = iconv('UTF-16LE', 'UTF-8', $data);
+        } else {
+            $utf8 = str_replace("\x00", "", $data);
+        }
+    } else {
+        $null_pos = strpos($data, "\x00");
+        if ($null_pos !== false) {
+            $data = substr($data, 0, $null_pos);
+        }
+        $utf8 = $data;
+    }
+
+    // Parse and strip language marker
+    $marker = '';
+    if (strlen($utf8) >= 2 && $utf8[0] === "\t") {
+        $m = $utf8[1];
+        if ($m === 'E' || $m === 'J' || $m === 'B' || $m === 'T' || $m === 'K') {
+            $marker = $m;
+            $utf8 = substr($utf8, 2);
+        }
+    }
+
+    if (!$is_utf16) {
+        $encoding = 'ISO-8859-1';
+        if ($marker === 'J') {
+            $encoding = 'Shift_JIS';
+        } elseif ($marker === 'E') {
+            $encoding = 'ISO-8859-1';
+        } else {
+            if (strtolower($default_lang) === 'jp' || strtolower($default_lang) === 'japanese') {
+                $encoding = 'Shift_JIS';
+            }
+        }
+        if (function_exists('mb_convert_encoding')) {
+            $utf8 = mb_convert_encoding($utf8, 'UTF-8', $encoding);
+        } elseif (function_exists('iconv')) {
+            $utf8 = iconv($encoding, 'UTF-8', $utf8);
+        }
+    }
+
+    return trim($utf8);
+}
+
+

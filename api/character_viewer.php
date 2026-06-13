@@ -310,11 +310,8 @@ if (file_exists($psocharPath)) {
     $sectionId = $SECID_MAP[$sectionIdVal] ?? 'Viridia';
     
     // UTF-16LE name starts at offset 116 (size 32)
-    // BB uses UTF16_ALWAYS_MARKED encoding: first chars are \t + language marker (J/E/B/T/K)
-    // That's 2 UTF-16LE characters = 4 bytes. Skip them to get the actual player name.
-    $nameBytes = substr($dispBlock, 116 + 4, 28);
-    $charName = mb_convert_encoding($nameBytes, 'UTF-8', 'UTF-16LE');
-    $charName = trim(str_replace("\x00", "", $charName));
+    $nameBytes = substr($dispBlock, 116, 32);
+    $charName = normalize_pso_string($nameBytes, true);
     
     // Material stats from extensions striped across items
     $powerMats = ord($invBlock[4 + 8 * 28 + 3]);

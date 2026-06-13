@@ -78,8 +78,7 @@ $charData = @file_get_contents($psocharFile);
 if ($charData !== false && strlen($charData) >= 1284) {
     // Display block starts at offset 852, name at +116 within it (UTF-16LE, 32 bytes)
     $nameBytes = substr($charData, 852 + 116, 32);
-    $parsed = mb_convert_encoding($nameBytes, 'UTF-8', 'UTF-16LE');
-    $parsed = trim(str_replace("\x00", "", $parsed));
+    $parsed = normalize_pso_string($nameBytes, true);
     if (!empty($parsed)) {
         $charName = $parsed;
     }

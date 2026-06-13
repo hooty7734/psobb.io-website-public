@@ -264,9 +264,9 @@ function bot_parse_psochar($charData, $slot, $CLASS_MAP, $SECID_MAP) {
     $charClass  = $CLASS_MAP[$charClassVal]  ?? 'Unknown';
     $sectionId  = $SECID_MAP[$sectionIdVal] ?? 'Unknown';
 
-    // Name: UTF-16LE, skip 4-byte language prefix (\t + marker)
-    $nameBytes = substr($dispBlock, 116 + 4, 28);
-    $charName  = trim(str_replace("\x00", '', mb_convert_encoding($nameBytes, 'UTF-8', 'UTF-16LE')));
+    // Name: UTF-16LE, normalize and remove markers
+    $nameBytes = substr($dispBlock, 116, 32);
+    $charName  = normalize_pso_string($nameBytes, true);
 
     // --- Material counts from inventory extension bytes ---
     $powerMats = ord($invBlock[4 + 8  * 28 + 3]);

@@ -105,8 +105,7 @@ if ($charData === false || strlen($charData) < 0x399C) {
 
 // Unpack character name from UTF-16LE starts at offset 852 + 116 = 968 (size 32)
 $nameBytes = substr($charData, 852 + 116, 32);
-$slotCharName = mb_convert_encoding($nameBytes, 'UTF-8', 'UTF-16LE');
-$slotCharName = trim(str_replace("\x00", "", $slotCharName));
+$slotCharName = normalize_pso_string($nameBytes, true);
 
 // Helper to POST shell commands to NewServ
 function run_shell_command($cmd) {
