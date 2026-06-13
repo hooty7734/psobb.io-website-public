@@ -3687,15 +3687,34 @@ window.syncWeaponDropdowns = function (changedSelectId, _unused, classFilterChan
         
         // If there's no selection error, check keeper constraints
         const keeperContainer = document.getElementById('tekker-keeper-selection-container');
+        const keeperActive = keeperContainer && keeperContainer.style.display !== 'none';
         let keeperOk = true;
-        if (keeperContainer && keeperContainer.style.display !== 'none') {
+        if (keeperActive) {
             const keeperCheckedCount = document.querySelectorAll('.tekker-keeper-cb:checked').length;
             if (keeperCheckedCount !== 3) {
                 keeperOk = false;
             }
         }
+
+        // Block redemption when any attribute would exceed the 90% cap. Mirror the
+        // backend: when a keeper selection is active, only the kept attributes
+        // count toward the total (the rest are zeroed out before the cap check).
+        const stats = { stat_native: 0, stat_abeast: 0, stat_machine: 0, stat_dark: 0, stat_hit: 0 };
+        checked.forEach(cb => {
+            stats.stat_native += parseInt(cb.getAttribute('data-native') || 0);
+            stats.stat_abeast += parseInt(cb.getAttribute('data-abeast') || 0);
+            stats.stat_machine += parseInt(cb.getAttribute('data-machine') || 0);
+            stats.stat_dark += parseInt(cb.getAttribute('data-dark') || 0);
+            stats.stat_hit += parseInt(cb.getAttribute('data-hit') || 0);
+        });
+        if (keeperActive) {
+            const kept = Array.from(document.querySelectorAll('.tekker-keeper-cb:checked')).map(cb => cb.value);
+            Object.keys(stats).forEach(k => { if (!kept.includes(k)) stats[k] = 0; });
+        }
+        const overCap = Object.values(stats).some(v => v > 90);
+
         if (claimBtn) {
-            claimBtn.disabled = !keeperOk;
+            claimBtn.disabled = !keeperOk || overCap;
         }
     }
 };
@@ -3721,6 +3740,10 @@ window.handleKeeperChange = function () {
             claimBtn.disabled = false;
         }
     }
+
+    // Re-run the full validation so the 90% cap (which depends on which
+    // attributes are kept) is re-evaluated against the new keeper selection.
+    window.syncWeaponDropdowns();
 };
 
 window.updateTekkerSelection = function () {
@@ -3777,29 +3800,21 @@ window.updateTekkerSelection = function () {
         hit += parseInt(cb.getAttribute('data-hit') || 0);
     });
 
-    // Determine if any combined stats exceed 90% warning limit
+    // Determine if any combined stats exceed the 90% hard cap. Over the cap,
+    // redemption is blocked entirely (no clamping) so the actual totals are
+    // shown to make the overshoot obvious.
+    const overCap = (native > 90 || abeast > 90 || machine > 90 || dark > 90 || hit > 90);
     const warningContainer = document.getElementById('tekker-cap-warning-container');
     if (warningContainer) {
-        if (native > 90 || abeast > 90 || machine > 90 || dark > 90 || hit > 90) {
-            warningContainer.style.display = 'block';
-        } else {
-            warningContainer.style.display = 'none';
-        }
+        warningContainer.style.display = overCap ? 'block' : 'none';
     }
 
-    // Keep stats clamped display at 90%
-    const dispNative = Math.min(90, native);
-    const dispAbeast = Math.min(90, abeast);
-    const dispMachine = Math.min(90, machine);
-    const dispDark = Math.min(90, dark);
-    const dispHit = Math.min(90, hit);
-
     const statParts = [];
-    statParts.push(`<span class="tekker-stat-badge ${dispNative > 0 ? 'has-val' : ''}">Native: +${dispNative}%</span>`);
-    statParts.push(`<span class="tekker-stat-badge ${dispAbeast > 0 ? 'has-val' : ''}">A.Beast: +${dispAbeast}%</span>`);
-    statParts.push(`<span class="tekker-stat-badge ${dispMachine > 0 ? 'has-val' : ''}">Machine: +${dispMachine}%</span>`);
-    statParts.push(`<span class="tekker-stat-badge ${dispDark > 0 ? 'has-val' : ''}">Dark: +${dispDark}%</span>`);
-    statParts.push(`<span class="tekker-stat-badge ${dispHit > 0 ? 'has-hit' : ''}">Hit: +${dispHit}%</span>`);
+    statParts.push(`<span class="tekker-stat-badge ${native > 0 ? 'has-val' : ''} ${native > 90 ? 'over-cap' : ''}">Native: +${native}%</span>`);
+    statParts.push(`<span class="tekker-stat-badge ${abeast > 0 ? 'has-val' : ''} ${abeast > 90 ? 'over-cap' : ''}">A.Beast: +${abeast}%</span>`);
+    statParts.push(`<span class="tekker-stat-badge ${machine > 0 ? 'has-val' : ''} ${machine > 90 ? 'over-cap' : ''}">Machine: +${machine}%</span>`);
+    statParts.push(`<span class="tekker-stat-badge ${dark > 0 ? 'has-val' : ''} ${dark > 90 ? 'over-cap' : ''}">Dark: +${dark}%</span>`);
+    statParts.push(`<span class="tekker-stat-badge ${hit > 0 ? 'has-hit' : ''} ${hit > 90 ? 'over-cap' : ''}">Hit: +${hit}%</span>`);
     const combinedStatsHtml = statParts.join('');
 
     document.getElementById('tekker-selected-count').textContent = count;

@@ -943,6 +943,14 @@ if (isset($_SESSION['user']['username'])) {
                         box-shadow: 0 0 8px rgba(0, 255, 200, 0.1);
                     }
 
+                    .tekker-stat-badge.over-cap {
+                        background: rgba(255, 68, 68, 0.15);
+                        border-color: rgba(255, 68, 68, 0.6);
+                        color: #ff4444;
+                        text-shadow: 0 0 5px rgba(255, 68, 68, 0.5);
+                        box-shadow: 0 0 8px rgba(255, 68, 68, 0.15);
+                    }
+
                     /* Custom Checkbox Design */
                     .tekker-checkbox-container {
                         display: flex;
@@ -1210,7 +1218,7 @@ if (isset($_SESSION['user']['username'])) {
                             </div>
                             <div id="tekker-cap-warning-container" style="display:none; margin-top: 10px; border: 1px dashed #ff4444; padding: 10px; border-radius: 6px; background: rgba(255,68,68,0.05);">
                                 <div style="font-family:'Share Tech Mono', monospace; font-size:0.85rem; color:#ff4444; line-height: 1.4;">
-                                    ⚠️ <b>Notice:</b> One or more combined attributes exceed the 90% limit. These stats will be capped at exactly 90% upon redemption.
+                                    ⚠️ <b>Notice:</b> One or more combined attributes exceed the 90% limit. Adjust your token selection so no attribute goes over 90% — redemption is blocked while any stat is over the cap.
                                 </div>
                             </div>
                             <div id="tekker-selection-error-container" style="display:none; margin-top: 10px; border: 1px dashed #ff4444; padding: 10px; border-radius: 6px; background: rgba(255,68,68,0.05);">

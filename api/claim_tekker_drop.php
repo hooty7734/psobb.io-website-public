@@ -309,12 +309,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Clamp combined stats at 90% per attribute
-    $combined_stats['stat_native']  = min(90, $combined_stats['stat_native']);
-    $combined_stats['stat_abeast']  = min(90, $combined_stats['stat_abeast']);
-    $combined_stats['stat_machine'] = min(90, $combined_stats['stat_machine']);
-    $combined_stats['stat_dark']    = min(90, $combined_stats['stat_dark']);
-    $combined_stats['stat_hit']     = min(90, $combined_stats['stat_hit']);
+    // Reject if any combined attribute exceeds the 90% cap. Players must trade
+    // tokens to land exactly on the stats they want rather than overshooting and
+    // forfeiting the remainder.
+    $stat_labels = [
+        'stat_native'  => 'Native',
+        'stat_abeast'  => 'A.Beast',
+        'stat_machine' => 'Machine',
+        'stat_dark'    => 'Dark',
+        'stat_hit'     => 'Hit'
+    ];
+    $over_cap = [];
+    foreach ($stat_labels as $key => $label) {
+        if ($combined_stats[$key] > 90) {
+            $over_cap[] = "{$label} ({$combined_stats[$key]}%)";
+        }
+    }
+    if (!empty($over_cap)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Combined stats exceed the 90% cap: ' . implode(', ', $over_cap) . '. Adjust your token selection so no attribute goes over 90%.']);
+        exit;
+    }
 
     // 1. Fetch online clients from newserv to verify status
     $url = $NEWSERV_API_URL . "/y/clients";
